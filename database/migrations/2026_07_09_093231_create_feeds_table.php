@@ -15,7 +15,7 @@ return new class extends Migration
     $table->id();
     $table->string('name');
     $table->string('type'); // konsentrat, hijauan, dll
-    $table->string('unit'); // kg, liter
+    $table->foreignId('unit_id')->nullable()->constrained('units');
     $table->decimal('stock', 10, 2)->default(0);
     $table->decimal('price_per_unit', 10, 2)->default(0);
     $table->text('description')->nullable();

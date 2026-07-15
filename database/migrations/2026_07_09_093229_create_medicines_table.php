@@ -15,7 +15,7 @@ return new class extends Migration
     $table->id();
     $table->string('name');
     $table->string('type'); // antibiotik, vitamin, vaksin, dll
-    $table->string('unit'); // ml, tablet, cc
+    $table->foreignId('unit_id')->nullable()->constrained('units');
     $table->decimal('stock', 10, 2)->default(0);
     $table->decimal('price_per_unit', 10, 2)->default(0);
     $table->text('description')->nullable();

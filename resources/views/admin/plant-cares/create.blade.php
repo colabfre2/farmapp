@@ -27,8 +27,17 @@
                     </div>
                     <div class="row">
                         <div class="col-6 mb-3">
-                            <label class="form-label fw-bold">Satuan</label>
-                            <input type="text" name="unit" class="form-control" value="{{ old('unit') }}" placeholder="cth: kg, liter, ml">
+                            <label class="form-label">Satuan</label>
+                            <select name="unit_id" class="form-select @error('unit_id') is-invalid @enderror" required>
+                                <option value="">-- Pilih satuan --</option>
+                                @foreach($units as $unit)
+                                    <option value="{{ $unit->id }}" {{ old('unit_id') == $unit->id ? 'selected' : '' }}>{{ $unit->name }} ({{ $unit->symbol }})</option>
+                                @endforeach
+                            </select>
+                            @error('unit_id')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        
                         </div>
                         <div class="col-6 mb-3">
                             <label class="form-label fw-bold">Stok Awal</label>

@@ -3,7 +3,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\PlantCare;
-
+use App\Models\Unit;
 class PlantCareController extends Controller
 {
     public function index(Request $request)
@@ -15,7 +15,8 @@ class PlantCareController extends Controller
 
     public function create()
     {
-        return view('admin.plant-cares.create');
+        $units = Unit::all();
+        return view('admin.plant-cares.create', compact('units'));
     }
 
     public function store(Request $request)
@@ -23,7 +24,7 @@ class PlantCareController extends Controller
         $request->validate([
             'name'           => 'required|string|max:255',
             'type'           => 'required|in:Pupuk,Penyiraman,Pestisida,Pemangkasan,Lainnya',
-            'unit'           => 'nullable|string|max:50',
+            'unit_id'           => 'required|exists:units,id',
             'stock'          => 'required|numeric|min:0',
             'price_per_unit' => 'required|numeric|min:0',
             'description'    => 'nullable|string',
@@ -36,7 +37,8 @@ class PlantCareController extends Controller
 
     public function edit(PlantCare $plantCare)
     {
-        return view('admin.plant-cares.edit', compact('plantCare'));
+        $units = Unit::all();
+        return view('admin.plant-cares.edit', compact('plantCare', 'units'));
     }
 
     public function update(Request $request, PlantCare $plantCare)
@@ -44,7 +46,7 @@ class PlantCareController extends Controller
         $request->validate([
             'name'           => 'required|string|max:255',
             'type'           => 'required|in:Pupuk,Penyiraman,Pestisida,Pemangkasan,Lainnya',
-            'unit'           => 'nullable|string|max:50',
+            'unit_id'           => 'required|exists:units,id',
             'stock'          => 'required|numeric|min:0',
             'price_per_unit' => 'required|numeric|min:0',
             'description'    => 'nullable|string',

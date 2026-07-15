@@ -15,7 +15,7 @@ return new class extends Migration
     $table->id();
     $table->string('name');
     $table->enum('type', ['Pupuk', 'Penyiraman', 'Pestisida', 'Pemangkasan', 'Lainnya']);
-    $table->string('unit')->nullable(); // kg, liter, ml
+    $table->foreignId('unit_id')->nullable()->constrained('units');
     $table->decimal('stock', 10, 2)->default(0);
     $table->decimal('price_per_unit', 10, 2)->default(0);
     $table->text('description')->nullable();

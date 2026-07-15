@@ -40,7 +40,7 @@
                             <td>{{ $loop->iteration }}</td>
                             <td>{{ $medicine->name }}</td>
                             <td>{{ $medicine->type }}</td>
-                            <td>{{ $medicine->unit }}</td>
+                            <td>{{ $medicine->unit->symbol ?? '-' }}</td>
                             <td>{{ $medicine->stock }}</td>
                             <td>{{ rupiah($medicine->price_per_unit) }}</td>
                             <td>

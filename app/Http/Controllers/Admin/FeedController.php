@@ -3,6 +3,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Feed;
+use App\Models\Unit;
 
 class FeedController extends Controller
 {
@@ -15,7 +16,8 @@ class FeedController extends Controller
 
     public function create()
     {
-        return view('admin.feeds.create');
+        $units = Unit::all();
+        return view('admin.feeds.create', compact('units'));
     }
 
     public function store(Request $request)
@@ -23,7 +25,7 @@ class FeedController extends Controller
         $request->validate([
             'name'           => 'required|string|max:255',
             'type'           => 'required|string|max:255',
-            'unit'           => 'required|string|max:50',
+            'unit_id'           => 'required|exists:units,id',
             'stock'          => 'required|numeric|min:0',
             'price_per_unit' => 'required|numeric|min:0',
             'description'    => 'nullable|string',
@@ -36,7 +38,8 @@ class FeedController extends Controller
 
     public function edit(Feed $feed)
     {
-        return view('admin.feeds.edit', compact('feed'));
+        $units = Unit::all();
+        return view('admin.feeds.edit', compact('feed', 'units'));
     }
 
     public function update(Request $request, Feed $feed)
@@ -44,7 +47,7 @@ class FeedController extends Controller
         $request->validate([
             'name'           => 'required|string|max:255',
             'type'           => 'required|string|max:255',
-            'unit'           => 'required|string|max:50',
+            'unit_id'           => 'required|exists:units,id',
             'stock'          => 'required|numeric|min:0',
             'price_per_unit' => 'required|numeric|min:0',
             'description'    => 'nullable|string',

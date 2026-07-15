@@ -40,9 +40,9 @@
                             <td>{{ $loop->iteration }}</td>
                             <td>{{ $feed->name }}</td>
                             <td>{{ $feed->type }}</td>
-                            <td>{{ $feed->unit }}</td>
+                            <td>{{ $feed->unit->name ?? '-' }}</td>
                             <td>{{ $feed->stock }}</td>
-                            <td>{{ rupiah($feed->price_per_unit) }}</td>
+                            <td>{{ rupiah($feed->price_per_unit) }} / {{ $feed->unit->symbol ?? '-' }}</td>
                             <td>
                                 <a href="{{ route('admin.feeds.edit', $feed) }}" class="btn btn-sm btn-warning">Ubah</a>
                                 <form method="POST" action="{{ route('admin.feeds.destroy', $feed) }}" style="display:inline" class="form-delete">

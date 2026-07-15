@@ -40,9 +40,9 @@
                             <td>{{ $loop->iteration }}</td>
                             <td>{{ $plantCare->name }}</td>
                             <td><span class="badge bg-success-lt text-success">{{ $plantCare->type }}</span></td>
-                            <td>{{ $plantCare->unit ?? '-' }}</td>
+                            <td>{{ $plantCare->unit->name ?? '-' }}</td>
                             <td>{{ $plantCare->stock }}</td>
-                            <td>{{ rupiah($plantCare->price_per_unit) }}</td>
+                            <td>{{ rupiah($plantCare->price_per_unit) }} / {{ $plantCare->unit->symbol ?? '-' }}</td>
                             <td>
                                 <a href="{{ route('admin.plant-cares.edit', $plantCare) }}" class="btn btn-sm btn-warning">Ubah</a>
                                 <form method="POST" action="{{ route('admin.plant-cares.destroy', $plantCare) }}" style="display:inline" class="form-delete">

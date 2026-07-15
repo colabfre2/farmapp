@@ -3,6 +3,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Medicine;
+use App\Models\Unit;
 
 class MedicineController extends Controller
 {
@@ -15,7 +16,8 @@ class MedicineController extends Controller
 
     public function create()
     {
-        return view('admin.medicines.create');
+        $units = Unit::all(); 
+        return view('admin.medicines.create', compact('units'));
     }
 
     public function store(Request $request)
@@ -23,7 +25,7 @@ class MedicineController extends Controller
         $request->validate([
             'name'           => 'required|string|max:255',
             'type'           => 'required|string|max:255',
-            'unit'           => 'required|string|max:50',
+            'unit_id'           => 'required|exists:units,id',
             'stock'          => 'required|numeric|min:0',
             'price_per_unit' => 'required|numeric|min:0',
             'description'    => 'nullable|string',
@@ -36,7 +38,10 @@ class MedicineController extends Controller
 
     public function edit(Medicine $medicine)
     {
-        return view('admin.medicines.edit', compact('medicine'));
+        $units = Unit::all(); 
+        
+
+        return view('admin.medicines.edit', compact('medicine', 'units'));
     }
 
     public function update(Request $request, Medicine $medicine)
@@ -44,7 +49,7 @@ class MedicineController extends Controller
         $request->validate([
             'name'           => 'required|string|max:255',
             'type'           => 'required|string|max:255',
-            'unit'           => 'required|string|max:50',
+            'unit_id'           => 'required|exists:units,id',
             'stock'          => 'required|numeric|min:0',
             'price_per_unit' => 'required|numeric|min:0',
             'description'    => 'nullable|string',

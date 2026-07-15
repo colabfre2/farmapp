@@ -25,7 +25,7 @@
             <div class="card-body">
                 <div class="d-flex align-items-center mb-2">
                     <span class="fs-3 me-auto">📦</span>
-                    <span class="text-primary small fw-bold">↗ +3</span>
+                    <span class="text-primary small fw-bold">↗ Total</span>
                 </div>
                 <div class="h1 mb-0 fw-bolder text-dark">{{ $totalProducts }}</div>
                 <div class="text-muted fw-semibold">Total Produk</div>
@@ -37,7 +37,7 @@
             <div class="card-body">
                 <div class="d-flex align-items-center mb-2">
                     <span class="fs-3 me-auto">🌱</span>
-                    <span class="text-success small fw-bold">↗ +1</span>
+                    <span class="text-success small fw-bold">↗ Aktif</span>
                 </div>
                 <div class="h1 mb-0 fw-bolder text-dark">{{ $totalCrops }}</div>
                 <div class="text-muted fw-semibold">Tanaman aktif</div>
@@ -49,7 +49,7 @@
             <div class="card-body">
                 <div class="d-flex align-items-center mb-2">
                     <span class="fs-3 me-auto">🐄</span>
-                    <span class="text-warning small fw-bold">↗ +20</span>
+                    <span class="text-warning small fw-bold">↗ Populasi</span>
                 </div>
                 <div class="h1 mb-0 fw-bolder text-dark">{{ $totalLivestock }}</div>
                 <div class="text-muted fw-semibold">Ternak</div>
@@ -63,7 +63,7 @@
             <div class="card-body">
                 <div class="d-flex align-items-center mb-2">
                     <span class="fs-3 me-auto">🛒</span>
-                    <span class="text-purple small fw-bold" style="color: #6f42c1;">↗ +8</span>
+                    <span class="text-purple small fw-bold" style="color: #6f42c1;">↗ Transaksi</span>
                 </div>
                 <div class="h1 mb-0 fw-bolder text-dark">{{ $totalOrders }}</div>
                 <div class="text-muted fw-semibold">Pesanan</div>
@@ -75,7 +75,7 @@
             <div class="card-body">
                 <div class="d-flex align-items-center mb-2">
                     <span class="fs-3 me-auto">💵</span>
-                    <span class="text-success small fw-bold">↗ +12%</span>
+                    <span class="text-success small fw-bold">↗ Akumulasi</span>
                 </div>
                 <div class="h1 mb-0 fw-bolder text-dark">{{ rupiah($totalRevenue) }}</div>
                 <div class="text-muted fw-semibold">Pendapatan</div>
@@ -87,7 +87,7 @@
             <div class="card-body">
                 <div class="d-flex align-items-center mb-2">
                     <span class="fs-3 me-auto">📈</span>
-                    <span class="text-info small fw-bold">↗ +8%</span>
+                    <span class="text-info small fw-bold">↗ Net Profit</span>
                 </div>
                 <div class="h1 mb-0 fw-bolder text-dark">{{ rupiah($netProfit) }}</div>
                 <div class="text-muted fw-semibold">Laba bersih</div>
@@ -127,27 +127,27 @@
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h3 class="card-title">Pesanan terbaru</h3>
-                <a href="#" class="text-success small">Lihat Semua</a>
+                <a href="{{ route('admin.transactions.index') }}" class="text-success small">Lihat Semua</a>
             </div>
             <div class="card-body p-0">
                 <div class="list-group list-group-flush">
                     @forelse($recentOrders as $order)
                     <div class="list-group-item d-flex align-items-center gap-3 py-3">
                         <span class="avatar bg-success-lt text-success fw-bold">
-                            {{ strtoupper(substr($order->user->name, 0, 1)) }}
+                            {{ strtoupper(substr($order->user->name ?? 'G', 0, 1)) }}
                         </span>
                         <div class="flex-fill">
-                            <div class="fw-bold">{{ $order->user->name }}</div>
+                            <div class="fw-bold">{{ $order->user->name ?? 'Guest' }}</div>
                             <div class="text-muted small">{{ $order->items->first()->product_name ?? '-' }}</div>
                         </div>
                         <div class="text-end">
                             <div class="fw-bold">{{ rupiah($order->total_amount) }}</div>
                             <span class="badge 
-                                @if($order->status == 'Pending') bg-warning text-white
+                                @if($order->status == 'Pending') bg-warning text-dark
                                 @elseif($order->status == 'Processing') bg-primary text-white
                                 @elseif($order->status == 'Shipped') bg-info text-white
                                 @elseif($order->status == 'Completed') bg-success text-white
-                                @else bg-danger
+                                @else bg-danger text-white
                                 @endif">
                                 {{ $order->status }}
                             </span>
@@ -165,7 +165,7 @@
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h3 class="card-title">Panen terbaru</h3>
-                <a href="#" class="text-success small">Lihat semua</a>
+                <a href="{{ route('admin.harvests.index') }}" class="text-success small">Lihat semua</a>
             </div>
             <div class="card-body p-0">
                 <div class="list-group list-group-flush">
@@ -174,7 +174,7 @@
                         <span class="avatar bg-success-lt">🌾</span>
                         <div class="flex-fill">
                             <div class="fw-bold">{{ $harvest->product_name }}</div>
-                            <div class="text-muted small">{{ $harvest->harvested_at }} · {{ $harvest->quantity }} {{ $harvest->unit->symbol }}</div>
+                            <div class="text-muted small">{{ $harvest->harvested_at }} · {{ $harvest->quantity }} {{ $harvest->unit?->symbol ?? '' }}</div>
                         </div>
                         <div class="fw-bold text-success">
                             {{ rupiah($harvest->quantity * $harvest->selling_price) }}
@@ -188,12 +188,16 @@
         </div>
     </div>
 </div>
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     const revenueData  = @json($revenueData);
     const expensesData = @json($expensesData);
     const profitData   = revenueData.map((r, i) => r - expensesData[i]);
+
+    // Helper format Rupiah di JS Tooltip
+    const formatRp = (value) => 'Rp ' + new Intl.NumberFormat('id-ID').format(value);
 
     // Revenue & Expenses Chart
     new Chart(document.getElementById('revenueChart'), {
@@ -221,8 +225,20 @@
         },
         options: {
             responsive: true,
-            plugins: { legend: { position: 'bottom' } },
-            scales: { y: { beginAtZero: true } }
+            plugins: { 
+                legend: { position: 'bottom' },
+                tooltip: {
+                    callbacks: {
+                        label: (ctx) => `${ctx.dataset.label}: ${formatRp(ctx.raw)}`
+                    }
+                }
+            },
+            scales: { 
+                y: { 
+                    beginAtZero: true,
+                    ticks: { callback: (val) => 'Rp ' + new Intl.NumberFormat('id-ID').format(val) }
+                } 
+            }
         }
     });
 
@@ -240,8 +256,20 @@
         },
         options: {
             responsive: true,
-            plugins: { legend: { display: false } },
-            scales: { y: { beginAtZero: true } }
+            plugins: { 
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: (ctx) => `Profit: ${formatRp(ctx.raw)}`
+                    }
+                }
+            },
+            scales: { 
+                y: { 
+                    beginAtZero: true,
+                    ticks: { callback: (val) => 'Rp ' + new Intl.NumberFormat('id-ID').format(val) }
+                } 
+            }
         }
     });
 </script>
