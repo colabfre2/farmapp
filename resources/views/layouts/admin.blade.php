@@ -5,78 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
     <title>FarmApp - Admin</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <link rel="stylesheet" href="{{ asset('css/style.css') }}">
-    <style>
-        /* --- PERUBAHAN LOGO STICKY --- */
-        .navbar-vertical .navbar-brand {
-            color: #ffffff !important;
-            padding: 1.5rem 1rem;
-            position: sticky;
-            top: 0;
-            background-color: #0d1b2a;
-            z-index: 1020;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        /* --- CUSTOM SCROLLBAR UNTUK SIDEBAR --- */
-        .navbar-collapse {
-            overflow-y: auto;
-            max-height: calc(100vh - 75px);
-        }
-        .navbar-collapse::-webkit-scrollbar {
-            width: 4px;
-        }
-        .navbar-collapse::-webkit-scrollbar-thumb {
-            background-color: #1a2d42;
-            border-radius: 10px;
-        }
-        .navbar-collapse::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        /* Sidebar */
-        .navbar-vertical {
-            background-color: #0d1b2a !important;
-            border-right: 1px solid #1a2d42 !important;
-        }
-        .navbar-vertical .nav-link {
-            color: #a0a0a0 !important;
-            border-radius: 8px;
-            margin: 2px 8px;
-        }
-        .navbar-vertical .nav-link:hover {
-            color: #ffffff !important;
-            background-color: #1a2d42 !important;
-        }
-        .navbar-vertical .nav-link.active {
-            color: #ffffff !important;
-            background-color: #2d7a2d !important;
-        }
-        .navbar-vertical .nav-link.text-success {
-            color: #4caf50 !important;
-        }
-        .badge.bg-success {
-            background-color: #4caf50 !important;
-        }
-
-        /* Page background */
-        .page-wrapper {
-            background-color: #f4f6f8 !important;
-        }
-
-        /* Header avatar */
-        .navbar-avatar {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            background: #2d7a2d;
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-        }
-    </style>
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
 </head>
 <body class="antialiased">
     <div class="wrapper">
