@@ -8,7 +8,8 @@
         </span>
         <form action="{{ route('logout') }}" method="post">
             @csrf
-            <button type="submit" onclick="return confirm('Apakah kamu yakin ingin logout?')" class=bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition>logout</button>
+            <button type="submit" onclick="return confirm('Apakah kamu yakin ingin logout?')" class=bg-red-500
+                hover:bg-red-600 text-white px-4 py-2 rounded-lg transition>logout</button>
         </form>
     </div>
-</nav> 
+</nav>

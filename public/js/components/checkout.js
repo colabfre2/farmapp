@@ -1,4 +1,4 @@
-const subtotal = window.checkoutData.subtotal;
+    const subtotal = window.checkoutData.subtotal;
 const provincesUrl = window.checkoutData.provincesUrl;
 const citiesUrl = window.checkoutData.citiesUrl;
 const ongkirUrl = window.checkoutData.ongkirUrl;
