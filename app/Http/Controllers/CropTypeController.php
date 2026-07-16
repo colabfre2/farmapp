@@ -11,10 +11,9 @@ class CropTypeController extends Controller
 
 public function index(Request $request)
 {
-    $query = $request->input('q');
-    $cropTypes = \App\Models\CropType::when($query, fn($q) => $q->where('name', 'like', "%{$query}%"))->get();
-    return view('admin.crop-types.index', compact('cropTypes', 'query'));
-
+        $query = $request->input('q');
+    $cropTypes = CropType::when($query, fn($q) => $q->where('name', 'like', "%{$query}%"))->get();
+    return view('admin.crop-types.index', compact('cropTypes', 'query'));  
 }
 
 public function create()
