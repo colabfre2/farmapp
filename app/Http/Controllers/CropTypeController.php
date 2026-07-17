@@ -2,58 +2,40 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreCropTypeRequest;
 use App\Models\CropType;
+use App\Services\CropTypeService;
 use Illuminate\Http\Request;
 
 class CropTypeController extends Controller
 {
+    public $service;
+    public function __construct(CropTypeService $service) {
+        $this->service = $service;
+    }
 
-
-public function index(Request $request)
-{
+    public function index(Request $request)
+    {
         $query = $request->input('q');
-    $cropTypes = CropType::when($query, fn($q) => $q->where('name', 'like', "%{$query}%"))->get();
-    return view('admin.crop-types.index', compact('cropTypes', 'query'));  
-}
+        $cropTypes = $this->service->getFiltered($query);
+        return view('admin.crop-types.index', compact('cropTypes', 'query'));
+    }
 
-public function create()
-{
-    return view('admin.crop-types.create');
-}
+    public function store(StoreCropTypeRequest $request)
+    {
+        $this->service->create($request);
+        return redirect()->route('admin.crop-types.index')->with('success', 'Created!');
+    }
 
-public function store(Request $request)
-{
-    $request->validate([
-        'name' => 'required|string|max:255',
-        'description' => 'nullable|string',
-    ]);
+    public function update(StoreCropTypeRequest $request, CropType $cropType)
+    {
+        $this->service->update($request, $cropType);
+        return redirect()->route('admin.crop-types.index')->with('success', 'Updated!');
+    }
 
-    CropType::create($request->all());
-
-    return redirect()->route('admin.crop-types.index')->with('success', 'Crop Type created successfully!');
-}
-
-public function edit(CropType $cropType)
-{
-    return view('admin.crop-types.edit', compact('cropType'));
-}
-
-public function update(Request $request, CropType $cropType)
-{
-    $request->validate([
-        'name' => 'required|string|max:255',
-        'description' => 'nullable|string',
-    ]);
-
-    $cropType->update($request->all());
-
-    return redirect()->route('admin.crop-types.index')->with('success', 'Crop Type updated successfully!');
-}
-
-public function destroy(CropType $cropType)
-{
-    $cropType->delete();
-
-    return redirect()->route('admin.crop-types.index')->with('success', 'Crop Type deleted successfully!');
-}
+    public function destroy(CropType $cropType)
+    {
+        $this->service->delete($cropType);
+        return redirect()->route('admin.crop-types.index')->with('success', 'Deleted!');
+    }
 }

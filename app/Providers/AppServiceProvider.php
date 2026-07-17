@@ -14,11 +14,11 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $bindings = [
-            CropTypeRepositoryInterface::class => CropTypeRepository::class
+            CropTypeRepositoryInterface::class => CropTypeRepository::class,
         ];
 
         foreach($bindings as $interface => $value){
-            this->app->bin($interface, $value);
+            $this->app->bind($interface, $value);
         }
     }
 

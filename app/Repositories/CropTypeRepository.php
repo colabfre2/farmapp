@@ -6,41 +6,38 @@ use App\Models\CropType;
 use App\DTOs\CropTypeDTO;
 use App\Repositories\Interfaces\CropTypeRepositoryInterface;
 
-class ProductRepository implements CropTypeRepositoryInterface
+class CropTypeRepository implements CropTypeRepositoryInterface
 {
-    public function all()
+    public function getDataCropTypes()
     {
-        return CropType::All();
+        return CropType::all(); // Gunakan 'all()' (lowercase) agar standar
     }
 
-    public function find($id)
+    public function find(int $id)
     {
         return CropType::findOrFail($id);
     }
 
-    public function store(CropTypeDTO $dto)
+    public function createCropType(CropTypeDTO $data)
     {
         return CropType::create([
-            'name' => $dto->name,
-            'description'    
+            'name' => $data->name,
+            'description' => $data->description
         ]);
     }
 
-    public function update($id, CropTypeDTO $dto)
+    public function updateCropType(CropType $cropType, CropTypeDTO $data)
     {
-        $product = CropType::findOrFail($id);
-
-        $product->update([
-            'name' => $dto->name,
-            'price' => $dto->price,
-            'stock' => $dto->stock,
+        $cropType->update([
+            'name' => $data->name,
+            'description' => $data->description,
         ]);
 
-        return $product;
+        return $cropType;
     }
 
-    public function delete($id)
+    public function delete(CropType $cropType)
     {
-        Product::findOrFail($id)->delete();
+        return $cropType->delete();
     }
 }

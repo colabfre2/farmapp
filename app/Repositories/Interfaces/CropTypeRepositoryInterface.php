@@ -2,17 +2,18 @@
 
 namespace App\Repositories\Interfaces;
 
+use App\Models\CropType;
 use App\DTOs\CropTypeDTO;
 
 interface CropTypeRepositoryInterface
 {
-    public function all();
+    public function getDataCropTypes();
+    
+    public function find(int $id);
+    
+    public function createCropType(CropTypeDTO $data);
 
-    public function find($id);
+    public function updateCropType(CropType $cropType, CropTypeDTO $data);
 
-    public function store(CropTypeDTO $dto);
-
-    public function update($id, CropTypeDTO $dto);
-
-    public function delete($id);
+    public function delete(CropType $cropType);
 }

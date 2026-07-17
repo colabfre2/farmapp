@@ -23,31 +23,31 @@ class RajaOngkirService
     }
 
     public function getCities($provinceId = null)
-{
-    $url = "{$this->baseUrl}/city";
-    if ($provinceId) {
-        $url .= "/{$provinceId}";
+    {
+        $url = "{$this->baseUrl}/city";
+        if ($provinceId) {
+            $url .= "/{$provinceId}";
+        }
+
+        $response = Http::withHeaders(['key' => $this->apiKey])
+            ->get($url);
+
+        return $response->json()['data'] ?? [];
     }
-
-    $response = Http::withHeaders(['key' => $this->apiKey])
-        ->get($url);
-
-    return $response->json()['data'] ?? [];
-}
 
 
     public function getOngkir($origin, $destination, $weight, $courier)
-{
-    $response = Http::withHeaders([
-        'key' => $this->apiKey,
-    ])->asForm()->post('https://rajaongkir.komerce.id/api/v1/calculate/domestic-cost', [
-        'origin'      => $origin,
-        'destination' => $destination,
-        'weight'      => $weight,
-        'courier'     => $courier,
-        'price'       => 'lowest',
-    ]);
+    {
+        $response = Http::withHeaders([
+            'key' => $this->apiKey,
+        ])->asForm()->post('https://rajaongkir.komerce.id/api/v1/calculate/domestic-cost', [
+            'origin'      => $origin,
+            'destination' => $destination,
+            'weight'      => $weight,
+            'courier'     => $courier,
+            'price'       => 'lowest',
+        ]);
 
-    return $response->json();
-}
+        return $response->json();
+    }
 }
