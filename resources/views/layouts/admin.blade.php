@@ -3,6 +3,7 @@
 <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+    <link rel="shortcut icon" href="{{ asset('images/fav.ico') }}" type="image/x-icon">
     <title>FarmApp - Admin</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
@@ -84,12 +85,23 @@
         {{-- Sidebar --}}
         <aside class="navbar navbar-vertical navbar-expand-lg">
             <div class="container-fluid">
-                <a href="{{ route('admin.dashboard') }}" class="navbar-brand">
-                    <div class="d-flex align-items-center gap-2">
-                        <div style="width:36px;height:36px;background:#2d7a2d;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;">🌿</div>
-                        <span style="color:#ffffff;font-weight:700;font-size:18px;">FarmApp</span>
-                    </div>
-                </a>
+                <a href="{{ route('admin.dashboard') }}" class="navbar-brand text-decoration-none">
+    <div class="d-flex align-items-center gap-2">
+        
+        {{-- Lingkaran Logo --}}
+        <div class="d-flex justify-content-center align-items-center rounded-circle border border-2 shadow-sm" 
+             style="width: 40px; height: 40px; background-color: #ffffff; border-color: rgba(255,255,255,0.5) !important;">
+            
+            {{-- Class d-block ini PENTING buat ngilangin spasi ghaib di bawah gambar --}}
+            <img src="{{ asset('images/icon.svg') }}" alt="Logo" class="d-block" style="width: 30px; height: 30px; object-fit: contain;">
+            
+        </div>
+        
+        {{-- Teks Brand --}}
+        <span class="text-white fw-bold font-quicksand" style="font-size: 19px; letter-spacing: 0.5px;">FarmApp</span>
+        
+    </div>
+</a>
 
                 <div class="collapse navbar-collapse show">
                     <ul class="navbar-nav pt-lg-3">

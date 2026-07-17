@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('harvests', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->string('product_name');
+            $table->foreignId('crop_id')->constrained()->cascadeOnDelete();
             $table->date('harvested_at');
             $table->decimal('quantity', 10, 2);
             $table->foreignId('unit_id')->constrained('units')->onDelete('cascade');

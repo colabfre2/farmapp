@@ -36,9 +36,8 @@ public function medicineLogs()
 {
     return $this->hasMany(MedicineLog::class);
 }
-
-public function weights()
+public function user()
 {
-    return $this->hasMany(LivestockWeight::class);
+    return $this->belongsTo(User::class);
 }
 }

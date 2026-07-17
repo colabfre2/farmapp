@@ -4,6 +4,11 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\OrderController;
+use App\Http\Controllers\Api\DashboardController;
+use App\Http\Controllers\Api\CropController;
+use App\Http\Controllers\Api\LivestockController;
+use App\Http\Controllers\Api\HarvestController;
+
 
 // Public routes
 Route::post('/login', [AuthController::class, 'login']);
@@ -21,5 +26,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/orders/{order}', [OrderController::class, 'show']);
     Route::post('/orders', [OrderController::class, 'store']);
     Route::post('/profile/avatar', [AuthController::class, 'updateAvatar']);
-
+    Route::get('/dashboard', [DashboardController::class, 'index']);
+    Route::apiResource('crops', CropController::class);
+    Route::apiResource('livestocks', LivestockController::class);
+    Route::apiResource('harvests', HarvestController::class);
 });

@@ -47,7 +47,7 @@
                     <thead>
                         <tr>
                             <th>#</th>
-                            <th>Produk</th>
+                            <th>Tanaman yang di panen</th>
                             <th>Tanggal panen</th>
                             <th>Jumlah</th>
                             <th>Harga jual</th>
@@ -59,7 +59,7 @@
                         @forelse($harvests as $harvest)
                         <tr>
                             <td>{{ $loop->iteration }}</td>
-                            <td>{{ $harvest->product_name }}</td>
+                            <td>{{ $harvest->crop->name ?? "Data tanaman di hapus" }}</td>
                             <td>{{ \Carbon\Carbon::parse($harvest->harvested_at)->format('d M Y') }}</td>
                             <!-- Menggunakan ->symbol agar yang tampil adalah "lsn" atau "g" -->
                             <td>{{ $harvest->quantity }} {{ $harvest->unit->symbol }}</td>

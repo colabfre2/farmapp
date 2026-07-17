@@ -8,9 +8,12 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Harvest extends Model
 {
     
+
+protected $table = 'harvests';
+    
 protected $fillable = [
     'user_id',
-    'product_name',
+    'crop_id',
     'harvested_at',
     'quantity',
     'unit_id',
@@ -31,5 +34,9 @@ public function crop()
 public function unit()
 {
     return $this->belongsTo(Unit::class);
+}
+public function user()
+{
+    return $this->belongsTo(User::class);
 }
 }
