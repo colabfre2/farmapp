@@ -3,203 +3,310 @@
 @section('title', 'Dashboard')
 
 @section('content')
+<style>
+    /* Styling khusus ala Flat/Modern Dashboard */
+    .bg-dashboard {
+        background-color: #f0f3f8;
+        min-height: 100vh;
+    }
+    .card-flat {
+        border: none !important;
+        border-radius: 16px !important;
+        background: #ffffff;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .card-flat:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.06);
+    }
+    .card-dark-stat {
+        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        color: #ffffff;
+        border-radius: 16px;
+    }
+    .stat-icon-box {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+    }
+    .table-custom th {
+        background-color: #f8fafc;
+        color: #64748b;
+        font-weight: 700;
+        font-size: 12px;
+        text-transform: uppercase;
+        border-bottom: 1px solid #e2e8f0;
+    }
+    
+    /* Mini Calendar Grid */
+    .cal-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 6px;
+        text-align: center;
+        font-size: 13px;
+    }
+    .cal-day-head {
+        font-weight: 700;
+        color: #94a3b8;
+        padding-bottom: 4px;
+    }
+    .cal-date {
+        padding: 6px 0;
+        border-radius: 8px;
+        color: #334155;
+        font-weight: 600;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+    .cal-date:hover:not(.active):not(.text-muted) {
+        background-color: #f1f5f9;
+    }
+    .cal-date.active {
+        background-color: #10b981;
+        color: #ffffff;
+        box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
+    }
+    .cal-date.text-muted {
+        opacity: 0.5;
+        cursor: default;
+    }
+</style>
 
-{{-- Greeting --}}
-<div class="mb-4">
-    <h2 class="fw-bold">Good morning, {{ auth()->user()->name }} 👋</h2>
-    <p class="text-muted">Ini yang terjadi di farm kamu hari ini.</p>
-</div>
-
-<div class="mb-4">
-    <form method="GET" action="{{ route('admin.search') }}" class="d-flex gap-2">
-        <input type="text" name="q" class="form-control" placeholder="Search dashboard..." style="max-width:300px;" value="{{ request('q') }}">
-        <button type="submit" class="btn btn-outline-secondary">🔍 Search</button>
-    </form>
-</div>
-
-{{-- Stat Cards --}}
-<div class="row row-deck row-cards mb-4">
-    <!-- Baris 1: 3 Cards -->
-    <div class="col-sm-6 col-lg-4 mb-3">
-        <div class="card h-100 card-modern bg-grad-blue">
-            <div class="card-body">
-                <div class="d-flex align-items-center mb-2">
-                    <span class="fs-3 me-auto">📦</span>
-                    <span class="text-primary small fw-bold">↗ Total</span>
-                </div>
-                <div class="h1 mb-0 fw-bolder text-dark">{{ $totalProducts }}</div>
-                <div class="text-muted fw-semibold">Total Produk</div>
-            </div>
+<div class="container-fluid py-2">
+    
+    {{-- Top Bar: Greeting & Search Floating --}}
+    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
+        <div>
+            <h2 class="fw-bold text-dark font-quicksand mb-1">DASHBOARD</h2>
+            <p class="text-muted mb-0">Welcome back, <strong class="text-dark">{{ auth()->user()->name }}</strong>! Ini rangkuman farm kamu hari ini.</p>
         </div>
-    </div>
-    <div class="col-sm-6 col-lg-4 mb-3">
-        <div class="card h-100 card-modern bg-grad-green">
-            <div class="card-body">
-                <div class="d-flex align-items-center mb-2">
-                    <span class="fs-3 me-auto">🌱</span>
-                    <span class="text-success small fw-bold">↗ Aktif</span>
-                </div>
-                <div class="h1 mb-0 fw-bolder text-dark">{{ $totalCrops }}</div>
-                <div class="text-muted fw-semibold">Tanaman aktif</div>
-            </div>
-        </div>
-    </div>
-    <div class="col-sm-6 col-lg-4 mb-3">
-        <div class="card h-100 card-modern bg-grad-orange">
-            <div class="card-body">
-                <div class="d-flex align-items-center mb-2">
-                    <span class="fs-3 me-auto">🐄</span>
-                    <span class="text-warning small fw-bold">↗ Populasi</span>
-                </div>
-                <div class="h1 mb-0 fw-bolder text-dark">{{ $totalLivestock }}</div>
-                <div class="text-muted fw-semibold">Ternak</div>
-            </div>
+        <div>
+            <form method="GET" action="{{ route('admin.search') }}" class="d-flex align-items-center bg-white p-1 rounded-pill shadow-sm border" style="max-width: 320px;">
+                <input type="text" name="q" class="form-control border-0 bg-transparent shadow-none ps-3" placeholder="Search dashboard..." value="{{ request('q') }}">
+                <button type="submit" class="btn btn-success rounded-circle p-2 d-flex align-items-center justify-content-center" style="width:36px; height:36px;">
+                    🔍
+                </button>
+            </form>
         </div>
     </div>
 
-    <!-- Baris 2: 3 Cards -->
-    <div class="col-sm-6 col-lg-4 mb-3">
-        <div class="card h-100 card-modern bg-grad-purple">
-            <div class="card-body">
-                <div class="d-flex align-items-center mb-2">
-                    <span class="fs-3 me-auto">🛒</span>
-                    <span class="text-purple small fw-bold" style="color: #6f42c1;">↗ Transaksi</span>
+    {{-- STAT CARDS (ROW 1: 6 STATS COMPACT) --}}
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-4 col-xl-2">
+            <div class="card card-flat p-3 h-100">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="stat-icon-box bg-primary-subtle text-primary">📦</span>
+                    <span class="badge bg-primary-subtle text-primary rounded-pill small">Total</span>
                 </div>
-                <div class="h1 mb-0 fw-bolder text-dark">{{ $totalOrders }}</div>
-                <div class="text-muted fw-semibold">Pesanan</div>
+                <div class="h2 fw-bold text-dark mb-0 font-quicksand">{{ $totalProducts }}</div>
+                <div class="text-muted small fw-semibold">Total Produk</div>
             </div>
         </div>
-    </div>
-    <div class="col-sm-6 col-lg-4 mb-3">
-        <div class="card h-100 card-modern bg-grad-emerald">
-            <div class="card-body">
-                <div class="d-flex align-items-center mb-2">
-                    <span class="fs-3 me-auto">💵</span>
-                    <span class="text-success small fw-bold">↗ Akumulasi</span>
-                </div>
-                <div class="h1 mb-0 fw-bolder text-dark">{{ rupiah($totalRevenue) }}</div>
-                <div class="text-muted fw-semibold">Pendapatan</div>
-            </div>
-        </div>
-    </div>
-    <div class="col-sm-6 col-lg-4 mb-3">
-        <div class="card h-100 card-modern bg-grad-cyan">
-            <div class="card-body">
-                <div class="d-flex align-items-center mb-2">
-                    <span class="fs-3 me-auto">📈</span>
-                    <span class="text-info small fw-bold">↗ Net Profit</span>
-                </div>
-                <div class="h1 mb-0 fw-bolder text-dark">{{ rupiah($netProfit) }}</div>
-                <div class="text-muted fw-semibold">Laba bersih</div>
-            </div>
-        </div>
-    </div>
-</div>
 
-{{-- Charts --}}
-<div class="row row-deck row-cards mb-4">
-    <div class="col-lg-8">
-        <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h3 class="card-title">Pendapatan & Pengeluaran</h3>
-                <span class="text-muted small">{{ date('Y') }}</span>
-            </div>
-            <div class="card-body">
-                <canvas id="revenueChart" height="120"></canvas>
+        <div class="col-6 col-md-4 col-xl-2">
+            <div class="card card-flat p-3 h-100">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="stat-icon-box bg-success-subtle text-success">🌱</span>
+                    <span class="badge bg-success-subtle text-success rounded-pill small">Aktif</span>
+                </div>
+                <div class="h2 fw-bold text-dark mb-0 font-quicksand">{{ $totalCrops }}</div>
+                <div class="text-muted small fw-semibold">Tanaman Aktif</div>
             </div>
         </div>
-    </div>
-    <div class="col-lg-4">
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">Tren laba</h3>
-            </div>
-            <div class="card-body">
-                <canvas id="profitChart" height="120"></canvas>
-            </div>
-        </div>
-    </div>
-</div>
 
-{{-- Recent Orders & Recent Harvests --}}
-<div class="row row-deck row-cards">
-    <div class="col-lg-6">
-        <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h3 class="card-title">Pesanan terbaru</h3>
-                <a href="{{ route('admin.transactions.index') }}" class="text-success small">Lihat Semua</a>
+        <div class="col-6 col-md-4 col-xl-2">
+            <div class="card card-flat p-3 h-100">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="stat-icon-box bg-warning-subtle text-warning">🐄</span>
+                    <span class="badge bg-warning-subtle text-warning rounded-pill small">Populasi</span>
+                </div>
+                <div class="h2 fw-bold text-dark mb-0 font-quicksand">{{ $totalLivestock }}</div>
+                <div class="text-muted small fw-semibold">Ternak</div>
             </div>
-            <div class="card-body p-0">
-                <div class="list-group list-group-flush">
-                    @forelse($recentOrders as $order)
-                    <div class="list-group-item d-flex align-items-center gap-3 py-3">
-                        <span class="avatar bg-success-lt text-success fw-bold">
-                            {{ strtoupper(substr($order->user->name ?? 'G', 0, 1)) }}
-                        </span>
-                        <div class="flex-fill">
-                            <div class="fw-bold">{{ $order->user->name ?? 'Guest' }}</div>
-                            <div class="text-muted small">{{ $order->items->first()->product_name ?? '-' }}</div>
-                        </div>
-                        <div class="text-end">
-                            <div class="fw-bold">{{ rupiah($order->total_amount) }}</div>
-                            <span class="badge 
-                                @if($order->status == 'Pending') bg-warning text-dark
-                                @elseif($order->status == 'Processing') bg-primary text-white
-                                @elseif($order->status == 'Shipped') bg-info text-white
-                                @elseif($order->status == 'Completed') bg-success text-white
-                                @else bg-danger text-white
-                                @endif">
-                                {{ $order->status }}
-                            </span>
+        </div>
+
+        <div class="col-6 col-md-4 col-xl-2">
+            <div class="card card-flat p-3 h-100">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="stat-icon-box bg-purple-subtle" style="background:#f3e8ff; color:#a855f7;">🛒</span>
+                    <span class="badge rounded-pill small" style="background:#f3e8ff; color:#a855f7;">Order</span>
+                </div>
+                <div class="h2 fw-bold text-dark mb-0 font-quicksand">{{ $totalOrders }}</div>
+                <div class="text-muted small fw-semibold">Pesanan</div>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-4 col-xl-2">
+            <div class="card card-flat p-3 h-100">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="stat-icon-box bg-emerald-subtle" style="background:#d1fae5; color:#059669;">💵</span>
+                    <span class="badge rounded-pill small" style="background:#d1fae5; color:#059669;">Akumulasi</span>
+                </div>
+                <div class="h4 fw-bold text-dark mb-0 font-quicksand">{{ rupiah($totalRevenue) }}</div>
+                <div class="text-muted small fw-semibold">Pendapatan</div>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-4 col-xl-2">
+            <div class="card card-flat p-3 h-100">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="stat-icon-box bg-info-subtle text-info">📈</span>
+                    <span class="badge bg-info-subtle text-info rounded-pill small">Net</span>
+                </div>
+                <div class="h4 fw-bold text-dark mb-0 font-quicksand">{{ rupiah($netProfit) }}</div>
+                <div class="text-muted small fw-semibold">Laba Bersih</div>
+            </div>
+        </div>
+    </div>
+
+    {{-- MIDDLE SECTION: CHARTS & SIDE WIDGET (CALENDAR / SUMMARY) --}}
+    <div class="row g-4 mb-4">
+        
+        <div class="col-lg-8">
+            <div class="card card-flat p-4 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <h4 class="fw-bold text-dark font-quicksand mb-0">Pendapatan & Pengeluaran</h4>
+                        <span class="text-muted small">Perbandingan performa keuangan {{ date('Y') }}</span>
+                    </div>
+                    <span class="badge bg-light text-dark border px-3 py-2 rounded-pill font-quicksand">{{ date('Y') }}</span>
+                </div>
+                <div class="mt-2" style="position: relative; height: 280px;">
+                    <canvas id="revenueChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="d-flex flex-column gap-3 h-100">
+                
+                <div class="card card-dark-stat p-3 shadow-sm">
+                    <div class="text-white-50 small font-quicksand text-uppercase tracking-wider">Laba Bersih Terbaru</div>
+                    <div class="display-6 fw-bold text-success my-1 font-quicksand">{{ rupiah($netProfit) }}</div>
+                    <div class="text-slate-300 small">Akumulasi laba bersih yang tercatat sejauh ini.</div>
+                </div>
+
+                {{-- KALENDER OTOMATIS --}}
+                <div class="card card-flat p-3 flex-fill">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 id="cal-header" class="fw-bold text-dark font-quicksand mb-0">📅 </h5>
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-outline-secondary border-0 py-0" onclick="changeMonth(-1)">&lt;</button>
+                            <button class="btn btn-outline-secondary border-0 py-0" onclick="changeMonth(1)">&gt;</button>
                         </div>
                     </div>
-                    @empty
-                    <div class="list-group-item text-muted text-center py-4">Belum ada pesanan</div>
-                    @endforelse
+                    <div id="cal-grid" class="cal-grid">
+                        <!-- Tanggal akan digenerate oleh JavaScript -->
+                    </div>
                 </div>
+
             </div>
         </div>
     </div>
 
-    <div class="col-lg-6">
-        <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h3 class="card-title">Panen terbaru</h3>
-                <a href="{{ route('admin.harvests.index') }}" class="text-success small">Lihat semua</a>
-            </div>
-            <div class="card-body p-0">
-                <div class="list-group list-group-flush">
-                    @forelse($recentHarvests as $harvest)
-                    <div class="list-group-item d-flex align-items-center gap-3 py-3">
-                        <span class="avatar bg-success-lt">🌾</span>
-                        <div class="flex-fill">
-                            <div class="fw-bold">{{ $harvest->product_name }}</div>
-                            <div class="text-muted small">{{ $harvest->harvested_at }} · {{ $harvest->quantity }} {{ $harvest->unit?->symbol ?? '' }}</div>
-                        </div>
-                        <div class="fw-bold text-success">
-                            {{ rupiah($harvest->quantity * $harvest->selling_price) }}
-                        </div>
-                    </div>
-                    @empty
-                    <div class="list-group-item text-muted text-center py-4">Belum ada panen</div>
-                    @endforelse
+    {{-- BARIS 3: PROFIT TREND CHART & TABLES --}}
+    <div class="row g-4 mb-4">
+        
+        <div class="col-lg-4">
+            <div class="card card-flat p-4 h-100">
+                <div class="mb-3">
+                    <h4 class="fw-bold text-dark font-quicksand mb-0">Tren Laba</h4>
+                    <span class="text-muted small">Grafik keuntungan bulanan</span>
+                </div>
+                <div style="position: relative; height: 230px;">
+                    <canvas id="profitChart"></canvas>
                 </div>
             </div>
         </div>
+
+        <div class="col-lg-4">
+            <div class="card card-flat h-100 overflow-hidden">
+                <div class="p-3 border-bottom d-flex justify-content-between align-items-center bg-white">
+                    <h5 class="fw-bold text-dark font-quicksand mb-0">🛒 Pesanan Terbaru</h5>
+                    <a href="{{ route('admin.transactions.index') }}" class="text-success small fw-bold text-decoration-none">Lihat Semua →</a>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        @forelse($recentOrders as $order)
+                        <div class="list-group-item d-flex align-items-center gap-3 py-3 px-3 border-0 border-bottom">
+                            <div class="avatar bg-success-subtle text-success fw-bold rounded-circle d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
+                                {{ strtoupper(substr($order->user->name ?? 'G', 0, 1)) }}
+                            </div>
+                            <div class="flex-fill overflow-hidden">
+                                <div class="fw-bold text-dark text-truncate">{{ $order->user->name ?? 'Guest' }}</div>
+                                <div class="text-muted small text-truncate">{{ $order->items->first()->product_name ?? '-' }}</div>
+                            </div>
+                            <div class="text-end">
+                                <div class="fw-bold text-dark small">{{ rupiah($order->total_amount) }}</div>
+                                <span class="badge rounded-pill 
+                                    @if($order->status == 'Pending') bg-warning-subtle text-warning
+                                    @elseif($order->status == 'Processing') bg-primary-subtle text-primary
+                                    @elseif($order->status == 'Shipped') bg-info-subtle text-info
+                                    @elseif($order->status == 'Completed') bg-success-subtle text-success
+                                    @else bg-danger-subtle text-danger
+                                    @endif" style="font-size: 10px;">
+                                    {{ $order->status }}
+                                </span>
+                            </div>
+                        </div>
+                        @empty
+                        <div class="p-4 text-center text-muted small">Belum ada pesanan masuk</div>
+                        @endforelse
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card card-flat h-100 overflow-hidden">
+                <div class="p-3 border-bottom d-flex justify-content-between align-items-center bg-white">
+                    <h5 class="fw-bold text-dark font-quicksand mb-0">🌾 Panen Terbaru</h5>
+                    <a href="{{ route('admin.harvests.index') }}" class="text-success small fw-bold text-decoration-none">Lihat Semua →</a>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        @forelse($recentHarvests as $harvest)
+                        <div class="list-group-item d-flex align-items-center gap-3 py-3 px-3 border-0 border-bottom">
+                            <div class="avatar bg-warning-subtle text-warning rounded-circle d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
+                                🌾
+                            </div>
+                            <div class="flex-fill overflow-hidden">
+                                <div class="fw-bold text-dark text-truncate">{{ $harvest->product_name }}</div>
+                                <div class="text-muted small">{{ $harvest->harvested_at }} · {{ $harvest->quantity }} {{ $harvest->unit?->symbol ?? '' }}</div>
+                            </div>
+                            <div class="fw-bold text-success small">
+                                {{ rupiah($harvest->quantity * $harvest->selling_price) }}
+                            </div>
+                        </div>
+                        @empty
+                        <div class="p-4 text-center text-muted small">Belum ada catatan panen</div>
+                        @endforelse
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
+
 </div>
 
+{{-- Script Dinamis (Chart & Kalender) --}}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
+    // --- 1. SCRIPT CHART ---
     const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     const revenueData  = @json($revenueData);
     const expensesData = @json($expensesData);
     const profitData   = revenueData.map((r, i) => r - expensesData[i]);
 
-    // Helper format Rupiah di JS Tooltip
     const formatRp = (value) => 'Rp ' + new Intl.NumberFormat('id-ID').format(value);
 
-    // Revenue & Expenses Chart
     new Chart(document.getElementById('revenueChart'), {
         type: 'line',
         data: {
@@ -208,41 +315,45 @@
                 {
                     label: 'Revenue',
                     data: revenueData,
-                    borderColor: '#4caf50',
-                    backgroundColor: 'rgba(76,175,80,0.1)',
+                    borderColor: '#10b981',
+                    backgroundColor: 'rgba(16, 185, 129, 0.08)',
                     fill: true,
                     tension: 0.4,
+                    borderWidth: 3,
+                    pointRadius: 4,
+                    pointBackgroundColor: '#10b981'
                 },
                 {
                     label: 'Expenses',
                     data: expensesData,
-                    borderColor: '#ff9800',
-                    backgroundColor: 'rgba(255,152,0,0.1)',
+                    borderColor: '#f59e0b',
+                    backgroundColor: 'rgba(245, 158, 11, 0.08)',
                     fill: true,
                     tension: 0.4,
+                    borderWidth: 3,
+                    pointRadius: 4,
+                    pointBackgroundColor: '#f59e0b'
                 }
             ]
         },
         options: {
             responsive: true,
+            maintainAspectRatio: false,
             plugins: { 
-                legend: { position: 'bottom' },
-                tooltip: {
-                    callbacks: {
-                        label: (ctx) => `${ctx.dataset.label}: ${formatRp(ctx.raw)}`
-                    }
-                }
+                legend: { position: 'top', labels: { usePointStyle: true, font: { family: 'Quicksand', weight: 'bold' } } },
+                tooltip: { callbacks: { label: (ctx) => `${ctx.dataset.label}: ${formatRp(ctx.raw)}` } }
             },
             scales: { 
+                x: { grid: { display: false } },
                 y: { 
                     beginAtZero: true,
+                    grid: { borderDash: [4, 4] },
                     ticks: { callback: (val) => 'Rp ' + new Intl.NumberFormat('id-ID').format(val) }
                 } 
             }
         }
     });
 
-    // Profit Trend Chart
     new Chart(document.getElementById('profitChart'), {
         type: 'bar',
         data: {
@@ -250,27 +361,90 @@
             datasets: [{
                 label: 'Profit',
                 data: profitData,
-                backgroundColor: '#4caf50',
-                borderRadius: 6,
+                backgroundColor: '#3b82f6',
+                borderRadius: 8,
+                hoverBackgroundColor: '#2563eb'
             }]
         },
         options: {
             responsive: true,
+            maintainAspectRatio: false,
             plugins: { 
                 legend: { display: false },
-                tooltip: {
-                    callbacks: {
-                        label: (ctx) => `Profit: ${formatRp(ctx.raw)}`
-                    }
-                }
+                tooltip: { callbacks: { label: (ctx) => `Profit: ${formatRp(ctx.raw)}` } }
             },
             scales: { 
+                x: { grid: { display: false } },
                 y: { 
                     beginAtZero: true,
+                    grid: { borderDash: [4, 4] },
                     ticks: { callback: (val) => 'Rp ' + new Intl.NumberFormat('id-ID').format(val) }
                 } 
             }
         }
     });
+
+
+    // --- 2. SCRIPT KALENDER DINAMIS ---
+    let currentDate = new Date();
+    let displayMonth = currentDate.getMonth();
+    let displayYear = currentDate.getFullYear();
+    const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+
+    function renderCalendar() {
+        const grid = document.getElementById('cal-grid');
+        const header = document.getElementById('cal-header');
+        const today = new Date(); // Referensi hari ini sungguhan
+
+        // Kalkulasi hari dalam sebulan
+        const firstDay = new Date(displayYear, displayMonth, 1).getDay();
+        const daysInMonth = new Date(displayYear, displayMonth + 1, 0).getDate();
+        const prevMonthDays = new Date(displayYear, displayMonth, 0).getDate();
+
+        // Update Judul
+        header.innerHTML = `📅 ${monthNames[displayMonth].toUpperCase()} ${displayYear}`;
+
+        // Header Hari (Minggu - Sabtu)
+        let html = `
+            <div class="cal-day-head">M</div>
+            <div class="cal-day-head">S</div>
+            <div class="cal-day-head">S</div>
+            <div class="cal-day-head">R</div>
+            <div class="cal-day-head">K</div>
+            <div class="cal-day-head">J</div>
+            <div class="cal-day-head">S</div>
+        `;
+
+        // Generate tanggal dari bulan sebelumnya (warna abu-abu)
+        for (let i = 0; i < firstDay; i++) {
+            const prevDate = prevMonthDays - firstDay + 1 + i;
+            html += `<div class="cal-date text-muted">${prevDate}</div>`;
+        }
+
+        // Generate tanggal bulan ini
+        for (let i = 1; i <= daysInMonth; i++) {
+            // Cek apakah ini tanggal hari ini untuk di-highlight hijau
+            let isToday = (i === today.getDate() && displayMonth === today.getMonth() && displayYear === today.getFullYear()) ? 'active' : '';
+            html += `<div class="cal-date ${isToday}">${i}</div>`;
+        }
+
+        grid.innerHTML = html;
+    }
+
+    // Fungsi untuk tombol < dan >
+    function changeMonth(offset) {
+        displayMonth += offset;
+        if (displayMonth > 11) {
+            displayMonth = 0;
+            displayYear++;
+        } else if (displayMonth < 0) {
+            displayMonth = 11;
+            displayYear--;
+        }
+        renderCalendar();
+    }
+
+    // Panggil saat halaman pertama kali dibuka
+    renderCalendar();
 </script>
 @endsection
