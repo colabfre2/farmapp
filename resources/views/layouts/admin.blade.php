@@ -8,6 +8,10 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
     <style>
+        /* Menghilangkan panah bawaan bootstrap pada dropdown profil */
+        .dropdown-toggle::after {
+            display: none !important;
+        }
         /* --- PERUBAHAN LOGO STICKY --- */
         .navbar-vertical .navbar-brand {
             color: #ffffff !important;
@@ -246,13 +250,8 @@
 
                     </ul>
 
-                    {{-- Logout --}}
-                    <div class="mt-auto pt-4">
-                        <form method="POST" action="{{ route('logout') }}">
-                            @csrf
-                            <button type="submit" class="btn btn-ghost-danger w-100">Logout</button>
-                        </form>
-                    </div>
+                    
+                    
                 </div>
             </div>
         </aside>
@@ -274,57 +273,88 @@
                         {{-- BAGIAN KANAN: Jam, Notifikasi & Profil --}}
                         <div class="d-flex align-items-center gap-3">
                             
-                            {{-- 1. Jam Live (Pakai border-end biar ada pemisah vertikal) --}}
+                            {{-- 1. Jam Live --}}
                             <div class="text-end text-muted pe-3 border-end">
                                 <div class="fw-bold" style="font-size: 0.85rem; color: #2d7a2d;">{{ \Carbon\Carbon::now()->format('d M Y') }}</div>
                                 <div id="live-clock" style="font-size: 0.8rem; font-family: monospace;">--:--:--</div>
                             </div>
                             
-                            {{-- 2. Notifikasi --}}
+                            {{-- 2. Notifikasi Modern --}}
                             <div class="dropdown">
-                                <a href="#" class="position-relative text-decoration-none" data-bs-toggle="dropdown" style="font-size: 1.2rem;">
+                                <a href="#" class="position-relative text-decoration-none text-secondary d-flex align-items-center justify-content-center" data-bs-toggle="dropdown" style="font-size: 1.3rem; width: 40px; height: 40px; border-radius: 50%; background: #ffffff; box-shadow: 0 2px 10px rgba(0,0,0,0.04);">
                                     🔔
                                     @if(auth()->user()->unreadNotifications->count() > 0)
-                                        <span class="badge bg-danger position-absolute text-white" style="top:-5px; right:-8px; font-size:9px; padding: 3px 5px;">
-                                            {{ auth()->user()->unreadNotifications->count() }}
+                                        <span class="position-absolute translate-middle p-1 bg-danger border border-light rounded-circle" style="top: 10px; right: 5px;">
+                                            <span class="visually-hidden">New alerts</span>
                                         </span>
                                     @endif
                                 </a>
-                                <div class="dropdown-menu dropdown-menu-end shadow-sm" style="width:320px; border-radius: 8px;">
-                                    <div class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom">
-                                        <span class="fw-bold">Notifikasi</span>
-                                        <div class="d-flex gap-2">
-                                            <form method="POST" action="{{ route('admin.notifications.mark-all-read') }}">
+                                
+                                <div class="dropdown-menu dropdown-menu-end shadow-lg border-0 p-0 mt-3" style="width: 380px; border-radius: 16px; overflow: hidden; background: #ffffff;">
+                                    
+                                    {{-- Header Dropdown --}}
+                                    <div class="d-flex justify-content-between align-items-center px-4 py-3 bg-light border-bottom">
+                                        <div>
+                                            <h6 class="fw-bold text-dark mb-0" style="font-family: 'Quicksand', sans-serif;">Notifikasi</h6>
+                                            <span class="text-muted" style="font-size: 0.75rem;">Anda punya {{ auth()->user()->unreadNotifications->count() }} pemberitahuan baru</span>
+                                        </div>
+                                        <div class="d-flex align-items-center gap-1">
+                                            <form method="POST" action="{{ route('admin.notifications.mark-all-read') }}" class="m-0">
                                                 @csrf
-                                                <button type="submit" class="btn btn-xs btn-outline-secondary border-0" style="font-size:11px;">Tandai dibaca</button>
+                                                <button type="submit" class="btn btn-sm btn-link text-success text-decoration-none fw-semibold p-0 me-2" style="font-size: 0.75rem;">Tandai dibaca</button>
                                             </form>
-                                            <a href="{{ route('admin.notifications.index') }}" class="btn btn-xs btn-outline-primary" style="font-size:11px;">Semua</a>
+                                            <a href="{{ route('admin.notifications.index') }}" class="btn btn-sm btn-light border rounded-pill px-2 py-1 text-muted" style="font-size: 0.75rem;">Semua</a>
                                         </div>
                                     </div>
-                                    @forelse(auth()->user()->notifications()->latest()->take(5)->get() as $notification)
-                                        <div class="dropdown-item py-2 {{ $notification->read_at ? '' : 'bg-light' }}" style="white-space:normal;">
-                                            <div class="d-flex justify-content-between">
-                                                <span class="fw-bold small">{{ $notification->data['title'] }}</span>
-                                                <span class="text-muted" style="font-size:10px;">{{ $notification->created_at->diffForHumans() }}</span>
+
+                                    {{-- List Notifikasi --}}
+                                    <div class="notification-list" style="max-height: 320px; overflow-y: auto;">
+                                        @forelse(auth()->user()->notifications()->latest()->take(5)->get() as $notification)
+                                            <div class="p-3 border-bottom position-relative {{ $notification->read_at ? 'bg-white' : 'bg-success-subtle bg-opacity-10' }}" style="transition: background 0.2s;">
+                                                
+                                                {{-- Titik hijau penanda belum dibaca --}}
+                                                @if(!$notification->read_at)
+                                                    <span class="position-absolute bg-success rounded-circle" style="width: 8px; height: 8px; top: 16px; left: 12px;"></span>
+                                                @endif
+
+                                                <div class="ps-2">
+                                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                                        <span class="fw-bold text-dark small">{{ $notification->data['title'] ?? 'Pemberitahuan' }}</span>
+                                                        <span class="text-muted" style="font-size: 0.7rem;">{{ $notification->created_at->diffForHumans() }}</span>
+                                                    </div>
+                                                    <p class="text-secondary small mb-2" style="line-height: 1.4;">{{ $notification->data['message'] ?? '-' }}</p>
+                                                    
+                                                    @if(isset($notification->data['order_id']))
+                                                        <a href="{{ route('admin.transactions.show', $notification->data['order_id']) }}" class="btn btn-sm btn-success rounded-pill px-3 py-1 fw-bold" style="font-size: 0.75rem;">
+                                                            Lihat Pesanan →
+                                                        </a>
+                                                    @endif
+                                                </div>
                                             </div>
-                                            <div class="text-muted small">{{ $notification->data['message'] }}</div>
-                                            @if(isset($notification->data['order_id']))
-                                                <a href="{{ route('admin.transactions.show', $notification->data['order_id']) }}" class="btn btn-xs btn-success mt-1" style="font-size:10px;">Lihat Pesanan</a>
-                                            @endif
-                                        </div>
-                                    @empty
-                                        <div class="dropdown-item text-center text-muted py-3">Tidak ada notifikasi</div>
-                                    @endforelse
+                                        @empty
+                                            <div class="text-center py-5">
+                                                <div style="font-size: 2.5rem;" class="mb-2">📭</div>
+                                                <p class="text-muted small mb-0 fw-semibold">Belum ada notifikasi masuk</p>
+                                            </div>
+                                        @endforelse
+                                    </div>
+
+                                    {{-- Footer Dropdown --}}
+                                    <div class="p-2 bg-light text-center border-top">
+                                        <a href="{{ route('admin.notifications.index') }}" class="text-decoration-none small text-success fw-bold">
+                                            Lihat Semua Riwayat Notifikasi →
+                                        </a>
+                                    </div>
+
                                 </div>
                             </div>
-                            
-                            {{-- 3. Profil --}}
-                            <div class="d-flex align-items-center gap-2 ps-2">
-                                <div class="text-end d-none d-md-block">
-                                    <div class="fw-bold small mb-0" style="line-height: 1;">{{ auth()->user()->name }}</div>
-                                    <small class="text-muted" style="font-size: 0.75rem;">Admin</small>
-                                </div>
-                                <a href="{{ route('profile.edit') }}">
+                            {{-- 3. PROFIL DENGAN DROPDOWN --}}
+                            <div class="dropdown ps-2">
+                                <a href="#" class="d-flex align-items-center gap-2 text-decoration-none dropdown-toggle" id="dropdownUser" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <div class="text-end d-none d-md-block">
+                                        <div class="fw-bold small mb-0 text-dark" style="line-height: 1;">{{ auth()->user()->name }}</div>
+                                        <small class="text-muted" style="font-size: 0.75rem;">Admin</small>
+                                    </div>
                                     @if(auth()->user()->avatar)
                                         <img src="{{ asset('storage/' . auth()->user()->avatar) }}" style="width:38px;height:38px;object-fit:cover;border-radius:50%; border: 2px solid #2d7a2d;">
                                     @else
@@ -332,10 +362,33 @@
                                             {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
                                         </div>
                                     @endif
-                                </a>
-                            </div>
-
+                                  </a>
+                                
+                                <ul class="dropdown-menu dropdown-menu-end shadow border-0 py-2 mt-2" aria-labelledby="dropdownUser" style="min-width: 200px; border-radius: 12px;">
+                                    <li>
+                                        <div class="px-3 py-1 mb-1">
+                                            <span class="text-muted d-block" style="font-size: 0.75rem;">Masuk sebagai</span>
+                                            <strong class="text-dark text-truncate d-block" style="font-size: 0.85rem;">{{ auth()->user()->email }}</strong>
+                                        </div>
+                                  </li>
+                                  <li><hr class="dropdown-divider my-1"></li>
+                                  <li>
+                                      <a class="dropdown-item py-2 px-3 d-flex align-items-center gap-2" href="{{ route('profile.edit') }}">
+                                          <span>👤</span> Profil Saya
+                                      </a>
+                                  </li>
+                                  <li><hr class="dropdown-divider my-1"></li>
+                                  <li>
+                                      <form method="POST" action="{{ route('logout') }}" class="d-inline">
+                                          @csrf
+                                          <button type="submit" class="dropdown-item py-2 px-3 text-danger d-flex align-items-center gap-2 w-100 bg-transparent border-0">
+                                              <span>🚪</span> Keluar (Logout)
+                                          </button>
+                                    </form>
+                                </li>
+                          </ul>
                         </div>
+
                     </div>
                 </div>
             </div>
@@ -357,7 +410,6 @@
         // Script untuk animasi chevron / panah pada menu dropdown sidebar
         document.querySelectorAll('[data-bs-toggle="collapse"]').forEach(function(el) {
             var target = document.querySelector(el.getAttribute('href'));
-            // Mencari element chevron tanpa mempedulikan nama class spesifiknya (disamakan jadi .icon-chevron)
             var icon = el.querySelector('.icon-chevron');
             if (!target || !icon) return;
 
@@ -373,7 +425,6 @@
         let serverTime = new Date("{{ \Carbon\Carbon::now()->toIso8601String() }}");
 
         function updateClock() {
-            // Tambahkan 1 detik setiap kali fungsi dipanggil
             serverTime.setSeconds(serverTime.getSeconds() + 1);
 
             const hours = String(serverTime.getHours()).padStart(2, '0');

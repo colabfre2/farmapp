@@ -1,96 +1,228 @@
 @extends('layouts.admin')
 
-@section('title', 'Edit Product')
+@section('title', 'Perbarui Produk')
 
 @section('content')
-<div class="row">
-    <div class="col-8">
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">Ubah produk</h3>
-            </div>
-            <div class="card-body">
-                <form method="POST" action="{{ route('admin.products.update', $product) }}" enctype="multipart/form-data">
-                    @csrf
-                    @method('PUT')
+
+<style>
+    .upload-area {
+        border: 2px dashed #cbd5e1;
+        cursor: pointer;
+        background-color: #f8fafc;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden; 
+        min-height: 240px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+    }
+    .upload-area:hover, .upload-area.dragover {
+        border-color: #2d7a2d;
+        background-color: #f0fdf4;
+    }
+    .upload-area.has-image #drop-text { display: none; }
+    .upload-area.has-image #imagePreview { display: block; }
+    #imagePreview {
+        display: none;
+        max-height: 220px;
+        max-width: 100%;
+        object-fit: contain;
+        border-radius: 8px;
+        z-index: 2;
+    }
+</style>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold mb-0">Perbarui Produk</h2>
+    <a href="{{ route('admin.products.index') }}" class="btn btn-outline-secondary">← Kembali</a>
+</div>
+
+<form id="productForm" method="POST" action="{{ route('admin.products.update', $product) }}" enctype="multipart/form-data">
+    @csrf
+    @method('PUT')
+    
+    <div class="row">
+        <div class="col-lg-8">
+            {{-- Card Informasi Dasar --}}
+            <div class="card mb-4 border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom-0 pt-4 pb-0">
+                    <h3 class="card-title fw-bold">Informasi Dasar</h3>
+                </div>
+                <div class="card-body">
                     <div class="mb-3">
-                        <label class="form-label">Nama produk</label>
+                        <label class="form-label fw-semibold">Nama Produk <span class="text-danger">*</span></label>
                         <input type="text" name="name" class="form-control @error('name') is-invalid @enderror" value="{{ old('name', $product->name) }}" required>
-                        @error('name')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
+                        @error('name') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
+                    
                     <div class="mb-3">
-                        <label class="form-label">Deskripsi</label>
-                        <textarea name="description" class="form-control" rows="3">{{ old('description', $product->description) }}</textarea>
+                        <label class="form-label fw-semibold">Deskripsi Singkat</label>
+                        <textarea name="description" class="form-control" rows="4">{{ old('description', $product->description) }}</textarea>
                     </div>
+                    
                     <div class="row">
-                        <div class="col-6 mb-3">
-                            <label class="form-label">Kategori</label>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Kategori <span class="text-danger">*</span></label>
                             <select name="category_id" class="form-select @error('category_id') is-invalid @enderror" required>
-                                <option value="">-- Pilih kategori --</option>
+                                <option value="">-- Pilih Kategori --</option>
                                 @foreach($categories as $category)
                                     <option value="{{ $category->id }}" {{ old('category_id', $product->category_id) == $category->id ? 'selected' : '' }}>{{ $category->name }}</option>
                                 @endforeach
                             </select>
-                            @error('category_id')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+                            @error('category_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
-                        <div class="col-6 mb-3">
-                            <label class="form-label">Satuan</label>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Satuan Penjualan <span class="text-danger">*</span></label>
                             <select name="unit_id" class="form-select @error('unit_id') is-invalid @enderror" required>
-                                <option value="">-- Pilih satuan --</option>
+                                <option value="">-- Pilih Satuan --</option>
                                 @foreach($units as $unit)
                                     <option value="{{ $unit->id }}" {{ old('unit_id', $product->unit_id) == $unit->id ? 'selected' : '' }}>{{ $unit->name }} ({{ $unit->symbol }})</option>
                                 @endforeach
                             </select>
-                            @error('unit_id')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+                            @error('unit_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Harga </label>
-                        <input type="text" inputmode="numeric" name="price" class="form-control input-rupiah @error('price') is-invalid @enderror" value="{{ old('price', isset($product) ? 'Rp. ' . number_format($product->price, 0, ',', '.') : '') }}" required>
-                        @error('price') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                    </div>
-                        <div class="col-6 mb-3">
-                            <label class="form-label">Stok</label>
-                            <input type="number" name="stock" class="form-control @error('stock') is-invalid @enderror" value="{{ old('stock', $product->stock) }}" required>
-                            @error('stock')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+                </div>
+            </div>
+
+            {{-- Card Harga & Stok --}}
+            <div class="card mb-4 border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom-0 pt-4 pb-0">
+                    <h3 class="card-title fw-bold">Harga & Manajemen Stok</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Harga Jual <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0">Rp</span>
+                                <input type="text" inputmode="numeric" id="priceInput" class="form-control border-start-0 ps-0 @error('price') is-invalid @enderror" placeholder="0" required>
+                                {{-- HIDDEN INPUT BUAT DIKIRIM KE DATABASE --}}
+                                <input type="hidden" name="price" id="priceActual" value="{{ old('price', $product->price) }}">
+                            </div>
+                            @error('price') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Stok Saat Ini <span class="text-danger">*</span></label>
+                            <input type="number" name="stock" class="form-control @error('stock') is-invalid @enderror" value="{{ old('stock', $product->stock) }}" min="0" required>
+                            @error('stock') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
                     </div>
-                    @if($product->image)
-                    <div class="mb-3">
-                        <label class="form-label">Foto saat ini</label><br>
-                        <img src="{{ asset('storage/'.$product->image) }}" style="width:100px;height:100px;object-fit:cover;border-radius:8px;">
-                    </div>
-                    @endif
-                    <div class="mb-3">
-                        <label class="form-label">Ubah foto produk</label>
-                        <div class="mt-2">
-                            <img id="imagePreview" src="" style="display:none; width:150px; height:150px; object-fit:cover; border-radius:8px;">
-                        </div>
-                        <input type="file" name="image" id="imageInput" class="form-control @error('image') is-invalid @enderror" accept="image/*" onchange="previewImage(event)">
-                        @error('image')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            {{-- Card Media --}}
+            <div class="card mb-4 border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom-0 pt-4 pb-0">
+                    <h3 class="card-title fw-bold">Media Produk</h3>
+                </div>
+                <div class="card-body">
+                    {{-- Kalau ada gambar bawaan, otomatis tambahkan class 'has-image' --}}
+                    <div id="drop-zone" class="upload-area p-3 text-center rounded-3 {{ $product->image ? 'has-image' : '' }}">
+                        <input type="file" name="image" id="imageInput" class="d-none @error('image') is-invalid @enderror" accept="image/*">
                         
+                        <div id="drop-text">
+                            <div style="font-size: 2.5rem; color: #94a3b8;">📸</div>
+                            <h5 class="mt-2 text-dark fw-semibold">Ubah Foto</h5>
+                            <p class="text-muted small mb-0">Tarik & lepas file di sini<br>atau klik untuk menelusuri.</p>
+                        </div>
+                        
+                        {{-- Set source gambar lama jika ada --}}
+                        <img id="imagePreview" src="{{ $product->image ? asset('storage/' . $product->image) : '' }}" class="img-fluid mx-auto" alt="Preview">
                     </div>
-                    <div class="mb-3 form-check">
-                        <input type="checkbox" name="is_active" class="form-check-input" id="isActive" {{ $product->is_active ? 'checked' : '' }}>
-                        <label class="form-check-label" for="isActive">Active (visible in marketplace)</label>
+                    @error('image') <div class="text-danger small mt-2 text-center">{{ $message }}</div> @enderror
+                </div>
+            </div>
+
+            {{-- Card Status --}}
+            <div class="card mb-4 border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom-0 pt-4 pb-0">
+                    <h3 class="card-title fw-bold">Visibilitas</h3>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center p-3 bg-light rounded-3 mb-3">
+                        <div class="form-check form-switch mb-0 w-100 d-flex justify-content-between align-items-center">
+                            <label class="form-check-label fw-semibold mb-0" for="isActive">Tampilkan di Marketplace</label>
+                            <input class="form-check-input ms-0" type="checkbox" role="switch" name="is_active" id="isActive" value="1" {{ old('is_active', $product->is_active) ? 'checked' : '' }} style="width: 2.5em; height: 1.25em;">
+                        </div>
                     </div>
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-primary">Perbarui</button>
-                        <a href="{{ route('admin.products.index') }}" class="btn btn-secondary">Batal</a>
-                    </div>
-                </form>
+                </div>
+            </div>
+
+            <div class="d-grid gap-2">
+                <button type="submit" id="btnSubmit" class="btn btn-primary btn-lg fw-bold">Perbarui Produk ✓</button>
             </div>
         </div>
     </div>
-</div>
+</form>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // --- 1. SCRIPT DRAG & DROP FOTO (Anti-Bocor) ---
+        const dropZone = document.getElementById('drop-zone');
+        const imageInput = document.getElementById('imageInput');
+        const imagePreview = document.getElementById('imagePreview');
+
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            window.addEventListener(eventName, e => { e.preventDefault(); e.stopPropagation(); }, false);
+        });
+
+        ['dragenter', 'dragover'].forEach(eventName => dropZone.addEventListener(eventName, () => dropZone.classList.add('dragover'), false));
+        ['dragleave', 'drop'].forEach(eventName => dropZone.addEventListener(eventName, () => dropZone.classList.remove('dragover'), false));
+
+        dropZone.addEventListener('drop', (e) => {
+            if (e.dataTransfer.files.length > 0) {
+                imageInput.files = e.dataTransfer.files;
+                handlePreview(e.dataTransfer.files[0]);
+            }
+        });
+
+        dropZone.addEventListener('click', () => imageInput.click());
+        imageInput.addEventListener('change', function() {
+            if (this.files.length > 0) handlePreview(this.files[0]);
+        });
+
+        function handlePreview(file) {
+            if (!file.type.startsWith('image/')) return alert('Harus berupa file gambar!');
+            const reader = new FileReader();
+            reader.onload = e => {
+                imagePreview.src = e.target.result;
+                dropZone.classList.add('has-image'); 
+            }
+            reader.readAsDataURL(file);
+        }
+
+        // --- 2. SCRIPT RUPIAH FORMATTER (Anti-Crash Database) ---
+        const priceInput = document.getElementById('priceInput');
+        const priceActual = document.getElementById('priceActual');
+
+        // Fungsi format titik
+        function formatRupiah(angka) {
+            return new Intl.NumberFormat('id-ID').format(angka);
+        }
+
+        // Format saat halaman pertama dimuat (mengambil data dari DB)
+        if (priceActual.value) {
+            priceInput.value = formatRupiah(priceActual.value);
+        }
+
+        // Format saat user mengetik
+        priceInput.addEventListener('input', function(e) {
+            let rawValue = this.value.replace(/[^0-9]/g, ''); // Buang semua huruf/simbol
+            priceActual.value = rawValue; // Simpan nilai murni
+            this.value = rawValue ? formatRupiah(rawValue) : ''; // Tampilkan nilai berformat
+        });
+
+        // --- 3. SCRIPT ANTI DOUBLE SUBMIT ---
+        document.getElementById('productForm').addEventListener('submit', function() {
+            const btn = document.getElementById('btnSubmit');
+            btn.innerHTML = 'Memperbarui... ⏳';
+            btn.classList.add('disabled');
+        });
+    });
+</script>
 @endsection

@@ -16,33 +16,31 @@ use App\Models\Product;
 
 class SearchController extends Controller
 {
-    //
-    
-public function index(Request $request)
-{
-    $query = $request->input('q');
+    public function index(Request $request)
+    {
+        $query = $request->input('q');
 
-    $categories = Category::where('name', 'like', "%{$query}%")->get();
-    $units = Unit::where('name', 'like', "%{$query}%")->get();
-    $cropTypes = CropType::where('name', 'like', "%{$query}%")->get();
-    $livestockTypes = LivestockType::where('name', 'like', "%{$query}%")->get();
-    $expenseCategories = ExpenseCategory::where('name', 'like', "%{$query}%")->get();
-    $livestocks = Livestock::where('name', 'like', "%{$query}%")->get();
-    $crops = Crop::where('name', 'like', "%{$query}%")->get();
-    $harvests = Harvest::where('product_name', 'like', "%{$query}%")->get();
-    $products = Product::where('name', 'like', "%{$query}%")->get();
+        // Mencegah error kalau user pencet cari tapi form-nya kosong
+        if (empty($query)) {
+            return back();
+        }
 
-    return view('admin.search', compact(
-        'query',
-        'categories',
-        'units',
-        'cropTypes',
-        'livestockTypes',
-        'expenseCategories',
-        'livestocks',
-        'crops',
-        'harvests',
-        'products'
-    ));
-}
+        $categories = Category::where('name', 'like', "%{$query}%")->get();
+        $units = Unit::where('name', 'like', "%{$query}%")->get();
+        $cropTypes = CropType::where('name', 'like', "%{$query}%")->get();
+        $livestockTypes = LivestockType::where('name', 'like', "%{$query}%")->get();
+        $expenseCategories = ExpenseCategory::where('name', 'like', "%{$query}%")->get();
+        $livestocks = Livestock::where('name', 'like', "%{$query}%")->get();
+        $crops = Crop::where('name', 'like', "%{$query}%")->get();
+        
+        // BUG FIX: Ganti 'crop_id' jadi 'product_name' karena ini pencarian teks
+        $harvests = Harvest::where('crop_id', 'like', "%{$query}%")->get(); 
+        
+        $products = Product::where('name', 'like', "%{$query}%")->get();
+
+        return view('admin.search', compact(
+            'query', 'categories', 'units', 'cropTypes', 'livestockTypes',
+            'expenseCategories', 'livestocks', 'crops', 'harvests', 'products'
+        ));
+    }
 }
