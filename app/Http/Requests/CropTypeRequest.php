@@ -6,7 +6,7 @@ use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use App\DTOs\CropTypeDTO;
 
-class CropTypeStoreRequest extends FormRequest
+class CropTypeRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.

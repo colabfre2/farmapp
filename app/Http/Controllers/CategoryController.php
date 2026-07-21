@@ -2,61 +2,56 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CategoryRequest;
 use App\Models\Category;
+use App\Services\CategoryService;
 use Illuminate\Http\Request;
 
 class CategoryController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    public CategoryService $service;
+
+    public function __construct(CategoryService $service)
+    {
+        $this->service = $service;
+    }
+
     public function index(Request $request)
-{
-    $query = $request->input('q');
-    $categories = \App\Models\Category::when($query, fn($q) => $q->where('name', 'like', "%{$query}%"))->get();
-    return view('admin.categories.index', compact('categories', 'query'));
+    {
+        $query = $request->input('q');
+        $categories = $this->service->getFiltered($query);
 
+        return view('admin.categories.index', compact('categories', 'query'));
+    }
 
-}
+    public function create()
+    {
+        return view('admin.categories.create');
+    }
 
-public function create()
-{
-    return view('admin.categories.create');
-}
+    public function store(CategoryRequest $request)
+    {
+        $this->service->createCategory($request->toDTO());
 
-public function store(Request $request)
-{
-    $request->validate([
-        'name' => 'required|string|max:255',
-        'description' => 'nullable|string',
-    ]);
+        return redirect()->route('admin.categories.index')->with('success', 'Category created successfully!');
+    }
 
-    Category::create($request->all());
+    public function edit(Category $category)
+    {
+        return view('admin.categories.edit', compact('category'));
+    }
 
-    return redirect()->route('admin.categories.index')->with('success', 'Category created successfully!');
-}
+    public function update(CategoryRequest $request, Category $category)
+    {
+        $this->service->updateCategory($category, $request->toDTO());
 
-public function edit(Category $category)
-{
-    return view('admin.categories.edit', compact('category'));
-}
+        return redirect()->route('admin.categories.index')->with('success', 'Category updated successfully!');
+    }
 
-public function update(Request $request, Category $category)
-{
-    $request->validate([
-        'name' => 'required|string|max:255',
-        'description' => 'nullable|string',
-    ]);
+    public function destroy(Category $category)
+    {
+        $this->service->deleteCategory($category);
 
-    $category->update($request->all());
-
-    return redirect()->route('admin.categories.index')->with('success', 'Category updated successfully!');
-}
-
-public function destroy(Category $category)
-{
-    $category->delete();
-
-    return redirect()->route('admin.categories.index')->with('success', 'Category deleted successfully!');
-}
+        return redirect()->route('admin.categories.index')->with('success', 'Category deleted successfully!');
+    }
 }

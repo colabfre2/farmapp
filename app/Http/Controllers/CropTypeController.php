@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\; // Ensure this file exists at app/Http/Requests/StoreCropTypeRequest.php
+use App\Http\Requests\CropTypeRequest; // Ensure this file exists at app/Http/Requests/StoreCropTypeRequest.php
 use App\Models\CropType;
 use App\Services\CropTypeService;
 use Illuminate\Http\Request;
@@ -24,26 +24,23 @@ class CropTypeController extends Controller
         return view('admin.crop-types.index', compact('cropTypes', 'query'));
     }
 
-    public function store(StoreCropTypeRequest $request)
+    public function store(CropTypeRequest $request)
     {
         // Convert the FormRequest to a DTO before passing to service
         $this->service->createCropType($request->toDTO());
-
         return redirect()->route('admin.crop-types.index')->with('success', 'Created!');
     }
 
-    public function update(StoreCropTypeRequest $request, CropType $cropType)
+    public function update(CropTypeRequest $request, CropType $cropType)
     {
         // Fixed: pass $cropType and $request->toDTO()
         $this->service->updateCropType($cropType, $request->toDTO());
-
         return redirect()->route('admin.crop-types.index')->with('success', 'Updated!');
     }
 
     public function destroy(CropType $cropType)
-    {
+    {   
         $this->service->deleteCropType($cropType);
-
         return redirect()->route('admin.crop-types.index')->with('success', 'Deleted!');
     }
 }

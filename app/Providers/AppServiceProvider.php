@@ -3,7 +3,9 @@
 namespace App\Providers;
 
 use App\Repositories\Interfaces\CropTypeRepositoryInterface;
+use App\Repositories\Interfaces\CategoryRepositoryInterface;
 use App\Repositories\CropTypeRepository;
+use App\Repositories\CategoryRepository;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -15,6 +17,7 @@ class AppServiceProvider extends ServiceProvider
     {
         $bindings = [
             CropTypeRepositoryInterface::class => CropTypeRepository::class,
+            CategoryRepositoryInterface::class => CategoryRepository::class,
         ];
 
         foreach($bindings as $interface => $value){
