@@ -10,7 +10,7 @@ class CropTypeRepository implements CropTypeRepositoryInterface
 {
     public function getDataCropTypes()
     {
-        return CropType::all(); // Gunakan 'all()' (lowercase) agar standar
+        return CropType::all(); 
     }
 
     public function find(int $id)
