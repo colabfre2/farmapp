@@ -11,7 +11,7 @@ class CropController extends Controller
 {
     public function index(Request $request)
 {
-    $query = $request->input('q');
+    $query = $request->input('q')   ;
 
     $crops = Crop::with('cropType')
         ->when($query, function ($q) use ($query) {

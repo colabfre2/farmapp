@@ -25,19 +25,18 @@ class CropTypeService
         return $this->repository->getDataCropTypes();
     }
 
-    public function storeCropType(CropTypeDTO $request){
+    public function createCropType(CropTypeDTO $request)
+    {
         return $this->repository->createCropType($request);
     }
 
     public function updateCropType(CropType $cropType, CropTypeDTO $request)
     {
-        // Pastikan Anda mengirim 2 argumen: $cropType DAN $dto
-        return $this->repository->updateCropType($cropType, $request->toDTO());
+        return $this->repository->updateCropType($cropType, $request);
     }
 
     public function deleteCropType(CropType $cropType)
     {
-        // Pastikan Anda mengirim 1 argumen: $cropType
         return $this->repository->delete($cropType);
-    }
+    }   
 }
