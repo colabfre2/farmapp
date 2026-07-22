@@ -4,17 +4,21 @@
 
 @section('content')
 
-{{-- Filter Tahun --}}
-<div class="d-flex justify-content-between align-items-center mb-4">
+{{-- Filter Tahun --}}<div class="d-flex justify-content-between align-items-center mb-4">
     <h2 class="fw-bold mb-0">📊 Laporan Laba Rugi</h2>
-    <form method="GET" action="{{ route('admin.finance.profit-loss') }}" class="d-flex gap-2">
-        <select name="year" class="form-select" style="width:120px;">
-            @for($y = date('Y'); $y >= date('Y') - 5; $y--)
-                <option value="{{ $y }}" {{ $year == $y ? 'selected' : '' }}>{{ $y }}</option>
-            @endfor
-        </select>
-        <button type="submit" class="btn btn-primary">Tampilkan</button>
-    </form>
+    <div class="d-flex gap-2">
+        <a href="{{ route('admin.finance.profit-loss.export-pdf', ['year' => $year]) }}" class="btn btn-danger">
+            📄 Export PDF
+        </a>
+        <form method="GET" action="{{ route('admin.finance.profit-loss') }}" class="d-flex gap-2">
+            <select name="year" class="form-select" style="width:120px;">
+                @for($y = date('Y'); $y >= date('Y') - 5; $y--)
+                    <option value="{{ $y }}" {{ $year == $y ? 'selected' : '' }}>{{ $y }}</option>
+                @endfor
+            </select>
+            <button type="submit" class="btn btn-primary">Tampilkan</button>
+        </form>
+    </div>
 </div>
 
 {{-- Summary Cards --}}

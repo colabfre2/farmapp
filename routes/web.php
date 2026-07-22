@@ -50,7 +50,10 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::resource('crop-types', \App\Http\Controllers\CropTypeController::class);
     Route::resource('livestock-types', \App\Http\Controllers\LivestockTypeController::class);
     Route::resource('expense-categories', \App\Http\Controllers\ExpenseCategoryController::class);
+
+    // harvest
     Route::resource('harvests', \App\Http\Controllers\Admin\HarvestController::class);
+    Route::get('/harvests-export', [App\Http\Controllers\Admin\HarvestController::class, 'exportExcel'])->name('harvests.export');
 
     Route::resource('crops', \App\Http\Controllers\Admin\CropController::class);
     Route::get('/crops-trash', [\App\Http\Controllers\Admin\CropController::class, 'trash'])->name('crops.trash');
@@ -74,15 +77,20 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 Route::get('/stock/in', [\App\Http\Controllers\Admin\StockMovementController::class, 'inIndex'])->name('stock.in.index');
 Route::get('/stock/in/create', [\App\Http\Controllers\Admin\StockMovementController::class, 'inCreate'])->name('stock.in.create');
 Route::post('/stock/in', [\App\Http\Controllers\Admin\StockMovementController::class, 'inStore'])->name('stock.in.store');
-
+Route::get('/stock/in-export', [App\Http\Controllers\Admin\StockMovementController::class, 'exportInExcel'])->name('stock.in.export');
 // Stock - Barang Keluar
 Route::get('/stock/out', [\App\Http\Controllers\Admin\StockMovementController::class, 'outIndex'])->name('stock.out.index');
 Route::get('/stock/out/create', [\App\Http\Controllers\Admin\StockMovementController::class, 'outCreate'])->name('stock.out.create');
 Route::post('/stock/out', [\App\Http\Controllers\Admin\StockMovementController::class, 'outStore'])->name('stock.out.store');
+Route::get('/stock/out-export', [App\Http\Controllers\Admin\StockMovementController::class, 'exportOutExcel'])->name('stock.out.export');
+
 
 Route::get('/transactions', [\App\Http\Controllers\Admin\TransactionController::class, 'index'])->name('transactions.index');
 Route::get('/transactions/{order}', [\App\Http\Controllers\Admin\TransactionController::class, 'show'])->name('transactions.show');
 Route::patch('/transactions/{order}/status', [\App\Http\Controllers\Admin\TransactionController::class, 'updateStatus'])->name('transactions.update-status');
+Route::get('/transactions-export', [App\Http\Controllers\Admin\TransactionController::class, 'exportExcel'])->name('transactions.export');
+
+
     // Finance - Income
 Route::get('/finance/income', [App\Http\Controllers\Admin\FinanceController::class, 'incomeIndex'])->name('finance.income.index');
 Route::get('/finance/income/create', [App\Http\Controllers\Admin\FinanceController::class, 'incomeCreate'])->name('finance.income.create');
@@ -101,6 +109,7 @@ Route::delete('/finance/expense/{expense}', [App\Http\Controllers\Admin\FinanceC
 
 // Finance - Profit & Loss
 Route::get('/finance/profit-loss', [App\Http\Controllers\Admin\FinanceController::class, 'profitLoss'])->name('finance.profit-loss');
+Route::get('/finance/profit-loss/export-pdf', [App\Http\Controllers\Admin\FinanceController::class, 'profitLossExportPdf'])->name('finance.profit-loss.export-pdf');
 
 // Obat Ternak
 Route::resource('medicines', \App\Http\Controllers\Admin\MedicineController::class);
@@ -129,6 +138,7 @@ Route::post('/livestock-movements/in', [\App\Http\Controllers\Admin\LivestockMov
 Route::get('/livestock-movements/out', [\App\Http\Controllers\Admin\LivestockMovementController::class, 'outIndex'])->name('livestock-movements.out.index');
 Route::get('/livestock-movements/out/create', [\App\Http\Controllers\Admin\LivestockMovementController::class, 'outCreate'])->name('livestock-movements.out.create');
 Route::post('/livestock-movements/out', [\App\Http\Controllers\Admin\LivestockMovementController::class, 'outStore'])->name('livestock-movements.out.store');
+
 });
     
 require __DIR__.'/auth.php';

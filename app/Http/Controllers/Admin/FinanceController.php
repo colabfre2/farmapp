@@ -7,7 +7,8 @@ use Illuminate\Http\Request;
 use App\Models\Income;
 use App\Models\Expense;
 use App\Models\ExpenseCategory;
-use App\Models\IncomeSource; // Tambahkan import ini
+use App\Models\IncomeSource; 
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class FinanceController extends Controller
 {
@@ -216,4 +217,36 @@ class FinanceController extends Controller
 
         return view('admin.finance.profit-loss', compact('months', 'totalIncome', 'totalExpense', 'netProfit', 'year'));
     }
+
+    public function profitLossExportPdf(Request $request)
+{
+    $year = $request->input('year', date('Y'));
+
+    $monthlyIncome = Income::selectRaw('MONTH(date) as month, SUM(amount) as total')
+        ->whereYear('date', $year)->groupBy('month')->pluck('total', 'month')->toArray();
+
+    $monthlyExpense = Expense::selectRaw('MONTH(date) as month, SUM(amount) as total')
+        ->whereYear('date', $year)->groupBy('month')->pluck('total', 'month')->toArray();
+
+    $months = [];
+    for ($i = 1; $i <= 12; $i++) {
+        $income  = $monthlyIncome[$i]  ?? 0;
+        $expense = $monthlyExpense[$i] ?? 0;
+        $months[] = [
+            'month'   => date('F', mktime(0, 0, 0, $i, 1)),
+            'income'  => $income,
+            'expense' => $expense,
+            'profit'  => $income - $expense,
+        ];
+    }
+
+    $totalIncome  = Income::whereYear('date', $year)->sum('amount');
+    $totalExpense = Expense::whereYear('date', $year)->sum('amount');
+    $netProfit    = $totalIncome - $totalExpense;
+
+    $pdf = Pdf::loadView('admin.finance.profit-loss-pdf', compact('months', 'totalIncome', 'totalExpense', 'netProfit', 'year'));
+
+    // Preview di browser (bukan langsung download)
+    return $pdf->stream('Laporan-Laba-Rugi-' . $year . '.pdf');
+}
 }

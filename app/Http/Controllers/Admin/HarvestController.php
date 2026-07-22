@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use App\Models\Harvest;
 use App\Models\Unit;
 use App\Models\Crop;
+use App\Exports\HarvestsExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class HarvestController extends Controller
 {
@@ -93,5 +95,11 @@ class HarvestController extends Controller
     {
         $harvest->delete();
         return redirect()->route('admin.harvests.index')->with('success', 'Harvest deleted successfully!');
+    }
+
+        
+    public function exportExcel()
+    {
+        return Excel::download(new HarvestsExport, 'Data-Panen-' . date('Y-m-d') . '.xlsx');
     }
 }

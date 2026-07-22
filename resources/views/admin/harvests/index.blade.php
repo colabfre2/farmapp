@@ -28,6 +28,7 @@
                     </form>
 
                     <div class="d-flex gap-2">
+                        <a href="{{ route('admin.harvests.export') }}" class="btn btn-success btn-sm">📊 Export Excel</a>
                         <a href="{{ route('admin.harvests.create') }}" class="btn btn-primary btn-sm">+ Catat panen</a>
                     </div>
                 </div>
