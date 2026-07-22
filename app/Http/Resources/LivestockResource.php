@@ -15,6 +15,8 @@ class LivestockResource extends JsonResource
         return [
             'id' => $this->id,
 
+            'arrival_date' => optional($this->arrival_date)->format('Y-m-d'),
+
             'name' => $this->name,
 
             'quantity' => $this->quantity,
@@ -26,16 +28,17 @@ class LivestockResource extends JsonResource
             'notes' => $this->notes,
 
             'livestock_type' => [
-                'id' => $this->livestockType->id,
-                'name' => $this->livestockType->name,
+                'id' => $this->livestockType?->id,
+                'name' => $this->livestockType?->name,
             ],
 
             'user' => [
-                'id' => $this->user->id,
-                'name' => $this->user->name,
+                'id' => $this->user?->id,
+                'name' => $this->user?->name,
             ],
 
             'created_at' => $this->created_at,
+            'updated_at' => $this->updated_at,
         ];
     }
 }

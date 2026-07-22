@@ -120,6 +120,15 @@ Route::get('/notifications', [\App\Http\Controllers\Admin\NotificationController
 Route::post('/notifications/mark-all-read', [\App\Http\Controllers\Admin\NotificationController::class, 'markAllRead'])->name('notifications.mark-all-read');
 Route::delete('/notifications/{id}', [\App\Http\Controllers\Admin\NotificationController::class, 'destroy'])->name('notifications.destroy');
 
+// Ternak Masuk
+Route::get('/livestock-movements/in', [\App\Http\Controllers\Admin\LivestockMovementController::class, 'inIndex'])->name('livestock-movements.in.index');
+Route::get('/livestock-movements/in/create', [\App\Http\Controllers\Admin\LivestockMovementController::class, 'inCreate'])->name('livestock-movements.in.create');
+Route::post('/livestock-movements/in', [\App\Http\Controllers\Admin\LivestockMovementController::class, 'inStore'])->name('livestock-movements.in.store');
+
+// Ternak Keluar
+Route::get('/livestock-movements/out', [\App\Http\Controllers\Admin\LivestockMovementController::class, 'outIndex'])->name('livestock-movements.out.index');
+Route::get('/livestock-movements/out/create', [\App\Http\Controllers\Admin\LivestockMovementController::class, 'outCreate'])->name('livestock-movements.out.create');
+Route::post('/livestock-movements/out', [\App\Http\Controllers\Admin\LivestockMovementController::class, 'outStore'])->name('livestock-movements.out.store');
 });
     
 require __DIR__.'/auth.php';

@@ -30,4 +30,5 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('crops', CropController::class);
     Route::apiResource('livestocks', LivestockController::class);
     Route::apiResource('harvests', HarvestController::class);
+    Route::apiResource('livestock-movements', \App\Http\Controllers\Api\LivestockMovementController::class)->only(['index', 'store']);
 });

@@ -180,7 +180,8 @@
 
                         {{-- 4. PETERNAKAN --}}
                         @php 
-                            $isPeternakanActive = request()->routeIs('admin.livestock.*', 'admin.medicine-logs.*', 'admin.feed-logs.*');
+                            // Ditambah admin.livestock-movements.* biar menu tetap kebuka pas akses route baru
+                            $isPeternakanActive = request()->routeIs('admin.livestock.*', 'admin.medicine-logs.*', 'admin.feed-logs.*', 'admin.livestock-movements.*');
                         @endphp
                         <li class="nav-item">
                             <a class="nav-link {{ $isPeternakanActive ? 'active' : '' }}" href="#peternakan-menu" data-bs-toggle="collapse" aria-expanded="{{ $isPeternakanActive ? 'true' : 'false' }}">
@@ -195,8 +196,22 @@
                             <div class="collapse {{ $isPeternakanActive ? 'show' : '' }}" id="peternakan-menu">
                                 <ul class="navbar-nav ps-4">
                                     <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.livestock.*') ? 'active fw-bold text-success' : '' }}" href="{{ route('admin.livestock.index') }}"><span class="nav-link-title">🐮 Ternak Aktif</span></a></li>
+                                    
+                                    {{-- Menu Ternak Masuk & Keluar yang baru ditambahkan --}}
+                                    <li class="nav-item">
+                                        <a class="nav-link {{ request()->routeIs('admin.livestock-movements.in.*') ? 'active fw-bold text-success' : '' }}" href="{{ route('admin.livestock-movements.in.index') }}">
+                                            <span class="nav-link-title">⬆ Ternak Masuk</span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link {{ request()->routeIs('admin.livestock-movements.out.*') ? 'active fw-bold text-success' : '' }}" href="{{ route('admin.livestock-movements.out.index') }}">
+                                            <span class="nav-link-title">⬇ Ternak Keluar</span>
+                                        </a>
+                                    </li>
+
                                     <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.medicine-logs.*') ? 'active fw-bold text-success' : '' }}" href="{{ route('admin.medicine-logs.index') }}"><span class="nav-link-title">📋 Log Obat</span></a></li>
                                     <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.feed-logs.*') ? 'active fw-bold text-success' : '' }}" href="{{ route('admin.feed-logs.index') }}"><span class="nav-link-title">📋 Log Pakan</span></a></li>
+                                    
                                 </ul>
                             </div>
                         </li>
@@ -249,9 +264,6 @@
                         </li>
 
                     </ul>
-
-                    
-                    
                 </div>
             </div>
         </aside>

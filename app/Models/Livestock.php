@@ -14,11 +14,16 @@ class Livestock extends Model
     protected $fillable = [
         'user_id',
         'livestock_type_id',
+        'arrival_date',
         'name',
         'quantity',
         'avg_weight',
         'health_status',
         'notes',
+    ];
+        
+    protected $casts = [
+        'arrival_date' => 'date',
     ];
 
     public function livestockType()

@@ -3,19 +3,18 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Api\BaseApiController;
+use App\Http\Requests\Api\StoreLivestockRequest;
+use App\Http\Requests\Api\UpdateLivestockRequest;
 use App\Http\Resources\LivestockResource;
 use App\Models\Livestock;
-use Illuminate\Http\Request;
+use App\Models\LivestockMovement;
 use Illuminate\Support\Facades\Auth;
 
 class LivestockController extends BaseApiController
 {
     public function index()
     {
-        $livestocks = Livestock::with([
-            'livestockType',
-            'user'
-        ])->latest()->paginate(10);
+        $livestocks = Livestock::with(['livestockType', 'user'])->latest()->paginate(10);
 
         return $this->success(
             LivestockResource::collection($livestocks),
@@ -25,58 +24,47 @@ class LivestockController extends BaseApiController
 
     public function show(Livestock $livestock)
     {
-        $livestock->load([
-            'livestockType',
-            'user'
-        ]);
+        $livestock->load(['livestockType', 'user']);
 
         return $this->success(
             new LivestockResource($livestock),
-            'Livestock detail retrieved successfully.'
+            'Livestock retrieved successfully.'
         );
     }
 
-    public function store(Request $request)
+    public function store(StoreLivestockRequest $request)
     {
-        $validated = $request->validate([
-            'livestock_type_id' => 'required|exists:livestock_types,id',
-            'name' => 'required|string|max:255',
-            'quantity' => 'required|integer|min:1',
-            'avg_weight' => 'nullable|string|max:100',
-            'health_status' => 'required|in:Sehat,Pemantauan,Sakit',
-            'notes' => 'nullable|string',
-        ]);
+        $data = $request->validated();
+        $data['user_id'] = Auth::id();
 
-        $validated['user_id'] = Auth::id();
+        $livestock = Livestock::create($data);
 
-        $livestock = Livestock::create($validated);
+        // Catat otomatis ke Ternak Masuk kalau quantity awal > 0
+        if ($data['quantity'] > 0) {
+            LivestockMovement::create([
+                'livestock_id' => $livestock->id,
+                'user_id'      => Auth::id(),
+                'type'         => 'in',
+                'quantity'     => $data['quantity'],
+                'date'         => $data['arrival_date'] ?? now()->toDateString(),
+                'reason'       => 'Data Awal',
+                'notes'        => 'Otomatis tercatat saat kandang dibuat via API',
+            ]);
+        }
 
         return $this->success(
-            new LivestockResource(
-                $livestock->load('livestockType', 'user')
-            ),
+            new LivestockResource($livestock->load('livestockType', 'user')),
             'Livestock created successfully.',
             201
         );
     }
 
-    public function update(Request $request, Livestock $livestock)
+    public function update(UpdateLivestockRequest $request, Livestock $livestock)
     {
-        $validated = $request->validate([
-            'livestock_type_id' => 'required|exists:livestock_types,id',
-            'name' => 'required|string|max:255',
-            'quantity' => 'required|integer|min:1',
-            'avg_weight' => 'nullable|string|max:100',
-            'health_status' => 'required|in:Sehat,Pemantauan,Sakit',
-            'notes' => 'nullable|string',
-        ]);
-
-        $livestock->update($validated);
+        $livestock->update($request->validated());
 
         return $this->success(
-            new LivestockResource(
-                $livestock->fresh()->load('livestockType', 'user')
-            ),
+            new LivestockResource($livestock->fresh()->load('livestockType', 'user')),
             'Livestock updated successfully.'
         );
     }
@@ -85,9 +73,6 @@ class LivestockController extends BaseApiController
     {
         $livestock->delete();
 
-        return $this->success(
-            null,
-            'Livestock deleted successfully.'
-        );
+        return $this->success(null, 'Livestock deleted successfully.');
     }
 }

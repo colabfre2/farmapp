@@ -11,18 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('livestocks', function (Blueprint $table) {
+        Schema::create('livestock_movements', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('livestock_id')->constrained('livestocks')->cascadeOnDelete();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('livestock_type_id')->constrained()->restrictOnDelete();
-            $table->date('arrival_date')->nullable();
-            $table->string('name');
+            $table->enum('type', ['in', 'out']);
             $table->integer('quantity');
-            $table->string('avg_weight')->nullable();
-            $table->enum('health_status', ['Sehat', 'Pemantauan', 'Sakit'])->default('Sehat');
+            $table->date('date');
+            $table->string('reason')->nullable();
             $table->text('notes')->nullable();
             $table->timestamps();
-            $table->softDeletes();
         });
     }
 
@@ -31,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('livestocks');
+        Schema::dropIfExists('livestock_movements');
     }
 };
