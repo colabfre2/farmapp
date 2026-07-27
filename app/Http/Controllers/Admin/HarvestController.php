@@ -9,6 +9,7 @@ use App\Models\Unit;
 use App\Models\Crop;
 use App\Exports\HarvestsExport;
 use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Facades\DB; // Wajib di-import untuk Transaction
 
 class HarvestController extends Controller
 {
@@ -16,7 +17,6 @@ class HarvestController extends Controller
     {
         $query = $request->input('q');
         
-        // Menggunakan relasi 'crop' untuk mencari berdasarkan nama tanaman
         $harvests = Harvest::with(['crop', 'unit'])
             ->when($query, function($q) use ($query) {
                 $q->whereHas('crop', function($c) use ($query) {
@@ -30,44 +30,62 @@ class HarvestController extends Controller
     }
 
     public function create()
-    {
-        $units = Unit::all();
-        $crops = Crop::all(); // Tambahkan ini agar dropdown tanaman muncul
-        return view('admin.harvests.create', compact('units', 'crops'));
-    }
+{
+    $units = Unit::all();
+    // Semua tanaman bisa dipilih untuk dipanen, kecuali yang sudah manual ditandai "Dipanen" (siklus selesai)
+    $crops = Crop::where('status', '!=', 'Dipanen')->get();
 
-    public function store(Request $request)
-    {
-        $request->merge([
-            'selling_price' => preg_replace('/[^0-9]/', '', $request->selling_price)
-        ]);
+    return view('admin.harvests.create', compact('units', 'crops'));
+}
 
-        $request->validate([
-            'crop_id'       => 'required|exists:crops,id',
-            'harvested_at'  => 'required|date',
-            'quantity'      => 'required|numeric|min:0',
-            'unit_id'       => 'required|exists:units,id',
-            'selling_price' => 'required|numeric|min:0',
-            'notes'         => 'nullable|string',
-        ]);
+public function store(Request $request)
+{
+    $request->merge([
+        'selling_price' => preg_replace('/[^0-9]/', '', $request->selling_price)
+    ]);
 
-        Harvest::create([
+    $validated = $request->validate([
+        'crop_id'       => 'required|exists:crops,id',
+        'harvested_at'  => 'required|date',
+        'quantity'      => 'required|numeric|min:0',
+        'unit_id'       => 'required|exists:units,id',
+        'selling_price' => 'required|numeric|min:0',
+        'notes'         => 'nullable|string',
+    ]);
+
+    DB::beginTransaction();
+    try {
+        $harvest = Harvest::create([
             'user_id'       => auth()->id(),
-            'crop_id'       => $request->crop_id,
-            'harvested_at'  => $request->harvested_at,
-            'quantity'      => $request->quantity,
-            'unit_id'       => $request->unit_id,
-            'selling_price' => $request->selling_price,
-            'notes'         => $request->notes,
+            'crop_id'       => $validated['crop_id'],
+            'harvested_at'  => $validated['harvested_at'],
+            'quantity'      => $validated['quantity'],
+            'unit_id'       => $validated['unit_id'],
+            'selling_price' => $validated['selling_price'],
+            'notes'         => $validated['notes'],
         ]);
 
-        return redirect()->route('admin.harvests.index')->with('success', 'Harvest recorded successfully!');
-    }
+        // Hanya catat tanggal panen terakhir, JANGAN otomatis ubah status jadi 'Dipanen'
+        // Status 'Dipanen' sekarang dikendalikan manual oleh admin (siklus benar-benar selesai)
+        $crop = Crop::findOrFail($validated['crop_id']);
+        $crop->update([
+            'actual_harvest_at' => $validated['harvested_at'],
+        ]);
 
+        DB::commit();
+        return redirect()->route('admin.harvests.index')->with('success', '🌾 Data panen berhasil dicatat!');
+
+    } catch (\Exception $e) {
+        DB::rollBack();
+        return back()->with('error', 'Terjadi kesalahan sistem: ' . $e->getMessage())->withInput();
+    }
+}
     public function edit(Harvest $harvest)
     {
         $units = Unit::all();
-        $crops = Crop::all(); // Tambahkan ini
+        // Kalau edit, tampilkan semua crop termasuk yang udah dipanen (buat nampilin data lama)
+        $crops = Crop::all(); 
+        
         return view('admin.harvests.edit', compact('harvest', 'units', 'crops'));
     }
 
@@ -77,27 +95,26 @@ class HarvestController extends Controller
             'selling_price' => preg_replace('/[^0-9]/', '', $request->selling_price)
         ]);
 
-        $request->validate([
+        $validated = $request->validate([
             'crop_id'       => 'required|exists:crops,id',
             'harvested_at'  => 'required|date',
             'quantity'      => 'required|numeric|min:0',
-            'unit_id'       => 'required|exists:units,id', // Di sini diperbaiki dari string menjadi exists
+            'unit_id'       => 'required|exists:units,id',
             'selling_price' => 'required|numeric|min:0',
             'notes'         => 'nullable|string',
         ]);
 
-        $harvest->update($request->all());
+        $harvest->update($validated);
 
-        return redirect()->route('admin.harvests.index')->with('success', 'Harvest updated successfully!');
+        return redirect()->route('admin.harvests.index')->with('success', 'Data panen berhasil diperbarui!');
     }
 
     public function destroy(Harvest $harvest)
     {
         $harvest->delete();
-        return redirect()->route('admin.harvests.index')->with('success', 'Harvest deleted successfully!');
+        return redirect()->route('admin.harvests.index')->with('success', 'Data panen berhasil dipindahkan ke sampah!');
     }
 
-        
     public function exportExcel()
     {
         return Excel::download(new HarvestsExport, 'Data-Panen-' . date('Y-m-d') . '.xlsx');

@@ -7,6 +7,9 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 });
+Route::get('/about', function () {
+    return view('about');
+})->name('about');
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/profile', [App\Http\Controllers\ProfileController::class, 'edit'])->name('profile.edit');
@@ -34,10 +37,15 @@ Route::middleware(['auth', 'role:buyer'])->prefix('buyer')->name('buyer.')->grou
 
     Route::get('/orders', [App\Http\Controllers\Buyer\OrderController::class, 'index'])->name('orders');
     Route::get('/orders/{order}', [App\Http\Controllers\Buyer\OrderController::class, 'show'])->name('orders.show');
+    Route::patch('/orders/{order}/cancel', [\App\Http\Controllers\Buyer\OrderController::class, 'cancel'])->name('orders.cancel');
+    
 
     Route::get('/shipping/provinces', [\App\Http\Controllers\Buyer\ShippingController::class, 'getProvinces'])->name('shipping.provinces');
     Route::get('/shipping/cities/{provinceId}', [\App\Http\Controllers\Buyer\ShippingController::class, 'getCities'])->name('shipping.cities');
     Route::post('/shipping/ongkir', [\App\Http\Controllers\Buyer\ShippingController::class, 'getOngkir'])->name('shipping.ongkir');
+
+    Route::get('/orders/{order}/review/{productId}', [\App\Http\Controllers\Buyer\ReviewController::class, 'create'])->name('reviews.create');
+    Route::post('/orders/{order}/review/{productId}', [\App\Http\Controllers\Buyer\ReviewController::class, 'store'])->name('reviews.store');
 
     });
 
@@ -50,6 +58,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::resource('crop-types', \App\Http\Controllers\CropTypeController::class);
     Route::resource('livestock-types', \App\Http\Controllers\LivestockTypeController::class);
     Route::resource('expense-categories', \App\Http\Controllers\ExpenseCategoryController::class);
+    Route::resource('crop-varieties', \App\Http\Controllers\Admin\CropVarietyController::class);
 
     // harvest
     Route::resource('harvests', \App\Http\Controllers\Admin\HarvestController::class);
@@ -139,6 +148,8 @@ Route::get('/livestock-movements/out', [\App\Http\Controllers\Admin\LivestockMov
 Route::get('/livestock-movements/out/create', [\App\Http\Controllers\Admin\LivestockMovementController::class, 'outCreate'])->name('livestock-movements.out.create');
 Route::post('/livestock-movements/out', [\App\Http\Controllers\Admin\LivestockMovementController::class, 'outStore'])->name('livestock-movements.out.store');
 
+
+Route::resource('farms', \App\Http\Controllers\Admin\FarmController::class);
 });
     
 require __DIR__.'/auth.php';

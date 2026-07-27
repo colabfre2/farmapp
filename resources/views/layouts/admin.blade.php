@@ -151,6 +151,8 @@
                                     <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.feeds.*') ? 'active fw-bold text-success' : '' }}" href="{{ route('admin.feeds.index') }}"><span class="nav-link-title">🌾 Pakan Ternak</span></a></li>
                                     <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.expense-categories.*') ? 'active fw-bold text-success' : '' }}" href="{{ route('admin.expense-categories.index') }}"><span class="nav-link-title">💸 Kategori Pengeluaran</span></a></li>
                                     <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.income-sources.*') ? 'active fw-bold text-success' : '' }}" href="{{ route('admin.income-sources.index') }}"><span class="nav-link-title">💸 Sumber Pemasukan</span></a></li>
+                                    <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.crop-varieties.*') ? 'active fw-bold text-success' : '' }}"href="{{ route('admin.crop-varieties.index') }}"><span class="nav-link-title">🌿 Varian Tanaman</span></a></li>
+                                    <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.farms.*') ? 'active fw-bold text-success' : '' }}"href="{{ route('admin.farms.index') }}"><span class="nav-link-title">🚜 Ladang</span></a></li>
                                 </ul>
                             </div>
                         </li>

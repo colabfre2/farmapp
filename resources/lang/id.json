@@ -191,5 +191,9 @@
     "Amount": "Jumlah",
     "Barang Masuk": "Barang Masuk",
     "Barang Keluar": "Barang Keluar",
-    "By": "Oleh"
+    "By": "Oleh",
+    "Showing" : "Menampilkan",
+    "to": "sampai",
+    "of": "dari",
+    "results": "hasil"
 }
