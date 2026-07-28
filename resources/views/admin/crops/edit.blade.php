@@ -127,12 +127,17 @@
                         @if($crop->status == 'Dipanen')
                             <input type="text" class="form-control bg-light rounded-3 py-2 text-success fw-bold" value="🌾 Dipanen" readonly>
                             <input type="hidden" name="status" value="Dipanen">
-                            <small class="text-muted mt-1 d-block"><i class="bi bi-info-circle me-1"></i>Tanaman sudah dipanen, data terkunci.</small>
+                            <small class="text-muted mt-1 d-block"><i class="bi bi-info-circle me-1"></i>Siklus tanam sudah ditandai selesai, data terkunci.</small>
                         @else
                             <select name="status" class="form-select rounded-3 py-2 @error('status') is-invalid @enderror" required>
                                 <option value="Bibit" {{ old('status', $crop->status) == 'Bibit' ? 'selected' : '' }}>🌱 Bibit</option>
                                 <option value="Pertumbuhan" {{ old('status', $crop->status) == 'Pertumbuhan' ? 'selected' : '' }}>🌿 Pertumbuhan</option>
+                                <option value="Dipanen" {{ old('status', $crop->status) == 'Dipanen' ? 'selected' : '' }}>🌾 Dipanen (Selesaikan Siklus)</option>
                             </select>
+                            @if($crop->harvests()->exists())
+                                <small class="text-success mt-1 d-block"><i class="bi bi-check-circle me-1"></i>Tanaman ini sudah dipanen {{ $crop->harvests()->count() }}x. Masih bisa dipanen lagi selama status belum "Dipanen".</small>
+                            @endif
+                            <small class="text-warning mt-1 d-block"><i class="bi bi-exclamation-triangle me-1"></i>Pilih "Dipanen" hanya jika siklus tanam ini benar-benar selesai (tidak akan dipanen lagi).</small>
                             @error('status') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         @endif
                     </div>

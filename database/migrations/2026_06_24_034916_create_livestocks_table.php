@@ -12,18 +12,19 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('livestocks', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('livestock_type_id')->constrained()->restrictOnDelete();
-            $table->date('arrival_date')->nullable();
-            $table->string('name');
-            $table->integer('quantity');
-            $table->string('avg_weight')->nullable();
-            $table->enum('health_status', ['Sehat', 'Pemantauan', 'Sakit'])->default('Sehat');
-            $table->text('notes')->nullable();
-            $table->timestamps();
-            $table->softDeletes();
-        });
+        $table->id();
+        $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+        $table->foreignId('livestock_type_id')->constrained()->restrictOnDelete();
+        $table->foreignId('kandang_id')->nullable()->constrained()->nullOnDelete(); // ← tambah
+        $table->string('name'); // tetap ada, tapi jadi nama batch/kelompok, bukan nama kandang
+        $table->date('arrival_date')->nullable();
+        $table->integer('quantity');
+        $table->decimal('avg_weight', 10, 2)->nullable();
+        $table->enum('health_status', ['Sehat', 'Pemantauan', 'Sakit'])->default('Sehat');
+        $table->text('notes')->nullable();
+        $table->timestamps();
+        $table->softDeletes();
+    });
     }
 
     /**

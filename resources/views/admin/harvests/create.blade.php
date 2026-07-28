@@ -46,10 +46,14 @@
                         </div>
                         <div class="col-6 mb-3">
                             <label class="form-label fw-semibold">Satuan <span class="text-danger">*</span></label>
-                            <select name="unit_id" class="form-select rounded-3 py-2 @error('unit_id') is-invalid @enderror" required>
-                                <option value="">-- Pilih satuan --</option>
+                            <!-- Tambahin ID unit_select disini -->
+                            <select name="unit_id" id="unit_select" class="form-select rounded-3 py-2 @error('unit_id') is-invalid @enderror" required>
+                                <option value="" data-symbol="satuan">-- Pilih satuan --</option>
                                 @foreach($units as $unit)
-                                    <option value="{{ $unit->id }}" {{ old('unit_id') == $unit->id ? 'selected' : '' }}>{{ $unit->name }} ({{ $unit->symbol }})</option>
+                                    <!-- Sisipkan data-symbol buat ditangkep JS -->
+                                    <option value="{{ $unit->id }}" data-symbol="{{ $unit->name }} ({{ $unit->symbol }})" {{ old('unit_id') == $unit->id ? 'selected' : '' }}>
+                                        {{ $unit->name }} ({{ $unit->symbol }})
+                                    </option>
                                 @endforeach
                             </select>
                             @error('unit_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
@@ -68,7 +72,8 @@
                 <div class="card-body">
                     {{-- Form Dual-Input Rupiah --}}
                     <div class="mb-3">
-                        <label class="form-label fw-semibold">Harga Jual (per satuan) <span class="text-danger">*</span></label>
+                        <!-- Tambahin ID dynamic-unit-label pada teks 'satuan' -->
+                        <label class="form-label fw-semibold">Harga Jual (per <span id="dynamic-unit-label">satuan</span>) <span class="text-danger">*</span></label>
                         <div class="input-group">
                             <span class="input-group-text rounded-start-3 border-end-0 bg-light">Rp</span>
                             <input type="text" id="display_selling_price" class="form-control rounded-end-3 py-2 border-start-0 @error('selling_price') is-invalid @enderror" value="{{ old('selling_price') }}" placeholder="0" required>
@@ -94,6 +99,30 @@
 
 <script>
 document.addEventListener("DOMContentLoaded", function() {
+    
+    // --- SCRIPT DYNAMIC LABEL SATUAN ---
+    const unitSelect = document.getElementById('unit_select');
+    const dynamicUnitLabel = document.getElementById('dynamic-unit-label');
+
+    // Dengerin kalau ada perubahan di dropdown satuan
+    unitSelect.addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        const symbol = selectedOption.getAttribute('data-symbol');
+        
+        // Ubah teks berdasarkan atribut data-symbol
+        if (symbol) {
+            dynamicUnitLabel.innerText = symbol;
+        } else {
+            dynamicUnitLabel.innerText = 'satuan';
+        }
+    });
+
+    // Trigger on-load buat jaga-jaga kalau form error validation dan old() aktif terpilih
+    if(unitSelect.value) {
+        unitSelect.dispatchEvent(new Event('change'));
+    }
+
+
     // --- SCRIPT DUAL-INPUT FORMAT RUPIAH ---
     const displayInput = document.getElementById('display_selling_price');
     const hiddenInput = document.getElementById('hidden_selling_price');

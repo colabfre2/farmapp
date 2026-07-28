@@ -58,6 +58,12 @@
         font-weight: 800;
         font-family: 'Quicksand', sans-serif;
     }
+    .alert-context {
+        border-radius: 10px;
+        padding: 0.85rem 1rem;
+        font-size: 0.85rem;
+        border: none;
+    }
 </style>
 
 {{-- Header --}}
@@ -75,6 +81,23 @@
         </a>
     </div>
 </div>
+
+{{-- Info Kontekstual: Status vs Tipe Panen --}}
+@if($crop->status != 'Dipanen' && $crop->cropType && $crop->cropType->harvest_type == 'Panen Berkelanjutan' && $crop->harvests->count() > 0)
+    <div class="alert alert-context bg-success-subtle text-success mb-4 d-flex align-items-center">
+        <span class="fs-5 me-2">🔁</span>
+        <div>
+            <strong>Tanaman ini bertipe "Panen Berkelanjutan"</strong> — sudah dipanen {{ $crop->harvests->count() }}x dan masih bisa terus dipanen selama status belum diubah ke "Dipanen" secara manual.
+        </div>
+    </div>
+@elseif($crop->status == 'Dipanen' && $crop->cropType && $crop->cropType->harvest_type == 'Sekali Panen')
+    <div class="alert alert-context bg-secondary-subtle text-secondary mb-4 d-flex align-items-center">
+        <span class="fs-5 me-2">🔒</span>
+        <div>
+            <strong>Siklus tanam ini sudah selesai secara otomatis</strong> — jenis tanaman "Sekali Panen" langsung dikunci sistem begitu dicatat panen pertama kali.
+        </div>
+    </div>
+@endif
 
 <div class="row g-4">
     <div class="col-lg-8">
@@ -107,6 +130,20 @@
                         <div class="info-value">{{ $crop->cropType->name ?? '-' }}</div>
                     </div>
                     <div class="col-md-6">
+                        <div class="info-label">Tipe Panen</div>
+                        <div>
+                            @if($crop->cropType)
+                                @if($crop->cropType->harvest_type == 'Sekali Panen')
+                                    <span class="badge bg-secondary-subtle text-secondary rounded-pill px-3 py-1">🔒 Sekali Panen</span>
+                                @else
+                                    <span class="badge bg-success-subtle text-success rounded-pill px-3 py-1">🔁 Panen Berkelanjutan</span>
+                                @endif
+                            @else
+                                <span class="text-muted">-</span>
+                            @endif
+                        </div>
+                    </div>
+                    <div class="col-md-6">
                         <div class="info-label">Varian</div>
                         <div class="info-value">{{ $crop->cropVariety->name ?? '-' }}</div>
                     </div>
@@ -134,7 +171,13 @@
                     </div>
                     @if($crop->actual_harvest_at)
                     <div class="col-md-6">
-                        <div class="info-label">Tanggal Panen Aktual</div>
+                        <div class="info-label">
+                            @if($crop->cropType && $crop->cropType->harvest_type == 'Panen Berkelanjutan')
+                                Panen Terakhir
+                            @else
+                                Tanggal Panen Aktual
+                            @endif
+                        </div>
                         <div class="info-value">{{ \Carbon\Carbon::parse($crop->actual_harvest_at)->format('d M Y') }}</div>
                     </div>
                     @endif
@@ -191,8 +234,11 @@
 
         {{-- Riwayat Panen --}}
         <div class="card card-flat">
-            <div class="card-header bg-white border-bottom p-3">
+            <div class="card-header bg-white border-bottom p-3 d-flex justify-content-between align-items-center">
                 <h3 class="h6 fw-bold mb-0 font-quicksand">🌾 Riwayat Panen</h3>
+                @if($crop->cropType && $crop->cropType->harvest_type == 'Panen Berkelanjutan' && $crop->status != 'Dipanen')
+                    <a href="{{ route('admin.harvests.create') }}" class="btn btn-sm btn-success rounded-pill px-3">+ Catat Panen Lagi</a>
+                @endif
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
@@ -247,6 +293,12 @@
                     <div class="info-label mb-1">Total Perawatan</div>
                     <div class="summary-number text-dark">{{ $crop->plantCareLogs->count() }} <span class="fs-6 fw-semibold text-muted">kali</span></div>
                 </div>
+                @if($crop->harvests->count() > 0)
+                <div class="summary-box">
+                    <div class="info-label mb-1">Rata-rata Nilai / Panen</div>
+                    <div class="summary-number text-dark" style="font-size: 1.1rem;">{{ rupiah($crop->harvests->sum('total_value') / $crop->harvests->count()) }}</div>
+                </div>
+                @endif
             </div>
         </div>
     </div>

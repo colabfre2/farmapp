@@ -113,13 +113,14 @@
                 <thead>
                     <tr>
                         <th width="5%" class="text-center">#</th>
-                        <th width="20%">Nama Kandang</th>
-                        <th width="15%">Jenis</th>
-                        <th width="15%">Tgl Masuk</th>
-                        <th width="10%">Populasi</th>
-                        <th width="10%">Berat Rata²</th>
-                        <th width="10%" class="text-center">Status</th>
-                        <th width="15%" class="text-center">Aksi</th>
+                        <th width="16%">Nama Kelompok</th>
+                        <th width="13%">Jenis</th>
+                        <th width="14%">Kandang</th>
+                        <th width="12%">Tgl Masuk</th>
+                        <th width="8%">Populasi</th>
+                        <th width="9%">Berat Rata²</th>
+                        <th width="9%" class="text-center">Status</th>
+                        <th width="14%" class="text-center">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -131,6 +132,13 @@
                         </td>
                         <td>
                             <span class="text-muted fw-semibold">{{ $livestock->livestockType->name ?? '-' }}</span>
+                        </td>
+                        <td>
+                            @if($livestock->kandang)
+                                <span class="badge bg-info-subtle text-info rounded-pill px-3 py-1">🏠 {{ $livestock->kandang->name }}</span>
+                            @else
+                                <span class="text-muted small">-</span>
+                            @endif
                         </td>
                         <td>
                             @if($livestock->arrival_date)
@@ -175,7 +183,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="8" class="text-center py-5">
+                        <td colspan="9" class="text-center py-5">
                             <div style="font-size: 2.5rem; color: #cbd5e1;" class="mb-2">🐄</div>
                             <h6 class="fw-bold text-dark mb-1 font-quicksand">Tidak Ada Data Ternak</h6>
                             <p class="text-muted small mb-0">

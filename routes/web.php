@@ -63,13 +63,16 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     // harvest
     Route::resource('harvests', \App\Http\Controllers\Admin\HarvestController::class);
     Route::get('/harvests-export', [App\Http\Controllers\Admin\HarvestController::class, 'exportExcel'])->name('harvests.export');
+    
 
+    Route::post('/crops/bulk', [\App\Http\Controllers\Admin\CropController::class, 'storeBulk'])->name('crops.store-bulk');
     Route::resource('crops', \App\Http\Controllers\Admin\CropController::class);
     Route::get('/crops-trash', [\App\Http\Controllers\Admin\CropController::class, 'trash'])->name('crops.trash');
     Route::patch('/crops/{id}/restore', [\App\Http\Controllers\Admin\CropController::class, 'restore'])->name('crops.restore');
     Route::delete('/crops/{id}/force-delete', [\App\Http\Controllers\Admin\CropController::class, 'forceDelete'])->name('crops.force-delete');
 
     // livestock
+    Route::post('/livestock/store-bulk', [\App\Http\Controllers\Admin\LivestockController::class, 'storeBulk'])->name('livestock.store-bulk');
     Route::resource('livestock', \App\Http\Controllers\Admin\LivestockController::class);
     Route::get('/livestock-trash', [\App\Http\Controllers\Admin\LivestockController::class, 'trash'])->name('livestock.trash');
     Route::patch('/livestock/{id}/restore', [\App\Http\Controllers\Admin\LivestockController::class, 'restore'])->name('livestock.restore');
@@ -148,7 +151,7 @@ Route::get('/livestock-movements/out', [\App\Http\Controllers\Admin\LivestockMov
 Route::get('/livestock-movements/out/create', [\App\Http\Controllers\Admin\LivestockMovementController::class, 'outCreate'])->name('livestock-movements.out.create');
 Route::post('/livestock-movements/out', [\App\Http\Controllers\Admin\LivestockMovementController::class, 'outStore'])->name('livestock-movements.out.store');
 
-
+Route::resource('kandangs', \App\Http\Controllers\Admin\KandangController::class);
 Route::resource('farms', \App\Http\Controllers\Admin\FarmController::class);
 });
     

@@ -6,10 +6,14 @@ use Illuminate\Database\Eloquent\Model;
 
 class CropType extends Model
 {
-    //
-    protected $fillable =[
+    protected $fillable = [
         'name',
-        'description'
-
+        'description',
+        'harvest_type',
     ];
+
+    public function crops()
+    {
+        return $this->hasMany(Crop::class);
+    }
 }

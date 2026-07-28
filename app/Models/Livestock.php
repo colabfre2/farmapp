@@ -13,6 +13,7 @@ class Livestock extends Model
 
     protected $fillable = [
         'user_id',
+        'kandang_id',
         'livestock_type_id',
         'arrival_date',
         'name',
@@ -32,6 +33,10 @@ class Livestock extends Model
     }
     
 
+    public function kandang()
+{
+    return $this->belongsTo(Kandang::class);
+}
 public function feedLogs()
 {
     return $this->hasMany(FeedLog::class);

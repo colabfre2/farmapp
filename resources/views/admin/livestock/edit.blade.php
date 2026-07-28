@@ -29,8 +29,8 @@
                     
                     <div class="row">
                         <div class="col-md-6 mb-4">
-                            <label class="form-label fw-semibold">Jenis Ternak <span class="text-danger">*</span></label>
-                            <select name="livestock_type_id" class="form-select rounded-3 py-2 @error('livestock_type_id') is-invalid @enderror" required>
+                            <label class="form-label fw-semibold">Jenis Hewan <span class="text-danger">*</span></label>
+                            <select name="livestock_type_id" id="livestockTypeSelect" class="form-select rounded-3 py-2 @error('livestock_type_id') is-invalid @enderror" required>
                                 <option value="">-- Pilih Jenis --</option>
                                 @foreach($livestockTypes as $type)
                                     <option value="{{ $type->id }}" {{ old('livestock_type_id', $livestock->livestock_type_id) == $type->id ? 'selected' : '' }}>
@@ -38,33 +38,52 @@
                                     </option>
                                 @endforeach
                             </select>
+                            <small class="text-muted">Otomatis ikut jenis hewan dari kandang yang dipilih.</small>
                             @error('livestock_type_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
-                        
+
+                        <div class="col-md-6 mb-4">
+                            <label class="form-label fw-semibold">Kandang <span class="text-danger">*</span></label>
+                            <select name="kandang_id" id="kandangSelect" class="form-select rounded-3 py-2 @error('kandang_id') is-invalid @enderror" required>
+                                <option value="" id="kandangPlaceholder">-- Pilih kandang --</option>
+                                @foreach($kandangs as $kandang)
+                                    <option value="{{ $kandang->id }}" data-type="{{ $kandang->livestock_type_id }}"
+                                        {{ old('kandang_id', $livestock->kandang_id) == $kandang->id ? 'selected' : '' }}
+                                        style="{{ old('livestock_type_id', $livestock->livestock_type_id) != $kandang->livestock_type_id ? 'display:none;' : '' }}">
+                                        {{ $kandang->name }}
+                                        @if($kandang->capacity)
+                                            (maks. {{ $kandang->capacity }} ekor)
+                                        @endif
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('kandang_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        </div>
+                    </div>
+
+                    <div class="row">
                         <div class="col-md-6 mb-4">
                             <label class="form-label fw-semibold">Tanggal Hewan Masuk <span class="text-danger">*</span></label>
                             <input type="date" name="arrival_date" class="form-control rounded-3 py-2 @error('arrival_date') is-invalid @enderror" 
                                    value="{{ old('arrival_date', $livestock->arrival_date ? \Carbon\Carbon::parse($livestock->arrival_date)->format('Y-m-d') : '') }}" required>
                             @error('arrival_date') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
-                    </div>
 
-                    <div class="row">
                         <div class="col-md-6 mb-4">
                             <label class="form-label fw-semibold">Berat Rata-rata (Kg)</label>
                             <input type="number" step="0.01" name="avg_weight" class="form-control rounded-3 py-2 @error('avg_weight') is-invalid @enderror" value="{{ old('avg_weight', $livestock->avg_weight) }}">
                             @error('avg_weight') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
-                        
-                        <div class="col-md-6 mb-4">
-                            <label class="form-label fw-semibold">Status Kesehatan <span class="text-danger">*</span></label>
-                            <select name="health_status" class="form-select rounded-3 py-2 @error('health_status') is-invalid @enderror" required>
-                                <option value="Sehat" {{ old('health_status', $livestock->health_status) == 'Sehat' ? 'selected' : '' }}>✅ Sehat</option>
-                                <option value="Pemantauan" {{ old('health_status', $livestock->health_status) == 'Pemantauan' ? 'selected' : '' }}>⚠️ Pemantauan</option>
-                                <option value="Sakit" {{ old('health_status', $livestock->health_status) == 'Sakit' ? 'selected' : '' }}>🤒 Sakit</option>
-                            </select>
-                            @error('health_status') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">Status Kesehatan <span class="text-danger">*</span></label>
+                        <select name="health_status" class="form-select rounded-3 py-2 @error('health_status') is-invalid @enderror" required>
+                            <option value="Sehat" {{ old('health_status', $livestock->health_status) == 'Sehat' ? 'selected' : '' }}>✅ Sehat</option>
+                            <option value="Pemantauan" {{ old('health_status', $livestock->health_status) == 'Pemantauan' ? 'selected' : '' }}>⚠️ Pemantauan</option>
+                            <option value="Sakit" {{ old('health_status', $livestock->health_status) == 'Sakit' ? 'selected' : '' }}>🤒 Sakit</option>
+                        </select>
+                        @error('health_status') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
 
                     <div class="mb-3">
@@ -115,4 +134,28 @@
         </div>
     </div>
 </form>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const typeSelect = document.getElementById('livestockTypeSelect');
+    const kandangSelect = document.getElementById('kandangSelect');
+    const placeholder = document.getElementById('kandangPlaceholder');
+
+    typeSelect.addEventListener('change', function() {
+        const selectedType = this.value;
+        const options = kandangSelect.querySelectorAll('option[data-type]');
+
+        placeholder.textContent = selectedType ? '-- Pilih kandang --' : '-- Pilih jenis hewan terlebih dahulu --';
+        options.forEach(opt => {
+            opt.style.display = (!selectedType || opt.dataset.type === selectedType) ? '' : 'none';
+        });
+
+        // Kalau kandang yang sedang dipilih tidak cocok lagi dengan jenis hewan baru, reset pilihan
+        const currentSelected = kandangSelect.querySelector('option:checked');
+        if (currentSelected && currentSelected.dataset.type && currentSelected.dataset.type !== selectedType) {
+            kandangSelect.value = '';
+        }
+    });
+});
+</script>
 @endsection

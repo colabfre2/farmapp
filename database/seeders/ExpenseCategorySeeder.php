@@ -2,25 +2,22 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\ExpenseCategory;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
 
 class ExpenseCategorySeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        //
-       
-        DB::table('expense_categories')->insert([
-    ['name' => 'Pakan',          'description' => 'Biaya pakan ternak'],
-    ['name' => 'Pupuk',          'description' => 'Pupuk tanah'],
-    ['name' => 'Bibit',          'description' => 'Bibit tanaman'],
-    ['name' => 'Obat-obatan',    'description' => 'Obat hewan dan tanaman'],
-    ['name' => 'Transportasi',   'description' => 'Ongkos pengiriman'],
-]);
+        $expenses = [
+            ['name' => 'Pakan Ternak', 'description' => 'Beli konsentrat dan rumput'],
+            ['name' => 'Pupuk & Pestisida', 'description' => 'Perawatan lahan pertanian'],
+            ['name' => 'Benih & Bibit', 'description' => 'Modal awal tanam/ternak'],
+            ['name' => 'Gaji Karyawan', 'description' => 'Upah pekerja harian/bulanan'],
+        ];
+
+        foreach ($expenses as $exp) {
+            ExpenseCategory::create($exp);
+        }
     }
 }
