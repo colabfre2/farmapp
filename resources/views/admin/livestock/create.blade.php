@@ -225,10 +225,9 @@ document.addEventListener("DOMContentLoaded", function() {
         const selectedOpt = kandangSelect.options[kandangSelect.selectedIndex];
         const kandangText = (selectedOpt && selectedOpt.dataset.name) ? selectedOpt.dataset.name : '';
 
-        const bulanTahun = new Date().toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
-
+        
         nameInput.value = typeText
-            ? typeText + (kandangText ? ' - ' + kandangText : '') + ' (' + bulanTahun + ')'
+            ? typeText + (kandangText ? ' - ' + kandangText : '') 
             : '';
     }
 

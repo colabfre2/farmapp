@@ -22,7 +22,7 @@ class Livestock extends Model
         'health_status',
         'notes',
     ];
-        
+
     protected $casts = [
         'arrival_date' => 'date',
     ];
@@ -31,23 +31,29 @@ class Livestock extends Model
     {
         return $this->belongsTo(LivestockType::class);
     }
-    
 
     public function kandang()
-{
-    return $this->belongsTo(Kandang::class);
-}
-public function feedLogs()
-{
-    return $this->hasMany(FeedLog::class);
-}
+    {
+        return $this->belongsTo(Kandang::class);
+    }
 
-public function medicineLogs()
-{
-    return $this->hasMany(MedicineLog::class);
-}
-public function user()
-{
-    return $this->belongsTo(User::class);
-}
+    public function movements()
+    {
+        return $this->hasMany(LivestockMovement::class);
+    }
+
+    public function feedLogs()
+    {
+        return $this->hasMany(FeedLog::class);
+    }
+
+    public function medicineLogs()
+    {
+        return $this->hasMany(MedicineLog::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

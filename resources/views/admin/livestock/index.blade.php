@@ -4,7 +4,6 @@
 
 @section('content')
 <style>
-    /* Styling Card Modern Flat */
     .card-flat {
         border: none !important;
         border-radius: 12px !important;
@@ -12,14 +11,8 @@
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
         overflow: hidden;
     }
-    .font-quicksand {
-        font-family: 'Quicksand', sans-serif !important;
-    }
-    
-    /* Styling Tabel Seamless */
-    .table-custom {
-        margin-bottom: 0;
-    }
+    .font-quicksand { font-family: 'Quicksand', sans-serif !important; }
+    .table-custom { margin-bottom: 0; }
     .table-custom thead th {
         background-color: #f8fafc;
         color: #64748b;
@@ -36,23 +29,10 @@
         border-bottom: 1px solid #f1f5f9;
         color: #334155;
     }
-    .table-custom tbody tr:hover {
-        background-color: #f8fafc;
-    }
-    .table-custom tbody tr:last-child td {
-        border-bottom: none;
-    }
-
-    /* Input Search Modern */
-    .search-wrapper {
-        position: relative;
-        width: 260px;
-    }
-    .search-wrapper input {
-        padding-left: 2.5rem;
-        border-radius: 20px;
-        font-size: 0.875rem;
-    }
+    .table-custom tbody tr:hover { background-color: #f8fafc; }
+    .table-custom tbody tr:last-child td { border-bottom: none; }
+    .search-wrapper { position: relative; width: 260px; }
+    .search-wrapper input { padding-left: 2.5rem; border-radius: 20px; font-size: 0.875rem; }
     .search-wrapper .icon {
         position: absolute;
         left: 12px;
@@ -65,10 +45,7 @@
 
 <div class="card card-flat">
     
-    {{-- TOOLBAR: Search di Kiri, Tombol Aksi di Kanan --}}
     <div class="card-header bg-white border-bottom p-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
-        
-        {{-- Form Search --}}
         <form method="GET" action="{{ route('admin.livestock.index') }}" class="m-0">
             <div class="search-wrapper">
                 <span class="icon">🔍</span>
@@ -76,7 +53,6 @@
             </div>
         </form>
 
-        {{-- Tombol Kanan --}}
         <div class="d-flex align-items-center gap-2">
             @if(!empty($query))
                 <a href="{{ route('admin.livestock.index') }}" class="btn btn-sm btn-light text-danger fw-bold rounded-pill px-3 shadow-sm border">✕ Reset</a>
@@ -88,17 +64,14 @@
                 + Tambah Ternak
             </a>
         </div>
-        
     </div>
 
-    {{-- Alert Sukses --}}
     @if(session('success'))
         <div class="alert alert-success bg-success-subtle text-success border-0 fw-bold m-3 d-flex align-items-center rounded-3">
             <span class="fs-5 me-2">✅</span> {{ session('success') }}
         </div>
     @endif
 
-    {{-- Info Hasil Pencarian --}}
     @if(!empty($query))
         <div class="px-4 pt-3 text-muted small fw-semibold">
             Menampilkan hasil untuk: <span class="text-dark fw-bold">"{{ $query }}"</span> 
@@ -106,33 +79,26 @@
         </div>
     @endif
 
-    {{-- AREA TABEL --}}
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table table-custom w-100">
                 <thead>
                     <tr>
-                        <th width="5%" class="text-center">#</th>
-                        <th width="16%">Nama Kelompok</th>
-                        <th width="13%">Jenis</th>
-                        <th width="14%">Kandang</th>
-                        <th width="12%">Tgl Masuk</th>
+                        <th width="5%" class="text-center">No</th>
+                        <th width="15%">Nama Kelompok</th>
+                        <th width="13%">Kandang</th>
+                        <th width="11%">Tgl Masuk</th>
                         <th width="8%">Populasi</th>
-                        <th width="9%">Berat Rata²</th>
                         <th width="9%" class="text-center">Status</th>
-                        <th width="14%" class="text-center">Aksi</th>
+                        <th width="19%" class="text-center">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($livestocks as $livestock)
                     <tr>
                         <td class="text-center fw-bold text-muted">{{ $loop->iteration }}</td>
-                        <td>
-                            <div class="fw-bold text-dark">{{ $livestock->name }}</div>
-                        </td>
-                        <td>
-                            <span class="text-muted fw-semibold">{{ $livestock->livestockType->name ?? '-' }}</span>
-                        </td>
+                        <td><div class="fw-bold text-dark">{{ $livestock->name }}</div></td>
+                        
                         <td>
                             @if($livestock->kandang)
                                 <span class="badge bg-info-subtle text-info rounded-pill px-3 py-1">🏠 {{ $livestock->kandang->name }}</span>
@@ -148,15 +114,10 @@
                             @endif
                         </td>
                         <td>
-                            <span class="fw-bold text-dark">{{ $livestock->quantity }}</span> <span class="text-muted small">ekor</span>
+                            <span class="fw-bold text-dark">{{ $livestock->quantity }}</span>
+                            <span class="text-muted small">ekor</span>
                         </td>
-                        <td>
-                            @if($livestock->avg_weight)
-                                <span class="fw-bold text-dark">{{ $livestock->avg_weight }}</span> <span class="text-muted small">kg</span>
-                            @else
-                                <span class="text-muted">-</span>
-                            @endif
-                        </td>
+                        
                         <td class="text-center">
                             @if($livestock->health_status == 'Sehat')
                                 <span class="badge bg-success-subtle text-success rounded-pill px-3 py-1">✅ Sehat</span>
@@ -168,6 +129,9 @@
                         </td>
                         <td>
                             <div class="d-flex justify-content-center gap-2">
+                                <a href="{{ route('admin.livestock.show', $livestock) }}" class="btn btn-sm btn-outline-primary rounded-3" title="Lihat Detail">
+                                    👀 Lihat
+                                </a>
                                 <a href="{{ route('admin.livestock.edit', $livestock) }}" class="btn btn-sm btn-light text-primary border shadow-sm rounded-3" title="Edit">
                                     ✏️ Edit
                                 </a>
@@ -202,17 +166,13 @@
     </div>
 </div>
 
-{{-- Script SweetAlert2 Konfirmasi Hapus --}}
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     document.addEventListener("DOMContentLoaded", function() {
-        const deleteButtons = document.querySelectorAll('.btn-delete');
-        
-        deleteButtons.forEach(button => {
+        document.querySelectorAll('.btn-delete').forEach(button => {
             button.addEventListener('click', function(e) {
                 e.preventDefault();
                 const form = this.closest('form');
-                
                 Swal.fire({
                     title: 'Hapus Data Ternak?',
                     text: "Data kandang akan dipindahkan ke Trash.",
