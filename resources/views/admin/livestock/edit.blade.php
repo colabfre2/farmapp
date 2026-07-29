@@ -8,6 +8,20 @@
     <a href="{{ route('admin.livestock.index') }}" class="btn btn-outline-secondary rounded-pill fw-bold shadow-sm px-4">← Kembali</a>
 </div>
 
+@if(session('error'))
+    <div class="alert alert-danger bg-danger-subtle text-danger border-0 fw-bold rounded-3 mb-4">❌ {{ session('error') }}</div>
+@endif
+@if($errors->any())
+    <div class="alert alert-danger bg-danger-subtle text-danger border-0 fw-bold rounded-3 mb-4">
+        <div class="mb-1">❌ Gagal menyimpan, periksa kembali data berikut:</div>
+        <ul class="mb-0 small fw-normal">
+            @foreach($errors->all() as $message)
+                <li>{{ $message }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
+
 <form method="POST" action="{{ route('admin.livestock.update', $livestock) }}">
     @csrf
     @method('PUT')
@@ -22,24 +36,25 @@
                 <div class="card-body p-4">
                     
                     <div class="mb-4">
-                        <label class="form-label fw-semibold">Nama Kandang / Kelompok <span class="text-danger">*</span></label>
-                        <input type="text" name="name" class="form-control rounded-3 py-2 @error('name') is-invalid @enderror" value="{{ old('name', $livestock->name) }}" required>
-                        @error('name') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        <label class="form-label fw-semibold">
+                            Nama Kelompok <span class="text-success fw-normal small">(Otomatis, ikut kandang)</span>
+                        </label>
+                        <input type="text" id="generatedNameDisplay" class="form-control bg-light rounded-3 py-2"
+                            value="{{ $livestock->name }}" readonly>
+                        <small class="text-muted">Nama otomatis mengikuti jenis hewan dan kandang yang dipilih.</small>
                     </div>
                     
                     <div class="row">
                         <div class="col-md-6 mb-4">
-                            <label class="form-label fw-semibold">Jenis Hewan <span class="text-danger">*</span></label>
-                            <select name="livestock_type_id" id="livestockTypeSelect" class="form-select rounded-3 py-2 @error('livestock_type_id') is-invalid @enderror" required>
-                                <option value="">-- Pilih Jenis --</option>
-                                @foreach($livestockTypes as $type)
-                                    <option value="{{ $type->id }}" {{ old('livestock_type_id', $livestock->livestock_type_id) == $type->id ? 'selected' : '' }}>
-                                        {{ $type->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            <small class="text-muted">Otomatis ikut jenis hewan dari kandang yang dipilih.</small>
-                            @error('livestock_type_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                            <label class="form-label fw-semibold d-flex justify-content-between align-items-center">
+                                Jenis Hewan
+                                <span class="badge bg-secondary rounded-pill" style="font-size: 0.6rem;">🔒 Terkunci</span>
+                            </label>
+                            <input type="text" class="form-control rounded-3 py-2 fw-bold text-dark"
+                                style="background-color: #e2e8f0; border: 1px solid #cbd5e1; cursor: not-allowed;"
+                                value="{{ $livestock->livestockType->name ?? '-' }}" readonly disabled>
+                            <input type="hidden" name="livestock_type_id" value="{{ $livestock->livestock_type_id }}">
+                            <small class="text-muted">Jenis hewan tidak bisa diganti. Kalau salah jenis, hapus kelompok ini dan buat baru lewat menu Tambah Ternak Baru.</small>
                         </div>
 
                         <div class="col-md-6 mb-4">
@@ -47,16 +62,22 @@
                             <select name="kandang_id" id="kandangSelect" class="form-select rounded-3 py-2 @error('kandang_id') is-invalid @enderror" required>
                                 <option value="" id="kandangPlaceholder">-- Pilih kandang --</option>
                                 @foreach($kandangs as $kandang)
-                                    <option value="{{ $kandang->id }}" data-type="{{ $kandang->livestock_type_id }}"
-                                        {{ old('kandang_id', $livestock->kandang_id) == $kandang->id ? 'selected' : '' }}
-                                        style="{{ old('livestock_type_id', $livestock->livestock_type_id) != $kandang->livestock_type_id ? 'display:none;' : '' }}">
+                                    <option value="{{ $kandang->id }}"
+                                        data-current="{{ $kandang->id === $livestock->kandang_id ? '1' : '0' }}"
+                                        data-capacity="{{ $kandang->capacity ?? '' }}"
+                                        data-name="{{ $kandang->name }}"
+                                        {{ old('kandang_id', $livestock->kandang_id) == $kandang->id ? 'selected' : '' }}>
                                         {{ $kandang->name }}
-                                        @if($kandang->capacity)
+                                        @if($kandang->id === $livestock->kandang_id)
+                                            (kandang saat ini)
+                                        @elseif($kandang->capacity)
                                             (maks. {{ $kandang->capacity }} ekor)
                                         @endif
                                     </option>
                                 @endforeach
                             </select>
+                            <div id="kandangCapacityInfo" class="small mt-1" style="display:none;"></div>
+                            <small class="text-muted">Hanya kandang kosong (atau kandang saat ini) untuk jenis yang sama yang bisa dipilih sebagai tujuan pindah.</small>
                             @error('kandang_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
                     </div>
@@ -116,9 +137,13 @@
                         
                         {{-- Notifikasi SOP Mentor --}}
                         <div class="mt-4 p-3 bg-white border rounded-3 border-warning border-start border-4 shadow-sm">
-                            <p class="text-muted small mb-0" style="line-height: 1.4;">
-                                💡 <strong>Info SOP:</strong> Populasi ternak tidak dapat diedit secara manual. Penambahan atau pengurangan jumlah hewan harus melalui menu <strong>Inventori > Stok Masuk / Keluar</strong> untuk menjaga keakuratan histori data.
+                            <p class="text-muted small mb-2" style="line-height: 1.4;">
+                                💡 <strong>Info SOP:</strong> Populasi ternak tidak dapat diedit secara manual. Penambahan atau pengurangan jumlah hewan harus melalui menu Ternak Masuk / Keluar untuk menjaga keakuratan histori data.
                             </p>
+                            <div class="d-flex gap-2">
+                                <a href="{{ route('admin.livestock-movements.in.create') }}" class="btn btn-sm btn-success rounded-pill px-3">⬆️ Ternak Masuk</a>
+                                <a href="{{ route('admin.livestock-movements.out.create') }}" class="btn btn-sm btn-outline-danger rounded-pill px-3">⬇️ Ternak Keluar</a>
+                            </div>
                         </div>
                     </div>
 
@@ -137,25 +162,65 @@
 
 <script>
 document.addEventListener("DOMContentLoaded", function() {
-    const typeSelect = document.getElementById('livestockTypeSelect');
     const kandangSelect = document.getElementById('kandangSelect');
-    const placeholder = document.getElementById('kandangPlaceholder');
+    const capacityInfo = document.getElementById('kandangCapacityInfo');
+    const nameDisplay = document.getElementById('generatedNameDisplay');
+    const arrivalDateInput = document.querySelector('input[name="arrival_date"]');
+    const jenisHewan = @json($livestock->livestockType->name ?? '');
 
-    typeSelect.addEventListener('change', function() {
-        const selectedType = this.value;
-        const options = kandangSelect.querySelectorAll('option[data-type]');
+    const bulanNama = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
 
-        placeholder.textContent = selectedType ? '-- Pilih kandang --' : '-- Pilih jenis hewan terlebih dahulu --';
-        options.forEach(opt => {
-            opt.style.display = (!selectedType || opt.dataset.type === selectedType) ? '' : 'none';
-        });
+    function formatBulanTahun(dateStr) {
+        if (!dateStr) return '';
+        const d = new Date(dateStr + 'T00:00:00');
+        if (isNaN(d)) return '';
+        return `${bulanNama[d.getMonth()]} ${d.getFullYear()}`;
+    }
 
-        // Kalau kandang yang sedang dipilih tidak cocok lagi dengan jenis hewan baru, reset pilihan
-        const currentSelected = kandangSelect.querySelector('option:checked');
-        if (currentSelected && currentSelected.dataset.type && currentSelected.dataset.type !== selectedType) {
-            kandangSelect.value = '';
+    function updateCapacityInfo() {
+        const opt = kandangSelect.options[kandangSelect.selectedIndex];
+
+        if (!opt || !opt.value) {
+            capacityInfo.style.display = 'none';
+            return;
         }
+
+        const isCurrent = opt.dataset.current === '1';
+        const capacity = opt.dataset.capacity;
+
+        capacityInfo.style.display = 'block';
+
+        if (isCurrent) {
+            capacityInfo.className = 'small mt-1 fw-semibold text-secondary';
+            capacityInfo.textContent = capacity
+                ? `Ini kandang saat ini (kapasitas ${capacity} ekor).`
+                : 'Ini kandang saat ini (tidak dibatasi kapasitas).';
+        } else if (capacity) {
+            capacityInfo.className = 'small mt-1 fw-semibold text-success';
+            capacityInfo.textContent = `Kapasitas kandang: ${capacity} ekor (kosong, siap diisi).`;
+        } else {
+            capacityInfo.className = 'small mt-1 text-muted';
+            capacityInfo.textContent = 'Kandang ini tidak dibatasi kapasitasnya.';
+        }
+    }
+
+    function updateNamePreview() {
+        const opt = kandangSelect.options[kandangSelect.selectedIndex];
+        const kandangName = (opt && opt.dataset.name) ? opt.dataset.name : '';
+        const bulanTahun = formatBulanTahun(arrivalDateInput.value);
+
+        nameDisplay.value = kandangName
+            ? `${jenisHewan} - ${kandangName}${bulanTahun ? ' (' + bulanTahun + ')' : ''}`
+            : jenisHewan;
+    }
+
+    kandangSelect.addEventListener('change', function() {
+        updateCapacityInfo();
+        updateNamePreview();
     });
+    arrivalDateInput.addEventListener('change', updateNamePreview);
+    updateCapacityInfo(); // tampilkan info untuk kandang yang sudah terpilih saat halaman dimuat
+    updateNamePreview();
 });
 </script>
 @endsection

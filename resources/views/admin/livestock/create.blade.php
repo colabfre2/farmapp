@@ -54,9 +54,31 @@
 @if(session('error'))
     <div class="alert alert-danger bg-danger-subtle text-danger border-0 fw-bold rounded-3 mb-4">❌ {{ session('error') }}</div>
 @endif
+@if($errors->any())
+    <div class="alert alert-danger bg-danger-subtle text-danger border-0 fw-bold rounded-3 mb-4">
+        <div class="mb-1">❌ Gagal menyimpan, periksa kembali data berikut:</div>
+        <ul class="mb-0 small fw-normal">
+            @foreach($errors->all() as $message)
+                <li>{{ $message }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
+
+{{-- Info kontekstual kalau ada kandang yang disembunyikan --}}
+@if($kandangsTerisi > 0)
+    <div class="alert alert-info bg-info-subtle text-info border-0 rounded-3 mb-4 d-flex align-items-center">
+        <span class="fs-5 me-2">ℹ️</span>
+        <div>
+            <strong>{{ $kandangsTerisi }} kandang</strong> tidak ditampilkan karena masih aktif terisi ternak.
+            Untuk menambah ternak ke kandang yang sudah ada, gunakan menu
+            <a href="{{ route('admin.livestock-movements.in.create') }}" class="fw-bold">Ternak Masuk</a>.
+        </div>
+    </div>
+@endif
 
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <p class="text-muted small mb-0"><i class="bi bi-info-circle me-1"></i>Bisa input beberapa kelompok ternak sekaligus — klik "Tambah Baris" untuk menambah form baru.</p>
+    <p class="text-muted small mb-0"><i class="bi bi-info-circle me-1"></i>Form ini untuk mendaftarkan batch/kelompok ternak baru ke kandang yang kosong. Bisa input beberapa sekaligus.</p>
     <button type="button" id="btnAddRow" class="btn btn-sm btn-outline-success rounded-pill px-3 fw-bold">+ Tambah Baris</button>
 </div>
 
@@ -68,7 +90,6 @@
     </div>
 </form>
 
-{{-- Template baris -- dipakai JS untuk clone --}}
 <template id="livestockRowTemplate">
     <div class="livestock-row" data-row>
         <span class="row-number" data-row-label></span>
@@ -78,7 +99,6 @@
             {{-- KOLOM KIRI --}}
             <div class="col-lg-8">
 
-                {{-- Auto-generated name --}}
                 <div class="mb-3">
                     <label class="form-label fw-semibold">
                         Nama Kelompok <span class="text-success fw-normal small">(Otomatis Dibuat)</span>
@@ -99,8 +119,6 @@
                                 <option value="{{ $type->id }}">{{ $type->name }}</option>
                             @endforeach
                         </select>
-                        {{-- livestock_type_id tetap dikirim sebagai referensi filter kandang di UI,
-                             tapi di controller akan di-override dengan nilai dari kandang yang dipilih --}}
                     </div>
 
                     <div class="col-md-6 mb-3">
@@ -113,18 +131,18 @@
                                     data-type="{{ $kandang->livestock_type_id }}"
                                     data-name="{{ $kandang->name }}"
                                     data-capacity="{{ $kandang->capacity ?? '' }}"
-                                    data-terisi="{{ $kandang->livestocks_sum_quantity ?? 0 }}"
                                     style="display:none;">
                                     {{ $kandang->name }}
                                     @if($kandang->capacity)
-                                        (maks. {{ $kandang->capacity }} ekor, terisi {{ $kandang->livestocks_sum_quantity ?? 0 }})
+                                        (kapasitas {{ $kandang->capacity }} ekor)
                                     @endif
                                 </option>
                             @endforeach
                         </select>
                         <div class="capacity-info" style="display:none;"></div>
                         <small class="text-muted">
-                            Belum ada kandangnya? <a href="{{ route('admin.kandangs.create') }}" target="_blank">Tambah kandang baru</a>
+                            Hanya kandang kosong yang tampil di sini.
+                            <a href="{{ route('admin.kandangs.create') }}" target="_blank">Tambah kandang baru</a>
                         </small>
                     </div>
                 </div>
@@ -137,7 +155,7 @@
 
             {{-- KOLOM KANAN --}}
             <div class="col-lg-4">
-                <div class="card border-0 shadow-sm h-100" style="border-radius: 10px; background: #f8fafc;">
+                <div class="card border-0 h-100" style="border-radius: 10px; background: #f8fafc;">
                     <div class="card-body p-3">
 
                         <div class="mb-3">
@@ -167,6 +185,7 @@
                                 <option value="Sakit">🤒 Sakit</option>
                             </select>
                         </div>
+
                     </div>
                 </div>
             </div>
@@ -191,8 +210,7 @@ document.addEventListener("DOMContentLoaded", function() {
         const rows = container.querySelectorAll('[data-row]');
         rows.forEach((row, i) => {
             row.querySelector('[data-row-label]').textContent = 'Ternak #' + (i + 1);
-            const btn = row.querySelector('.btn-remove-row');
-            btn.style.display = rows.length > 1 ? '' : 'none';
+            row.querySelector('.btn-remove-row').style.display = rows.length > 1 ? '' : 'none';
         });
     }
 
@@ -204,30 +222,20 @@ document.addEventListener("DOMContentLoaded", function() {
         let typeText = typeSelect.options[typeSelect.selectedIndex]?.text || '';
         if (typeText.startsWith('--')) typeText = '';
 
-        let kandangText = '';
         const selectedOpt = kandangSelect.options[kandangSelect.selectedIndex];
-        if (selectedOpt && selectedOpt.dataset.name) {
-            kandangText = selectedOpt.dataset.name;
-        }
+        const kandangText = (selectedOpt && selectedOpt.dataset.name) ? selectedOpt.dataset.name : '';
 
-        const today = new Date();
-        const bulanTahun = today.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+        const bulanTahun = new Date().toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
 
-        let name = '';
-        if (typeText) {
-            name = typeText;
-            name += kandangText ? ' - ' + kandangText : '';
-            name += ' (' + bulanTahun + ')';
-        }
-
-        nameInput.value = name;
+        nameInput.value = typeText
+            ? typeText + (kandangText ? ' - ' + kandangText : '') + ' (' + bulanTahun + ')'
+            : '';
     }
 
     function updateCapacityInfo(row) {
         const kandangSelect = row.querySelector('.kandang-select');
         const capacityInfo = row.querySelector('.capacity-info');
         const quantityInput = row.querySelector('.quantity-input');
-        const qtyWarning = row.querySelector('.quantity-warning');
         const opt = kandangSelect.options[kandangSelect.selectedIndex];
 
         if (!opt || !opt.value) {
@@ -237,14 +245,13 @@ document.addEventListener("DOMContentLoaded", function() {
         }
 
         const capacity = opt.dataset.capacity;
-        const terisi = parseInt(opt.dataset.terisi || 0);
-
         if (capacity) {
-            const sisa = parseInt(capacity) - terisi;
+            // Kandang yang muncul di sini sudah pasti kosong (quantity = 0),
+            // jadi sisa kapasitas = kapasitas penuh
             capacityInfo.style.display = 'block';
-            capacityInfo.className = 'capacity-info fw-semibold ' + (sisa > 0 ? 'text-success' : 'text-danger');
-            capacityInfo.textContent = `Kapasitas: ${capacity} ekor — Terisi: ${terisi} — Sisa: ${sisa} ekor`;
-            quantityInput.setAttribute('max', Math.max(sisa, 0));
+            capacityInfo.className = 'capacity-info fw-semibold text-success';
+            capacityInfo.textContent = `Kapasitas kandang: ${capacity} ekor (kosong, siap diisi)`;
+            quantityInput.setAttribute('max', parseInt(capacity));
         } else {
             capacityInfo.style.display = 'block';
             capacityInfo.className = 'capacity-info text-muted';
@@ -263,37 +270,38 @@ document.addEventListener("DOMContentLoaded", function() {
 
         if (max !== null && val > parseInt(max)) {
             qtyWarning.style.display = 'block';
-            qtyWarning.textContent = `⚠️ Jumlah melebihi sisa kapasitas kandang (maks. ${max} ekor)!`;
+            qtyWarning.textContent = `⚠️ Jumlah melebihi kapasitas kandang (maks. ${max} ekor)!`;
         } else {
             qtyWarning.style.display = 'none';
+        }
+    }
+
+    function filterKandangByType(row, selectedType) {
+        const kandangSelect = row.querySelector('.kandang-select');
+        const placeholder = kandangSelect.querySelector('.kandang-placeholder');
+        const options = kandangSelect.querySelectorAll('option[data-type]');
+
+        if (!selectedType) {
+            kandangSelect.setAttribute('disabled', 'disabled');
+            placeholder.textContent = '-- Pilih jenis terlebih dahulu --';
+            options.forEach(opt => opt.style.display = 'none');
+        } else {
+            kandangSelect.removeAttribute('disabled');
+            placeholder.textContent = '-- Pilih kandang --';
+            options.forEach(opt => {
+                opt.style.display = opt.dataset.type === selectedType ? '' : 'none';
+            });
         }
     }
 
     function attachRowEvents(row) {
         const typeSelect = row.querySelector('.livestock-type-select');
         const kandangSelect = row.querySelector('.kandang-select');
-        const placeholder = kandangSelect.querySelector('.kandang-placeholder');
         const quantityInput = row.querySelector('.quantity-input');
-        const removeBtn = row.querySelector('.btn-remove-row');
 
         typeSelect.addEventListener('change', function() {
-            const selectedType = this.value;
-            const options = kandangSelect.querySelectorAll('option[data-type]');
-
-            if (!selectedType) {
-                kandangSelect.setAttribute('disabled', 'disabled');
-                placeholder.textContent = '-- Pilih jenis terlebih dahulu --';
-                options.forEach(opt => opt.style.display = 'none');
-                kandangSelect.value = '';
-            } else {
-                kandangSelect.removeAttribute('disabled');
-                placeholder.textContent = '-- Pilih kandang --';
-                options.forEach(opt => {
-                    opt.style.display = (opt.dataset.type === selectedType) ? '' : 'none';
-                });
-                kandangSelect.value = '';
-            }
-
+            filterKandangByType(row, this.value);
+            kandangSelect.value = '';
             row.querySelector('.capacity-info').style.display = 'none';
             generateName(row);
         });
@@ -305,7 +313,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
         quantityInput.addEventListener('input', () => checkQuantity(row));
 
-        removeBtn.addEventListener('click', function() {
+        row.querySelector('.btn-remove-row').addEventListener('click', function() {
             row.remove();
             renumberRows();
         });
@@ -328,16 +336,13 @@ document.addEventListener("DOMContentLoaded", function() {
 
             if (prefill.livestock_type_id) {
                 typeSelect.value = prefill.livestock_type_id;
-                typeSelect.dispatchEvent(new Event('change'));
+                filterKandangByType(insertedRow, typeSelect.value);
             }
-
             if (prefill.kandang_id) {
-                setTimeout(() => {
-                    kandangSelect.value = prefill.kandang_id;
-                    kandangSelect.dispatchEvent(new Event('change'));
-                }, 0);
+                kandangSelect.value = prefill.kandang_id;
+                generateName(insertedRow);
+                updateCapacityInfo(insertedRow);
             }
-
             if (prefill.arrival_date) insertedRow.querySelector('input[name$="[arrival_date]"]').value = prefill.arrival_date;
             if (prefill.quantity) insertedRow.querySelector('.quantity-input').value = prefill.quantity;
             if (prefill.avg_weight) insertedRow.querySelector('input[name$="[avg_weight]"]').value = prefill.avg_weight;
@@ -360,17 +365,12 @@ document.addEventListener("DOMContentLoaded", function() {
 
     btnAddRow.addEventListener('click', () => addRow());
 
-    // Render ulang baris gagal validasi dari session
     if (oldInput && oldInput.length > 0) {
-        oldInput.forEach((data, i) => {
-            const errors = oldFailedRows[i + 1] || null;
-            addRow(data, errors);
-        });
+        oldInput.forEach((data, i) => addRow(data, oldFailedRows[i + 1] || null));
     } else {
-        addRow(); // 1 baris kosong saat halaman baru dibuka
+        addRow();
     }
 
-    // Anti double submit
     document.getElementById('bulkLivestockForm').addEventListener('submit', function() {
         const btn = document.getElementById('btnSubmitAll');
         btn.innerHTML = 'Menyimpan... ⏳';

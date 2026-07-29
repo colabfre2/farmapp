@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\CropController;
 use App\Http\Controllers\Api\LivestockController;
 use App\Http\Controllers\Api\HarvestController;
+use App\Http\Controllers\Api\NotificationController;
 
 
 // Public routes
@@ -28,7 +29,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/profile/avatar', [AuthController::class, 'updateAvatar']);
     Route::get('/dashboard', [DashboardController::class, 'index']);
     Route::apiResource('crops', CropController::class);
-    Route::apiResource('livestocks', LivestockController::class);
+    
     Route::apiResource('harvests', HarvestController::class);
-    Route::apiResource('livestock-movements', \App\Http\Controllers\Api\LivestockMovementController::class)->only(['index', 'store']);
+    Route::get('/notifications', [NotificationController::class, 'index']);
+    Route::put('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
+    Route::put('/notifications/read-all', [NotificationController::class, 'markAllAsRead']);
+    Route::apiResource('livestock-movements', \App\Http\Controllers\Api\LivestockMovementController::class)->only(['index']); // hapus 'store'
+    Route::get('/livestocks', [LivestockController::class, 'index']);
+    Route::get('/livestocks/{livestock}', [LivestockController::class, 'show']);
+    Route::patch('/livestocks/{livestock}/health', [LivestockController::class, 'updateHealth']);
 });
