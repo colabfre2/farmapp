@@ -11,13 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('crop_types', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->string('description')->nullable();
-            $table->timestamps();
-            
-        });
+            Schema::create('crop_types', function (Blueprint $table) {
+        $table->id();
+        $table->string('name');
+        $table->string('description')->nullable();
+        $table->enum('harvest_type', ['Sekali Panen', 'Panen Berkelanjutan'])->default('Sekali Panen');
+        $table->timestamps();
+    });   
+    
     }
 
     /**

@@ -6,7 +6,7 @@
         <div class="card">
             <div class="card-header">
                 <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
-                    <h3 class="card-title mb-0">⬆ Ternak Masuk</h3>
+                    <h3 class="card-title mb-0">⬆️ Ternak Masuk</h3>
                     <form method="GET" action="{{ route('admin.livestock-movements.in.index') }}" class="d-flex align-items-center gap-2">
                         <input type="text" name="q" class="form-control form-control-sm" placeholder="Cari kandang..." value="{{ $query ?? '' }}" style="width:180px;">
                         <button type="submit" class="btn btn-sm btn-outline-secondary">🔍</button>
@@ -26,7 +26,8 @@
                         <tr>
                             <th>#</th>
                             <th>Tanggal</th>
-                            <th>Kandang</th>
+                            <th>Kelompok Ternak</th>
+                            <th>Kandang Fisik</th>
                             <th>Jumlah</th>
                             <th>Alasan</th>
                             <th>Catatan</th>
@@ -38,15 +39,22 @@
                         <tr>
                             <td>{{ $loop->iteration }}</td>
                             <td>{{ \Carbon\Carbon::parse($movement->date)->format('d M Y') }}</td>
-                            <td>{{ $movement->livestock->name ?? '-' }}</td>
-                            <td class="fw-bold text-success">+{{ $movement->quantity }} ekor</td>
+                            <td class="fw-semibold">{{ $movement->livestock->name ?? '-' }}</td>
+                            <td>
+                                @if($movement->livestock?->kandang)
+                                    <span class="badge bg-info-subtle text-info rounded-pill px-2">🏠 {{ $movement->livestock->kandang->name }}</span>
+                                @else
+                                    <span class="text-muted">-</span>
+                                @endif
+                            </td>
+                            <td><span class="fw-bold text-success">+{{ $movement->quantity }} ekor</span></td>
                             <td>{{ $movement->reason ?? '-' }}</td>
-                            <td>{{ $movement->notes ?? '-' }}</td>
+                            <td class="text-muted">{{ $movement->notes ?? '-' }}</td>
                             <td>{{ $movement->user->name ?? '-' }}</td>
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="7" class="text-center text-muted py-4">Belum ada data ternak masuk</td>
+                            <td colspan="8" class="text-center text-muted py-4">Belum ada data ternak masuk</td>
                         </tr>
                         @endforelse
                     </tbody>

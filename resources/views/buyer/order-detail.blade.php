@@ -22,6 +22,9 @@
                             <th>Harga</th>
                             <th>Jumlah</th>
                             <th>Subtotal</th>
+                            @if($order->status === 'Completed')
+                            <th>Ulasan</th>
+                            @endif
                         </tr>
                     </thead>
                     <tbody>
@@ -31,6 +34,11 @@
                             <td>{{ rupiah($item->unit_price) }}</td>
                             <td>{{ $item->quantity }}</td>
                             <td class="fw-bold text-success">{{ rupiah($item->subtotal) }}</td>
+                            @if($order->status === 'Completed')
+                            <td>
+                                <a href="{{ route('buyer.reviews.create', [$order, $item->product_id]) }}" class="btn btn-sm btn-outline-warning">⭐ Beri Ulasan</a>
+                            </td>
+                            @endif
                         </tr>
                         @endforeach
                     </tbody>
@@ -102,6 +110,15 @@
                     <span>Total</span>
                     <span class="text-success">${{ number_format($order->total_amount, 2) }}</span>
                 </div>
+                @if($order->status === 'Pending')
+                <form method="POST" action="{{ route('buyer.orders.cancel', $order) }}" class="mt-3">
+                    @csrf
+                    @method('PATCH')
+                    <button type="submit" class="btn btn-outline-danger w-100" onclick="return confirm('Yakin ingin membatalkan pesanan ini?')">
+                        ✕ Batalkan Pesanan
+                    </button>
+                </form>
+                @endif
             </div>
         </div>
     </div>

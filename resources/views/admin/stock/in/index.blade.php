@@ -17,6 +17,7 @@
                             <a href="{{ route('admin.stock.in.index') }}" class="btn btn-sm btn-outline-danger">✕ Reset</a>
                         @endif
                     </form>
+                    <a href="{{ route('admin.stock.in.export') }}" class="btn btn-success btn-sm">📊 Export Excel</a>
                     <a href="{{ route('admin.stock.in.create') }}" class="btn btn-success btn-sm">+ Tambah Barang Masuk</a>
                 </div>
             </div>

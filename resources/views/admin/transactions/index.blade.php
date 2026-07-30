@@ -24,6 +24,7 @@
                             <a href="{{ route('admin.transactions.index') }}" class="btn btn-sm btn-outline-danger">✕ Reset</a>
                         @endif
                     </form>
+                    <a href="{{ route('admin.transactions.export') }}" class="btn btn-success btn-sm">📊 Export Excel</a>
                 </div>
             </div>
             <div class="card-body">

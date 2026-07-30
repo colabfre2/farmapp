@@ -2,24 +2,41 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\Crop;
 use Illuminate\Database\Seeder;
+use Carbon\Carbon;
 
-use Illuminate\Support\Facades\DB;
 class CropSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        //
-    
-        DB::table('crops')->insert([
-    ['user_id'=>1,'crop_type_id'=>1,'name'=>'Sawah Blok A','planted_at'=>'2024-03-01','expected_harvest_at'=>'2024-07-15','status'=>'Pertumbuhan','created_at'=>now(),'updated_at'=>now()],
-    ['user_id'=>1,'crop_type_id'=>3,'name'=>'Kebun Cabai B','planted_at'=>'2024-04-10','expected_harvest_at'=>'2024-08-20','status'=>'Pertumbuhan','created_at'=>now(),'updated_at'=>now()],
-    ['user_id'=>1,'crop_type_id'=>2,'name'=>'Ladang Jagung C','planted_at'=>'2024-02-20','expected_harvest_at'=>'2024-06-10','status'=>'Dipanen','created_at'=>now(),'updated_at'=>now()],
-    ['user_id'=>1,'crop_type_id'=>4,'name'=>'Greenhouse Tomat','planted_at'=>'2024-05-01','expected_harvest_at'=>'2024-09-01','status'=>'Dipanen','created_at'=>now(),'updated_at'=>now()],
-]);
+        $crops = [
+            [
+                'user_id' => 1,
+                'crop_type_id' => 1, // Padi
+                'crop_variety_id' => 1, // Ciherang
+                'farm_id' => 1,
+                'name' => 'Penanaman Padi Musim Hujan',
+                'planted_at' => Carbon::now()->subDays(30),
+                'expected_harvest_at' => Carbon::now()->addDays(60),
+                'status' => 'Pertumbuhan',
+                'notes' => 'Perlu pupuk urea tambahan minggu depan',
+            ],
+            [
+                'user_id' => 1,
+                'crop_type_id' => 3, // Cabai
+                'crop_variety_id' => 3, // Rawit Setan
+                'farm_id' => 2,
+                'name' => 'Cabai Greenhouse Blok B',
+                'planted_at' => Carbon::now()->subDays(10),
+                'expected_harvest_at' => Carbon::now()->addDays(80),
+                'status' => 'Bibit',
+                'notes' => 'Irigasi tetes sudah aktif',
+            ]
+        ];
+
+        foreach ($crops as $crop) {
+            Crop::create($crop);
+        }
     }
 }

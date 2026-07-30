@@ -51,7 +51,15 @@
                         </td>
                         <td>
                             <a href="{{ route('buyer.orders.show', $order) }}" class="btn btn-sm btn-outline-primary">Lihat</a>
+                            @if($order->status === 'Pending')
+                            <form method="POST" action="{{ route('buyer.orders.cancel', $order) }}" style="display:inline">
+                                @csrf
+                                @method('PATCH')
+                                <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Yakin ingin membatalkan pesanan ini?')">Batalkan</button>
+                            </form>
+                            @endif
                         </td>
+                        
                     </tr>
                     @endforeach
                 </tbody>

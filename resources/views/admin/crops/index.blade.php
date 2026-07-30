@@ -65,22 +65,34 @@
 
 <div class="card card-flat">
     
-    {{-- TOOLBAR: Search di Kiri, Tombol Aksi di Kanan --}}
+    {{-- TOOLBAR: Search & Filter di Kiri, Tombol Aksi di Kanan --}}
     <div class="card-header bg-white border-bottom p-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
         
-        {{-- Form Search --}}
-        <form method="GET" action="{{ route('admin.crops.index') }}" class="m-0">
+        {{-- Form Search & Filter (Digabung) --}}
+        <form method="GET" action="{{ route('admin.crops.index') }}" class="m-0 d-flex flex-wrap gap-2">
+            
+            {{-- Dropdown Filter Status --}}
+            <select name="status" class="form-select bg-light border-0 text-muted" style="border-radius: 20px; width: auto; font-size: 0.875rem;" onchange="this.form.submit()">
+                <option value="">🌱 Semua Status</option>
+                <option value="Bibit" {{ request('status') == 'Bibit' ? 'selected' : '' }}>Bibit</option>
+                <option value="Pertumbuhan" {{ request('status') == 'Pertumbuhan' ? 'selected' : '' }}>Pertumbuhan</option>
+                <option value="Dipanen" {{ request('status') == 'Dipanen' ? 'selected' : '' }}>Dipanen</option>
+            </select>
+
+            {{-- Form Search Asli --}}
             <div class="search-wrapper">
                 <span class="icon">🔍</span>
-                <input type="text" name="q" class="form-control bg-light border-0" placeholder="Cari nama tanaman..." value="{{ $query ?? '' }}">
+                <input type="text" name="q" class="form-control bg-light border-0" placeholder="Cari ladang tanaman..." value="{{ request('q') }}">
             </div>
         </form>
 
         {{-- Tombol Kanan --}}
         <div class="d-flex align-items-center gap-2">
-            @if(!empty($query))
+            {{-- Tombol Reset Muncul Kalau Ada Pencarian ATAU Filter --}}
+            @if(request('q') || request('status'))
                 <a href="{{ route('admin.crops.index') }}" class="btn btn-sm btn-light text-danger fw-bold rounded-pill px-3 shadow-sm border">✕ Reset</a>
             @endif
+            
             <a href="{{ route('admin.crops.trash') }}" class="btn btn-sm btn-light text-danger fw-bold rounded-pill px-3 shadow-sm border">
                 🗑️ Sampah
             </a>
@@ -99,10 +111,16 @@
     @endif
 
     {{-- Info Hasil Pencarian --}}
-    @if(!empty($query))
+    @if(request('q') || request('status'))
         <div class="px-4 pt-3 text-muted small fw-semibold">
-            Menampilkan hasil untuk: <span class="text-dark fw-bold">"{{ $query }}"</span> 
-            <span class="badge bg-secondary ms-2 rounded-pill">{{ $crops->count() }} Ditemukan</span>
+            Menampilkan hasil untuk 
+            @if(request('q')) <span class="text-dark fw-bold">"{{ request('q') }}"</span> @endif
+            @if(request('status')) Filter: <span class="text-dark fw-bold">{{ request('status') }}</span> @endif
+            
+            {{-- 👇 CLASS BADGE-NYA GUA UBAH BIAR LEBIH TERANG & KONTRAS 👇 --}}
+            <span class="badge bg-light text-secondary border ms-2 rounded-pill px-3 shadow-sm">
+                {{ $crops->total() ?? $crops->count() }} Ditemukan
+            </span>
         </div>
     @endif
 
@@ -113,8 +131,8 @@
                 <thead>
                     <tr>
                         <th width="5%" class="text-center">#</th>
-                        <th width="25%">Nama Tanaman</th>
-                        <th width="15%">Jenis</th>
+                        <th width="25%">Nama Ladang</th>
+                        <th width="15%">Tanaman</th>
                         <th width="15%">Tanggal Tanam</th>
                         <th width="15%">Perkiraan Panen</th>
                         <th width="10%" class="text-center">Status</th>
@@ -124,7 +142,8 @@
                 <tbody>
                     @forelse($crops as $crop)
                     <tr>
-                        <td class="text-center fw-bold text-muted">{{ $loop->iteration }}</td>
+                        {{-- Logika Penomoran Berlanjut untuk Pagination --}}
+                        <td class="text-center fw-bold text-muted">{{ $crops->firstItem() + $loop->index }}</td>
                         <td>
                             <div class="fw-bold text-dark">{{ $crop->name }}</div>
                         </td>
@@ -148,10 +167,11 @@
                         </td>
                         <td>
                             <div class="d-flex justify-content-center gap-2">
+                                <a href="{{ route('admin.crops.show', $crop) }}" class="btn btn-sm btn-outline-primary rounded-3">👀 Lihat</a>
                                 <a href="{{ route('admin.crops.edit', $crop) }}" class="btn btn-sm btn-light text-primary border shadow-sm rounded-3" title="Edit">
                                     ✏️ Edit
                                 </a>
-                                <form method="POST" action="{{ route('admin.crops.destroy', $crop) }}" class="d-inline">
+                                <form method="POST" action="{{ route('admin.crops.destroy', $crop) }}" class="form-delete d-inline">
                                     @csrf
                                     @method('DELETE')
                                     <button type="button" class="btn btn-sm btn-light text-danger border shadow-sm rounded-3 btn-delete" title="Hapus">
@@ -167,8 +187,8 @@
                             <div style="font-size: 2.5rem; color: #cbd5e1;" class="mb-2">🌱</div>
                             <h6 class="fw-bold text-dark mb-1 font-quicksand">Tidak Ada Data Tanaman</h6>
                             <p class="text-muted small mb-0">
-                                @if(!empty($query))
-                                    Tidak ada tanaman yang cocok dengan pencarian <strong>"{{ $query }}"</strong>.
+                                @if(request('q') || request('status'))
+                                    Tidak ada tanaman yang cocok dengan pencarian Anda.
                                 @else
                                     Mulai catat aktivitas pertanian Anda di sini.
                                 @endif
@@ -180,6 +200,13 @@
             </table>
         </div>
     </div>
+
+    {{-- AREA PAGINATION (Baru Ditambah) --}}
+    @if($crops->hasPages())
+    <div class="card-footer bg-white border-top p-3 d-flex justify-content-end" style="border-bottom-left-radius: 12px; border-bottom-right-radius: 12px;">
+        {{ $crops->links('pagination::bootstrap-5') }}
+    </div>
+    @endif
 </div>
 
 {{-- Script SweetAlert2 Konfirmasi Hapus --}}

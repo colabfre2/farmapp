@@ -54,6 +54,11 @@
                         <span class="badge bg-success-lt text-success">{{ $product->category->name ?? '-' }}</span>
                     </div>
                     <h4 class="card-title mb-1">{{ $product->name }}</h4>
+                    @if($product->reviews->count() > 0)
+                    <div class="mb-1" style="font-size:13px;">
+                        ⭐ {{ $product->rating }} <span class="text-muted">({{ $product->reviews->count() }} ulasan)</span>
+                    </div>
+                    @endif
                     <p class="text-muted small mb-2">{{ Str::limit($product->description, 60) }}</p>
                     <div class="mt-auto">
                         <div class="d-flex justify-content-between align-items-center mb-2">

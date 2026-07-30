@@ -6,6 +6,9 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\StockMovement;
 use App\Models\Product;
+use App\Exports\StockInExport;
+use App\Exports\StockOutExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class StockMovementController extends Controller
 {
@@ -97,5 +100,16 @@ class StockMovementController extends Controller
         $product->decrement('stock', $request->quantity);
 
         return redirect()->route('admin.stock.out.index')->with('success', 'Barang keluar berhasil dicatat!');
+    }
+
+        
+    public function exportInExcel()
+    {
+        return Excel::download(new StockInExport, 'Barang-Masuk-' . date('Y-m-d') . '.xlsx');
+    }
+
+    public function exportOutExcel()
+    {
+        return Excel::download(new StockOutExport, 'Barang-Keluar-' . date('Y-m-d') . '.xlsx');
     }
 }

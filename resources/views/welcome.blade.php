@@ -61,7 +61,7 @@
                     <ul class="navbar-nav mx-auto fw-bold gap-3">
                         <li class="nav-item active"><a class="nav-link text-success" href="/">Beranda</a></li>
                         <li class="nav-item"><a class="nav-link" href="{{ route('buyer.marketplace') }}">Katalog Produk</a></li>
-                        <li class="nav-item"><a class="nav-link" href="#tentang-kami">Tentang Kebun Kami</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{{ route('about') }}">Tentang Kebun Kami</a></li>
                     </ul>
                     <div class="d-md-none mt-3 pb-2 border-top pt-3">
                         <a href="{{ route('register') }}" class="btn btn-success w-100 rounded-pill mb-2 fw-bold">Daftar Akun</a>

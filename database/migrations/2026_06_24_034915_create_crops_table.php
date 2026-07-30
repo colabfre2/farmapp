@@ -11,19 +11,21 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('crops', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('crop_type_id')->constrained()->restrictOnDelete();
-            $table->string('name');
-            $table->date('planted_at');
-            $table->date('expected_harvest_at');
-            $table->date('actual_harvest_at')->nullable();
-            $table->enum('status', ['Bibit', 'Pertumbuhan', 'Dipanen'])->default('Bibit');
-            $table->text('notes')->nullable();
-            $table->timestamps();
-            $table->softDeletes();
-        });
+            Schema::create('crops', function (Blueprint $table) {
+        $table->id();
+        $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+        $table->foreignId('crop_type_id')->constrained()->restrictOnDelete();
+        $table->foreignId('crop_variety_id')->nullable()->constrained()->nullOnDelete();
+        $table->foreignId('farm_id')->nullable()->constrained()->nullOnDelete(); // ← ganti location & area_size
+        $table->string('name');
+        $table->date('planted_at');
+        $table->date('expected_harvest_at');
+        $table->date('actual_harvest_at')->nullable();
+        $table->enum('status', ['Bibit', 'Pertumbuhan', 'Dipanen'])->default('Bibit');
+        $table->text('notes')->nullable();
+        $table->timestamps();
+        $table->softDeletes();
+    });
     }
 
     /**

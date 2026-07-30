@@ -6,10 +6,13 @@ use Illuminate\Database\Eloquent\Model;
 
 class LivestockType extends Model
 {
-    //
-    protected $fillable =[
+    protected $fillable = [
         'name',
-        'description'
-
+        'description',
     ];
+
+    public function kandangs()
+    {
+        return $this->hasMany(Kandang::class);
+    }
 }

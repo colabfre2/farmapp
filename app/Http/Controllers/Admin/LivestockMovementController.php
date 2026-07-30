@@ -23,7 +23,8 @@ class LivestockMovementController extends Controller
 
     public function inCreate()
     {
-        $livestocks = Livestock::all();
+        // Load kandang agar view bisa tampilkan info kapasitas
+        $livestocks = Livestock::with('kandang')->latest()->get();
         return view('admin.livestock-movements.in.create', compact('livestocks'));
     }
 
@@ -37,7 +38,21 @@ class LivestockMovementController extends Controller
             'notes'        => 'nullable|string',
         ]);
 
-        $livestock = Livestock::findOrFail($request->livestock_id);
+        $livestock = Livestock::with('kandang')->findOrFail($request->livestock_id);
+
+        // PENTING: Validasi kapasitas kandang di sini juga, bukan cuma saat create awal.
+        // Tanpa ini, kapasitas kandang bisa ditembus lewat jalur pencatatan ternak masuk.
+        if ($livestock->kandang && $livestock->kandang->capacity !== null) {
+            // Hitung total isi kandang dari SEMUA livestock di kandang ini (bukan cuma yg ini)
+            $totalTerisiKandang = Livestock::where('kandang_id', $livestock->kandang_id)->sum('quantity');
+            $sisa = $livestock->kandang->capacity - $totalTerisiKandang;
+
+            if ($request->quantity > $sisa) {
+                return back()->withErrors([
+                    'quantity' => "Kapasitas kandang \"{$livestock->kandang->name}\" tidak mencukupi! Sisa ruang: {$sisa} ekor.",
+                ])->withInput();
+            }
+        }
 
         LivestockMovement::create([
             'livestock_id' => $request->livestock_id,
@@ -51,7 +66,8 @@ class LivestockMovementController extends Controller
 
         $livestock->increment('quantity', $request->quantity);
 
-        return redirect()->route('admin.livestock-movements.in.index')->with('success', 'Ternak masuk berhasil dicatat!');
+        return redirect()->route('admin.livestock-movements.in.index')
+            ->with('success', 'Ternak masuk berhasil dicatat!');
     }
 
     // ── Ternak Keluar ─────────────────────────────────────────
@@ -68,7 +84,7 @@ class LivestockMovementController extends Controller
 
     public function outCreate()
     {
-        $livestocks = Livestock::all();
+        $livestocks = Livestock::with('kandang')->latest()->get();
         return view('admin.livestock-movements.out.create', compact('livestocks'));
     }
 
@@ -85,7 +101,9 @@ class LivestockMovementController extends Controller
         $livestock = Livestock::findOrFail($request->livestock_id);
 
         if ($livestock->quantity < $request->quantity) {
-            return back()->withErrors(['quantity' => 'Jumlah ternak tidak cukup! Jumlah saat ini: ' . $livestock->quantity])->withInput();
+            return back()->withErrors([
+                'quantity' => "Jumlah ternak tidak cukup! Populasi saat ini: {$livestock->quantity} ekor.",
+            ])->withInput();
         }
 
         LivestockMovement::create([
@@ -100,6 +118,7 @@ class LivestockMovementController extends Controller
 
         $livestock->decrement('quantity', $request->quantity);
 
-        return redirect()->route('admin.livestock-movements.out.index')->with('success', 'Ternak keluar berhasil dicatat!');
+        return redirect()->route('admin.livestock-movements.out.index')
+            ->with('success', 'Ternak keluar berhasil dicatat!');
     }
 }

@@ -3,18 +3,19 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Api\BaseApiController;
-use App\Http\Requests\Api\StoreLivestockRequest;
-use App\Http\Requests\Api\UpdateLivestockRequest;
+use App\Http\Requests\Api\UpdateLivestockHealthRequest;
 use App\Http\Resources\LivestockResource;
 use App\Models\Livestock;
-use App\Models\LivestockMovement;
-use Illuminate\Support\Facades\Auth;
 
 class LivestockController extends BaseApiController
 {
+    // Read-only: admin di mobile hanya boleh melihat data.
+    // Create/update penuh/hapus tetap wajib lewat web (kandang, kapasitas, movement, dsb
+    // punya validasi kompleks yang sengaja hanya dikelola dari web).
+
     public function index()
     {
-        $livestocks = Livestock::with(['livestockType', 'user'])->latest()->paginate(10);
+        $livestocks = Livestock::with(['livestockType', 'kandang', 'user'])->latest()->paginate(10);
 
         return $this->success(
             LivestockResource::collection($livestocks),
@@ -24,7 +25,7 @@ class LivestockController extends BaseApiController
 
     public function show(Livestock $livestock)
     {
-        $livestock->load(['livestockType', 'user']);
+        $livestock->load(['livestockType', 'kandang', 'user']);
 
         return $this->success(
             new LivestockResource($livestock),
@@ -32,47 +33,14 @@ class LivestockController extends BaseApiController
         );
     }
 
-    public function store(StoreLivestockRequest $request)
-    {
-        $data = $request->validated();
-        $data['user_id'] = Auth::id();
-
-        $livestock = Livestock::create($data);
-
-        // Catat otomatis ke Ternak Masuk kalau quantity awal > 0
-        if ($data['quantity'] > 0) {
-            LivestockMovement::create([
-                'livestock_id' => $livestock->id,
-                'user_id'      => Auth::id(),
-                'type'         => 'in',
-                'quantity'     => $data['quantity'],
-                'date'         => $data['arrival_date'] ?? now()->toDateString(),
-                'reason'       => 'Data Awal',
-                'notes'        => 'Otomatis tercatat saat kandang dibuat via API',
-            ]);
-        }
-
-        return $this->success(
-            new LivestockResource($livestock->load('livestockType', 'user')),
-            'Livestock created successfully.',
-            201
-        );
-    }
-
-    public function update(UpdateLivestockRequest $request, Livestock $livestock)
+    // Update terbatas: hanya status kesehatan & catatan yang boleh diubah dari mobile.
+    public function updateHealth(UpdateLivestockHealthRequest $request, Livestock $livestock)
     {
         $livestock->update($request->validated());
 
         return $this->success(
-            new LivestockResource($livestock->fresh()->load('livestockType', 'user')),
-            'Livestock updated successfully.'
+            new LivestockResource($livestock->fresh()->load(['livestockType', 'kandang', 'user'])),
+            'Status kesehatan berhasil diperbarui.'
         );
-    }
-
-    public function destroy(Livestock $livestock)
-    {
-        $livestock->delete();
-
-        return $this->success(null, 'Livestock deleted successfully.');
     }
 }

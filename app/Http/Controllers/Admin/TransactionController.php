@@ -5,6 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Order;
+use App\Exports\TransactionsExport;
+use Maatwebsite\Excel\Facades\Excel;
+
 
 class TransactionController extends Controller
 {
@@ -48,6 +51,10 @@ class TransactionController extends Controller
         ]);
     }
 
-    return redirect()->route('admin.transactions.show', $order)->with('success', 'Status pesanan berhasil diperbarui!');
-}
+        return redirect()->route('admin.transactions.show', $order)->with('success', 'Status pesanan berhasil diperbarui!');
+    }
+    public function exportExcel()
+    {
+        return Excel::download(new TransactionsExport, 'Data-Transaksi-' . date('Y-m-d') . '.xlsx');
+    }
 }

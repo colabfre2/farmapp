@@ -17,6 +17,7 @@ protected $fillable = [
     'name',
     'description',
     'price',
+    'rating',
     'stock',
     'image',
     'is_active',
@@ -40,5 +41,11 @@ public function orderItems()
 {
     return $this->hasMany(OrderItem::class);
 }
+public function reviews()
+{
+    return $this->hasMany(ProductReview::class);
+}
+
+
 
 }

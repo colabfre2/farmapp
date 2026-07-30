@@ -33,7 +33,16 @@ class MarketplaceController extends Controller
 
 public function show(Product $product)
 {
-    return view('buyer.product-detail', compact('product'));
+    $product->load('category', 'unit');
+
+    $reviews = $product->reviews()
+        ->with('user')
+        ->latest()
+        ->paginate(5);
+
+    $reviewCount = $product->reviews()->count();
+
+    return view('buyer.product-detail', compact('product', 'reviews', 'reviewCount'));
 }
 
 }
