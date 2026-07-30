@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 
 class LivestockMovement extends Model
-{
+{ 
     protected $fillable = [
         'livestock_id',
         'user_id',
