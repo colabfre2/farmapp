@@ -50,7 +50,6 @@
                             <option value="">-- Pilih alasan --</option>
                             <option value="Bibit Baru" {{ old('reason') == 'Bibit Baru' ? 'selected' : '' }}>Bibit Baru</option>
                             <option value="Kelahiran" {{ old('reason') == 'Kelahiran' ? 'selected' : '' }}>Kelahiran</option>
-                            <option value="Pindahan dari Kandang Lain" {{ old('reason') == 'Pindahan dari Kandang Lain' ? 'selected' : '' }}>Pindahan dari Kandang Lain</option>
                             <option value="Koreksi Data" {{ old('reason') == 'Koreksi Data' ? 'selected' : '' }}>Koreksi Data</option>
                         </select>
                     </div>

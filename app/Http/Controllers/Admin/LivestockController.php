@@ -32,8 +32,6 @@ class LivestockController extends Controller
     {
         $livestockTypes = LivestockType::all();
 
-        // Hanya tampilkan kandang yang KOSONG (total quantity semua livestock di kandang = 0).
-        // Kandang yang masih terisi harus ditambah lewat menu Ternak Masuk, bukan form ini.
         $semuaKandang = Kandang::withSum('livestocks', 'quantity')->get();
         $kandangs = $semuaKandang->filter(fn($k) => ($k->livestocks_sum_quantity ?? 0) == 0)->values();
         $kandangsTerisi = $semuaKandang->count() - $kandangs->count();
@@ -65,8 +63,6 @@ class LivestockController extends Controller
         $kandang = Kandang::withSum('livestocks', 'quantity')->findOrFail($kandangId);
 
         if ($kandang->capacity !== null) {
-            // Kalau update (pindah kandang), stok livestock yang sedang diedit
-            // tidak ikut dihitung sebagai "terisi" kandang baru
             $terisi = $kandang->livestocks_sum_quantity ?? 0;
             $sisa = $kandang->capacity - $terisi;
 
@@ -85,8 +81,6 @@ class LivestockController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            // kandang_id WAJIB — livestock_type_id akan di-derive dari kandang,
-            // bukan dipercaya dari input mentah (anti-tamper via inspect element).
             'kandang_id'    => 'required|exists:kandangs,id',
             'name'          => 'required|string|max:255',
             'arrival_date'  => 'required|date',
@@ -97,10 +91,7 @@ class LivestockController extends Controller
         ]);
 
         try {
-            // Form ini ("Tambah Ternak Baru") cuma untuk kandang kosong.
-            // Kandang yang sudah terisi harus lewat menu Ternak Masuk.
             $this->getKandangAndCheckEmpty($validated['kandang_id']);
-
             $kandang = $this->getKandangAndCheckCapacity(
                 $validated['kandang_id'],
                 $validated['quantity']
@@ -110,7 +101,6 @@ class LivestockController extends Controller
                 ->with('error', 'Kandang tidak valid untuk pendaftaran baru!');
         }
 
-        // Derive livestock_type_id dari kandang — bukan dari dropdown jenis hewan
         $validated['livestock_type_id'] = $kandang->livestock_type_id;
         $validated['user_id'] = auth()->id();
 
@@ -121,6 +111,7 @@ class LivestockController extends Controller
             if ($validated['quantity'] > 0) {
                 \App\Models\LivestockMovement::create([
                     'livestock_id' => $livestock->id,
+                    'kandang_id'   => $livestock->kandang_id,
                     'user_id'      => auth()->id(),
                     'type'         => 'in',
                     'quantity'     => $validated['quantity'],
@@ -147,16 +138,12 @@ class LivestockController extends Controller
 
         DB::beginTransaction();
         try {
-            // Tracking kapasitas kandang di memori — mencegah 2 baris bulk yang masing-masing
-            // valid tapi gabungannya melebihi kapasitas kandang yang sama.
             $kandangTracking = [];
 
             foreach ($rows as $index => $data) {
                 $kandangId = $data['kandang_id'];
 
                 if (!isset($kandangTracking[$kandangId])) {
-                    // Form ini ("Tambah Ternak Baru") cuma untuk kandang kosong.
-                    // Kandang yang sudah terisi harus lewat menu Ternak Masuk.
                     try {
                         $kandang = $this->getKandangAndCheckEmpty($kandangId);
                     } catch (ValidationException $e) {
@@ -186,7 +173,6 @@ class LivestockController extends Controller
                     $kandangTracking[$kandangId]['terisi'] += $qty;
                 }
 
-                // Derive livestock_type_id dari kandang, bukan dari input
                 $livestock = Livestock::create([
                     'user_id'           => auth()->id(),
                     'livestock_type_id' => $kandangTracking[$kandangId]['livestock_type_id'],
@@ -202,6 +188,7 @@ class LivestockController extends Controller
                 if ($data['quantity'] > 0) {
                     \App\Models\LivestockMovement::create([
                         'livestock_id' => $livestock->id,
+                        'kandang_id'   => $livestock->kandang_id,
                         'user_id'      => auth()->id(),
                         'type'         => 'in',
                         'quantity'     => $data['quantity'],
@@ -219,12 +206,10 @@ class LivestockController extends Controller
         } catch (ValidationException $e) {
             DB::rollBack();
 
-            // Kelompokkan error per index baris (livestocks.{index}.field => pesan)
-            // supaya form bisa menandai baris mana yang bermasalah.
             $failedRows = [];
             foreach ($e->errors() as $field => $messages) {
                 if (preg_match('/^livestocks\.(\d+)\./', $field, $m)) {
-                    $rowNumber = ((int) $m[1]) + 1; // 1-based, sesuai label "Ternak #N"
+                    $rowNumber = ((int) $m[1]) + 1;
                     $failedRows[$rowNumber] = array_merge($failedRows[$rowNumber] ?? [], $messages);
                 }
             }
@@ -251,17 +236,12 @@ class LivestockController extends Controller
 
     public function edit(Livestock $livestock)
     {
-        // Jenis hewan terkunci (tidak bisa diganti), jadi kandang tujuan pindah
-        // WAJIB sejenis dengan livestock ini. Tampilkan: kandang asal livestock ini
-        // + kandang kosong lain yang sejenis DAN kapasitasnya cukup untuk menampung
-        // seluruh populasi livestock ini (kandang kosong tapi kapasitasnya kurang
-        // dari quantity tidak ditampilkan, supaya tidak ada pilihan yang pasti gagal).
         $kandangs = Kandang::withSum('livestocks', 'quantity')
             ->where('livestock_type_id', $livestock->livestock_type_id)
             ->get()
             ->filter(function ($k) use ($livestock) {
                 if ($k->id === $livestock->kandang_id) {
-                    return true; // kandang asal livestock ini selalu ditampilkan
+                    return true;
                 }
                 $kosong = ($k->livestocks_sum_quantity ?? 0) == 0;
                 $cukup = $k->capacity === null || $k->capacity >= $livestock->quantity;
@@ -280,21 +260,21 @@ class LivestockController extends Controller
             'avg_weight'    => 'nullable|numeric',
             'health_status' => 'required|in:Sehat,Pemantauan,Sakit',
             'notes'         => 'nullable|string',
-            // name TIDAK divalidasi/diambil dari input — auto-generate dari jenis + kandang di bawah.
-            // livestock_type_id TIDAK divalidasi/diupdate — dikunci di sisi view (hidden input)
-            // dan di sini di-derive ulang dari data livestock, tidak pernah dipercaya dari request.
-            // quantity TIDAK divalidasi/diupdate — hanya lewat LivestockMovement
+            // name: auto-generate, tidak dari input
+            // livestock_type_id: dikunci, tidak dari input
+            // quantity: hanya lewat LivestockMovement
         ]);
 
-        // Jenis hewan dikunci — selalu pakai jenis livestock ini, tidak pernah dari input.
+        // Jenis hewan dikunci — derive dari livestock yang ada
         $validated['livestock_type_id'] = $livestock->livestock_type_id;
 
-        // Cek kapasitas hanya kalau kandang berubah
-        if ((int) $validated['kandang_id'] !== (int) $livestock->kandang_id) {
+        $kandangBerubah = (int) $validated['kandang_id'] !== (int) $livestock->kandang_id;
+        $kandangAsal    = $livestock->kandang; // simpan sebelum update
+
+        if ($kandangBerubah) {
             $kandangTujuan = Kandang::findOrFail($validated['kandang_id']);
 
-            // Kandang tujuan wajib sejenis dengan livestock ini — mencegah tamper
-            // via inspect element mengirim kandang_id dari jenis hewan yang berbeda.
+            // Kandang tujuan wajib sejenis
             if ((int) $kandangTujuan->livestock_type_id !== (int) $livestock->livestock_type_id) {
                 return back()->withErrors([
                     'kandang_id' => 'Kandang tujuan harus untuk jenis hewan yang sama.',
@@ -304,7 +284,7 @@ class LivestockController extends Controller
             try {
                 $this->getKandangAndCheckCapacity(
                     $validated['kandang_id'],
-                    $livestock->quantity // stok yang akan pindah ke kandang baru
+                    $livestock->quantity
                 );
             } catch (ValidationException $e) {
                 return back()->withErrors($e->errors())->withInput()
@@ -314,15 +294,37 @@ class LivestockController extends Controller
             $kandangTujuan = $livestock->kandang;
         }
 
-        // Nama kelompok otomatis mengikuti jenis hewan + kandang tujuan, sama seperti form Tambah Ternak Baru.
-        // Tidak dipercaya dari input manual, supaya nama selalu konsisten dengan kandang saat ini.
-        $bulanTahun = \Carbon\Carbon::parse($validated['arrival_date'])->translatedFormat('F Y');
-        $validated['name'] = $livestock->livestockType->name . ' - ' . $kandangTujuan->name . ' (' . $bulanTahun . ')';
+        // Nama auto-generate dari jenis + kandang tujuan + bulan-tahun arrival
+        $validated['name'] = $livestock->livestockType->name . ' - ' . $kandangTujuan->name;
 
-        $livestock->update($validated);
+        DB::beginTransaction();
+        try {
+            $livestock->update($validated);
+
+            // ── Catat perpindahan kandang ke LivestockMovement ──
+            if ($kandangBerubah) {
+                \App\Models\LivestockMovement::create([
+                    'livestock_id' => $livestock->id,
+                    'kandang_id'   => $kandangTujuan->id, // kandang tujuan (info asal ada di notes)
+                    'user_id'      => auth()->id(),
+                    'type'         => 'transfer',
+                    'quantity'     => $livestock->quantity,
+                    'date'         => now()->toDateString(),
+                    'reason'       => 'Pindah Kandang',
+                    'notes'        => 'Dipindahkan dari kandang "' . ($kandangAsal->name ?? '-') . '" ke kandang "' . $kandangTujuan->name . '"',
+                ]);
+            }
+
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Terjadi kesalahan sistem: ' . $e->getMessage())->withInput();
+        }
 
         return redirect()->route('admin.livestock.index')
-            ->with('success', 'Data ternak berhasil diperbarui!');
+            ->with('success', $kandangBerubah
+                ? 'Data ternak diperbarui & perpindahan kandang berhasil dicatat!'
+                : 'Data ternak berhasil diperbarui!');
     }
 
     // ── Destroy, Trash, Restore, ForceDelete ─────────────────────────────────
@@ -336,7 +338,6 @@ class LivestockController extends Controller
 
     public function trash()
     {
-        // FIX: tambah 'kandang' agar $livestock->kandang->name tidak N+1 / null di view trash
         $livestocks = Livestock::onlyTrashed()->with('livestockType', 'kandang')->latest()->get();
         return view('admin.livestock.trash', compact('livestocks'));
     }

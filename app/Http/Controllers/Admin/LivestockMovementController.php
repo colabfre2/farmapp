@@ -15,7 +15,7 @@ class LivestockMovementController extends Controller
     {
         $query = $request->input('q');
         $movements = LivestockMovement::with('livestock', 'user')
-            ->where('type', 'in')
+            ->whereIn('type', ['in', 'transfer'])
             ->when($query, fn($q) => $q->whereHas('livestock', fn($q) => $q->where('name', 'like', "%{$query}%")))
             ->latest()->get();
         return view('admin.livestock-movements.in.index', compact('movements', 'query'));
@@ -23,7 +23,6 @@ class LivestockMovementController extends Controller
 
     public function inCreate()
     {
-        // Load kandang agar view bisa tampilkan info kapasitas
         $livestocks = Livestock::with('kandang')->latest()->get();
         return view('admin.livestock-movements.in.create', compact('livestocks'));
     }
@@ -40,10 +39,7 @@ class LivestockMovementController extends Controller
 
         $livestock = Livestock::with('kandang')->findOrFail($request->livestock_id);
 
-        // PENTING: Validasi kapasitas kandang di sini juga, bukan cuma saat create awal.
-        // Tanpa ini, kapasitas kandang bisa ditembus lewat jalur pencatatan ternak masuk.
         if ($livestock->kandang && $livestock->kandang->capacity !== null) {
-            // Hitung total isi kandang dari SEMUA livestock di kandang ini (bukan cuma yg ini)
             $totalTerisiKandang = Livestock::where('kandang_id', $livestock->kandang_id)->sum('quantity');
             $sisa = $livestock->kandang->capacity - $totalTerisiKandang;
 
@@ -56,6 +52,7 @@ class LivestockMovementController extends Controller
 
         LivestockMovement::create([
             'livestock_id' => $request->livestock_id,
+            'kandang_id'   => $livestock->kandang_id,
             'user_id'      => auth()->id(),
             'type'         => 'in',
             'quantity'     => $request->quantity,
@@ -76,7 +73,7 @@ class LivestockMovementController extends Controller
     {
         $query = $request->input('q');
         $movements = LivestockMovement::with('livestock', 'user')
-            ->where('type', 'out')
+            ->whereIn('type', ['out', 'transfer'])
             ->when($query, fn($q) => $q->whereHas('livestock', fn($q) => $q->where('name', 'like', "%{$query}%")))
             ->latest()->get();
         return view('admin.livestock-movements.out.index', compact('movements', 'query'));
@@ -108,6 +105,7 @@ class LivestockMovementController extends Controller
 
         LivestockMovement::create([
             'livestock_id' => $request->livestock_id,
+            'kandang_id'   => $livestock->kandang_id,
             'user_id'      => auth()->id(),
             'type'         => 'out',
             'quantity'     => $request->quantity,

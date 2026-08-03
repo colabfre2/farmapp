@@ -27,7 +27,8 @@
                             <th>#</th>
                             <th>Tanggal</th>
                             <th>Kelompok Ternak</th>
-                            <th>Kandang Fisik</th>
+                            <th>Kandang</th>
+                            
                             <th>Jumlah</th>
                             <th>Alasan</th>
                             <th>Catatan</th>
@@ -41,20 +42,28 @@
                             <td>{{ \Carbon\Carbon::parse($movement->date)->format('d M Y') }}</td>
                             <td class="fw-semibold">{{ $movement->livestock->name ?? '-' }}</td>
                             <td>
-                                @if($movement->livestock?->kandang)
-                                    <span class="badge bg-info-subtle text-info rounded-pill px-2">🏠 {{ $movement->livestock->kandang->name }}</span>
+                                @if($movement->kandang)
+                                    <span class="badge bg-info-subtle text-info rounded-pill px-2">🏠 {{ $movement->kandang->name }}</span>
                                 @else
                                     <span class="text-muted">-</span>
                                 @endif
                             </td>
+                            <td>
+                                @if($movement->type === 'transfer')
+                                    <span class="badge bg-warning-subtle text-warning rounded-pill px-2">🔄 Pindah Kandang</span>
+                                @else
+                                    <span class="badge bg-success-subtle text-success rounded-pill px-2">⬆️ Masuk</span>
+                                @endif
+                            </td>
                             <td><span class="fw-bold text-success">+{{ $movement->quantity }} ekor</span></td>
-                            <td>{{ $movement->reason ?? '-' }}</td>
+                            
+                            
                             <td class="text-muted">{{ $movement->notes ?? '-' }}</td>
                             <td>{{ $movement->user->name ?? '-' }}</td>
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="8" class="text-center text-muted py-4">Belum ada data ternak masuk</td>
+                            <td colspan="9" class="text-center text-muted py-4">Belum ada data ternak masuk</td>
                         </tr>
                         @endforelse
                     </tbody>

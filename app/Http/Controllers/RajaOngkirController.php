@@ -15,33 +15,23 @@ class RajaOngkirController extends Controller
     }
 
     /**
-     * Menampilkan daftar provinsi dari API Raja Ongkir
+     * Halaman kalkulator ongkir (search box, bukan dropdown lagi)
      */
     public function index()
     {
-        // Pakai service yang sudah dibuat
-        $provinces = $this->rajaOngkirService->getProvinces();
-
-        return view('rajaongkir', compact('provinces'));
+        return view('rajaongkir');
     }
 
     /**
-     * Menampilkan kota berdasarkan provinsi
-     */
-    public function getCities($provinceId)
-    {
-        $cities = $this->rajaOngkirService->getCities($provinceId);
-
-        return response()->json($cities);
-    }
-
-    /**
-     * Mencari lokasi (kecamatan)
+     * Cari destinasi (provinsi/kota/kecamatan) buat autocomplete
      */
     public function searchDestination(Request $request)
     {
-        $keyword = $request->get('q');
-        $results = $this->rajaOngkirService->searchDestination($keyword);
+        $request->validate([
+            'q' => 'required|string|min:3',
+        ]);
+
+        $results = $this->rajaOngkirService->searchDestination($request->query('q'));
 
         return response()->json($results);
     }

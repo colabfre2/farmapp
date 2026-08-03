@@ -4,9 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+
 class Order extends Model
 {
-    //
     use SoftDeletes;
 
     protected $fillable = [
@@ -18,6 +18,12 @@ class Order extends Model
         'shipping_phone',
         'shipping_address',
         'shipping_city',
+        'shipping_district',
+        'province',
+        'destination_id',
+        'courier',
+        'courier_service',
+        'shipping_cost',
         'payment_method',
     ];
 
@@ -25,8 +31,9 @@ class Order extends Model
     {
         return $this->belongsTo(User::class);
     }
+
     public function items()
     {
-        return $this->hasMany(Orderitem::class);
+        return $this->hasMany(OrderItem::class);
     }
 }

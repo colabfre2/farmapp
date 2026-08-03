@@ -49,7 +49,6 @@
                             <option value="">-- Pilih alasan --</option>
                             <option value="Dijual" {{ old('reason') == 'Dijual' ? 'selected' : '' }}>Dijual</option>
                             <option value="Mati" {{ old('reason') == 'Mati' ? 'selected' : '' }}>Mati</option>
-                            <option value="Dipindah ke Kandang Lain" {{ old('reason') == 'Dipindah ke Kandang Lain' ? 'selected' : '' }}>Dipindah ke Kandang Lain</option>
                             <option value="Koreksi Data" {{ old('reason') == 'Koreksi Data' ? 'selected' : '' }}>Koreksi Data</option>
                         </select>
                     </div>

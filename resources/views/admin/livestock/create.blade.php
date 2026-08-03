@@ -225,9 +225,8 @@ document.addEventListener("DOMContentLoaded", function() {
         const selectedOpt = kandangSelect.options[kandangSelect.selectedIndex];
         const kandangText = (selectedOpt && selectedOpt.dataset.name) ? selectedOpt.dataset.name : '';
 
-        
         nameInput.value = typeText
-            ? typeText + (kandangText ? ' - ' + kandangText : '') 
+            ? typeText + (kandangText ? ' - ' + kandangText : '')
             : '';
     }
 
