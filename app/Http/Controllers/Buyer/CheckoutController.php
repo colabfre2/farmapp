@@ -68,7 +68,7 @@ class CheckoutController extends Controller
             'courier'           => 'required|in:jne,jnt,sicepat',
             'courier_service'   => 'required|string',
             'shipping_cost'     => 'required|numeric|min:0',
-            'payment_method'    => 'required|in:card,transfer,cod',
+            'payment_method'    => 'required|in:card,transfer,cod,midtrans', // Ditambah midtrans
             'save_address'      => 'nullable|boolean',
             'address_label'     => 'nullable|string|max:50',
         ]);
@@ -134,9 +134,10 @@ class CheckoutController extends Controller
             'courier_service'   => $request->courier_service,
             'shipping_cost'     => $shippingCost,
             'payment_method'    => $request->payment_method,
+            'payment_status'    => 'pending',
         ]);
 
-        // Insert Order Items dan update stok produk (Sesuai aturan bisnis: stok berkurang otomatis saat order)
+        // Insert Order Items dan update stok produk
         foreach ($cart as $item) {
             OrderItem::create([
                 'order_id'     => $order->id,
@@ -149,7 +150,6 @@ class CheckoutController extends Controller
 
             $product = Product::find($item['id']);
             if ($product) {
-                // Pastikan tipe data stok integer agar kalkulasi akurat
                 $product->decrement('stock', $item['quantity']);
             }
         }
@@ -162,6 +162,11 @@ class CheckoutController extends Controller
 
         // Bersihkan session keranjang belanja setelah checkout berhasil
         session()->forget('cart');
+
+        // Jika metode pembayaran Midtrans, lempar ke halaman detail pesanan untuk bayar
+        if ($request->payment_method === 'midtrans') {
+            return redirect()->route('buyer.orders.show', $order->id)->with('success', 'Pesanan berhasil dibuat! Silakan lakukan pembayaran.');
+        }
 
         return redirect()->route('buyer.orders')->with('success', 'Pesanan berhasil dibuat!');
     }

@@ -2,11 +2,11 @@
 @section('title', 'Checkout')
 
 @section('content')
-<div class="container py-4">
-    <h4 class="fw-bold mb-4">🛒 Checkout FarmApp</h4>
+<div class="container-fluid py-4" style="max-width: 1100px;">
+    <h2 class="fw-bold mb-4 font-quicksand text-dark">🛒 Checkout FarmApp</h2>
 
     @if($errors->any())
-        <div class="alert alert-danger rounded-3 mb-4 shadow-sm border-0">
+        <div class="alert alert-danger bg-danger-subtle text-danger rounded-3 mb-4 shadow-sm border-0 fw-bold">
             <ul class="mb-0">@foreach($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul>
         </div>
     @endif
@@ -19,11 +19,11 @@
             <div class="col-lg-7">
 
                 {{-- PILIH ALAMAT TERSIMPAN --}}
-                <div class="card border-0 shadow-sm rounded-3 mb-3" style="border-radius: 12px;">
-                    <div class="card-header bg-white border-bottom pt-3 pb-2 px-4">
+                <div class="card border-0 shadow-sm rounded-3 mb-4" style="border-radius: 12px;">
+                    <div class="card-header bg-white border-bottom-0 pt-4 pb-2 px-4">
                         <div class="d-flex justify-content-between align-items-center">
-                            <h6 class="fw-bold mb-0">📍 Alamat Pengiriman</h6>
-                            <a href="{{ route('buyer.addresses.create') }}" class="btn btn-sm btn-outline-success rounded-pill px-3" target="_blank">+ Tambah Alamat</a>
+                            <h5 class="fw-bold mb-0 font-quicksand text-dark">📍 Alamat Pengiriman</h5>
+                            <a href="{{ route('buyer.addresses.create') }}" class="btn btn-sm btn-outline-success rounded-pill px-3 fw-bold" target="_blank">+ Tambah Alamat</a>
                         </div>
                     </div>
                     <div class="card-body p-4">
@@ -44,7 +44,7 @@
                                                 <span class="badge bg-success-subtle text-success rounded-pill small">Utama</span>
                                             @endif
                                         </div>
-                                        <div class="fw-semibold">{{ $addr->recipient_name }} · {{ $addr->phone }}</div>
+                                        <div class="fw-semibold text-dark">{{ $addr->recipient_name }} · {{ $addr->phone }}</div>
                                         <div class="text-muted small">{{ $addr->full_address }}</div>
                                     </label>
                                 </div>
@@ -85,11 +85,10 @@
                                 <div class="col-12 position-relative">
                                     <label class="form-label fw-semibold">Kecamatan Tujuan <span class="text-danger">*</span></label>
                                     <input type="text" id="destinationSearch" class="form-control rounded-3 py-2 manual-input"
-                                        placeholder="Ketik minimal 3 huruf nama kecamatan (contoh: Curug, Kelapa Dua)..."
+                                        placeholder="Ketik minimal 3 huruf nama kecamatan..."
                                         autocomplete="off"
                                         value="{{ old('shipping_district') ? old('shipping_district') . ', ' . old('shipping_city') . ', ' . old('province') : '' }}">
                                     
-                                    {{-- DROPDOWN HASIL PENCARIAN (Solid Background & Z-Index Tinggi) --}}
                                     <div id="destinationResults" class="list-group position-absolute w-100 shadow-lg rounded-3 border"
                                         style="z-index: 9999; display: none; max-height: 260px; overflow-y: auto; background-color: #ffffff !important;"></div>
                                     
@@ -127,20 +126,20 @@
                 </div>
 
                 {{-- PILIH KURIR & LAYANAN --}}
-                <div class="card border-0 shadow-sm rounded-3 mb-3" style="border-radius: 12px;">
-                    <div class="card-header bg-white border-bottom pt-3 pb-2 px-4">
-                        <h6 class="fw-bold mb-0">🚚 Pilih Kurir</h6>
+                <div class="card border-0 shadow-sm rounded-3 mb-4" style="border-radius: 12px;">
+                    <div class="card-header bg-white border-bottom-0 pt-4 pb-2 px-4">
+                        <h5 class="fw-bold mb-0 font-quicksand text-dark">🚚 Pilih Kurir</h5>
                     </div>
                     <div class="card-body p-4">
 
                         <div class="row g-2 mb-3">
                             @foreach(['jne' => 'JNE', 'jnt' => 'J&T Express', 'sicepat' => 'SiCepat'] as $key => $label)
                             <div class="col-4">
-                                <div class="form-check border rounded-3 p-3 text-center courier-card {{ old('courier') === $key ? 'border-primary bg-primary-subtle bg-opacity-10' : '' }}"
+                                <div class="form-check border rounded-3 p-3 text-center courier-card {{ old('courier') === $key ? 'border-success bg-success-subtle bg-opacity-10' : '' }}"
                                     id="courierCard_{{ $key }}" style="cursor:pointer;" onclick="selectCourier('{{ $key }}')">
                                     <input type="radio" class="d-none" name="courier" value="{{ $key }}" id="courier_{{ $key }}"
                                         {{ old('courier') === $key ? 'checked' : '' }}>
-                                    <div class="fw-bold">{{ $label }}</div>
+                                    <div class="fw-bold text-dark">{{ $label }}</div>
                                 </div>
                             </div>
                             @endforeach
@@ -160,20 +159,25 @@
                     </div>
                 </div>
 
-                {{-- METODE PEMBAYARAN --}}
+                {{-- METODE PEMBAYARAN (Tanpa Kartu Kredit, Ditambah Midtrans) --}}
                 <div class="card border-0 shadow-sm rounded-3" style="border-radius: 12px;">
-                    <div class="card-header bg-white border-bottom pt-3 pb-2 px-4">
-                        <h6 class="fw-bold mb-0">💳 Metode Pembayaran</h6>
+                    <div class="card-header bg-white border-bottom-0 pt-4 pb-2 px-4">
+                        <h5 class="fw-bold mb-0 font-quicksand text-dark">💳 Metode Pembayaran</h5>
                     </div>
                     <div class="card-body p-4">
-                        <div class="row g-2">
-                            @foreach(['transfer' => '🏦 Transfer Bank', 'cod' => '💵 COD', 'card' => '💳 Kartu'] as $val => $lbl)
-                            <div class="col-4">
-                                <div class="form-check border rounded-3 p-3 text-center pay-card {{ old('payment_method', 'transfer') === $val ? 'border-primary bg-primary-subtle bg-opacity-10' : '' }}"
+                        <div class="row g-3">
+                            @foreach([
+                                'midtrans' => ['label' => '💳 Midtrans (QRIS / VA / E-Wallet)', 'desc' => 'Otomatis & Real-time'],
+                                'transfer' => ['label' => '🏦 Transfer Manual', 'desc' => 'Konfirmasi manual oleh admin'],
+                                'cod'      => ['label' => '💵 COD (Bayar di Tempat)', 'desc' => 'Bayar saat kurir sampai']
+                            ] as $val => $info)
+                            <div class="col-md-4">
+                                <div class="form-check border rounded-3 p-3 h-100 pay-card {{ old('payment_method', 'midtrans') === $val ? 'border-success bg-success-subtle bg-opacity-10' : '' }}"
                                     id="payCard_{{ $val }}" style="cursor:pointer;" onclick="selectPaymentMethod('{{ $val }}')">
                                     <input type="radio" name="payment_method" value="{{ $val }}" id="payInput_{{ $val }}" class="d-none"
-                                        {{ old('payment_method', 'transfer') === $val ? 'checked' : '' }}>
-                                    <div class="small fw-semibold">{{ $lbl }}</div>
+                                        {{ old('payment_method', 'midtrans') === $val ? 'checked' : '' }}>
+                                    <div class="fw-bold text-dark small mb-1">{{ $info['label'] }}</div>
+                                    <div class="text-muted" style="font-size: 0.75rem;">{{ $info['desc'] }}</div>
                                 </div>
                             </div>
                             @endforeach
@@ -186,37 +190,37 @@
             {{-- ── KANAN: Ringkasan Pesanan ───────────────────── --}}
             <div class="col-lg-5">
                 <div class="card border-0 shadow-sm rounded-3 sticky-top" style="top: 80px; border-radius: 12px;">
-                    <div class="card-header bg-white border-bottom pt-3 pb-2 px-4">
-                        <h6 class="fw-bold mb-0">🧾 Ringkasan Pesanan</h6>
+                    <div class="card-header bg-white border-bottom-0 pt-4 pb-2 px-4">
+                        <h5 class="fw-bold mb-0 font-quicksand text-dark">🧾 Ringkasan Pesanan</h5>
                     </div>
                     <div class="card-body p-4">
 
                         {{-- Item Cart --}}
                         @foreach($cart as $item)
                         <div class="d-flex justify-content-between mb-2 small">
-                            <span>{{ $item['name'] }} <span class="text-muted">×{{ $item['quantity'] }}</span></span>
-                            <span class="fw-semibold">Rp {{ number_format($item['price'] * $item['quantity'], 0, ',', '.') }}</span>
+                            <span class="text-dark">{{ $item['name'] }} <span class="text-muted">×{{ $item['quantity'] }}</span></span>
+                            <span class="fw-semibold text-dark">Rp {{ number_format($item['price'] * $item['quantity'], 0, ',', '.') }}</span>
                         </div>
                         @endforeach
 
-                        <hr>
+                        <hr class="text-muted opacity-25">
 
                         <div class="d-flex justify-content-between mb-1">
                             <span class="text-muted">Subtotal</span>
-                            <span>Rp {{ number_format($subtotal, 0, ',', '.') }}</span>
+                            <span class="text-dark">Rp {{ number_format($subtotal, 0, ',', '.') }}</span>
                         </div>
                         <div class="d-flex justify-content-between mb-3">
                             <span class="text-muted">Ongkos Kirim</span>
                             <span id="shippingCostDisplay" class="text-muted">— pilih layanan</span>
                         </div>
 
-                        <div class="d-flex justify-content-between fw-bold fs-6 border-top pt-3">
-                            <span>Total Pembayaran</span>
-                            <span id="totalDisplay" class="text-success">Rp {{ number_format($subtotal, 0, ',', '.') }}</span>
+                        <div class="d-flex justify-content-between fw-bold fs-5 border-top pt-3 mb-4">
+                            <span class="text-dark">Total Pembayaran</span>
+                            <span id="totalDisplay" class="text-success font-quicksand">Rp {{ number_format($subtotal, 0, ',', '.') }}</span>
                         </div>
 
-                        <button type="submit" class="btn btn-success w-100 fw-bold rounded-pill mt-4 py-2 shadow-sm">
-                            Buat Pesanan ✓
+                        <button type="submit" class="btn btn-success w-100 fw-bold rounded-pill py-3 shadow-sm">
+                            Buat Pesanan & Bayar ✓
                         </button>
                     </div>
                 </div>
@@ -397,8 +401,8 @@ document.addEventListener('click', function (e) {
 function selectCourier(courier) {
     selectedCourier = courier;
 
-    document.querySelectorAll('.courier-card').forEach(el => el.classList.remove('border-primary', 'bg-primary-subtle', 'bg-opacity-10'));
-    document.getElementById('courierCard_' + courier)?.classList.add('border-primary', 'bg-primary-subtle', 'bg-opacity-10');
+    document.querySelectorAll('.courier-card').forEach(el => el.classList.remove('border-success', 'bg-success-subtle', 'bg-opacity-10'));
+    document.getElementById('courierCard_' + courier)?.classList.add('border-success', 'bg-success-subtle', 'bg-opacity-10');
     document.getElementById('courier_' + courier).checked = true;
 
     resetServiceSection();
@@ -413,7 +417,7 @@ function selectCourier(courier) {
 
 function selectPaymentMethod(methodVal) {
     document.querySelectorAll('.pay-card').forEach(card => {
-        card.classList.remove('border-primary', 'bg-primary-subtle', 'bg-opacity-10');
+        card.classList.remove('border-success', 'bg-success-subtle', 'bg-opacity-10');
     });
 
     const radioInput = document.getElementById('payInput_' + methodVal);
@@ -421,7 +425,7 @@ function selectPaymentMethod(methodVal) {
 
     const selectedCard = document.getElementById('payCard_' + methodVal);
     if (selectedCard) {
-        selectedCard.classList.add('border-primary', 'bg-primary-subtle', 'bg-opacity-10');
+        selectedCard.classList.add('border-success', 'bg-success-subtle', 'bg-opacity-10');
     }
 }
 
@@ -477,7 +481,7 @@ function renderServices(costs) {
                 onchange="onServiceSelected('${svc.service}', ${svc.cost})">
             <label class="form-check-label w-100" for="svc_${serviceKey}" style="cursor:pointer;">
                 <div class="d-flex justify-content-between">
-                    <span class="fw-semibold">${svc.service} <small class="text-muted fw-normal">${svc.description ?? ''}</small></span>
+                    <span class="fw-semibold text-dark">${svc.service} <small class="text-muted fw-normal">${svc.description ?? ''}</small></span>
                     <span class="fw-bold text-success">${formatRupiahDisplay(svc.cost)}</span>
                 </div>
                 <div class="text-muted small">Estimasi ${svc.etd || '-'} hari</div>

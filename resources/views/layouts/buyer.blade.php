@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
-    <title>FarmApp - Marketplace Buyer</title>
+    <title>ALMS - Marketplace Buyer</title>
     
     <link rel="icon" type="image/x-icon" href="{{ asset('images/fav.ico') }}">
     
@@ -77,10 +77,10 @@
         <div class="container-fluid px-3 align-items-center">
             
             {{-- Brand & Logo (Kiri) --}}
-            <a href="{{ route('buyer.marketplace') }}" class="navbar-brand text-decoration-none d-flex align-items-center gap-3">
+            <a href="{{ route('buyer.home') }}" class="navbar-brand text-decoration-none d-flex align-items-center gap-3">
                 <img src="{{ asset('images/logo.png') }}" alt="FarmApp" style="height: 40px; width: auto; object-fit: contain;">
                 <div class="d-flex flex-column lh-sm">
-                    <span style="letter-spacing: 1px; font-size: 1.15rem; font-weight: 700;">FarmApp</span>
+                    <span style="letter-spacing: 1px; font-size: 1.15rem; font-weight: 700;">ALMS</span>
                     <span class="text-white-50" style="font-size: 0.65rem; font-weight: 400;">Agriculture Livestock Management</span>
                 </div>
             </a>

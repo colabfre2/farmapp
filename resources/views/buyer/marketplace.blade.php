@@ -64,7 +64,8 @@
                 <div class="col-sm-6 col-md-6 col-xl-4">
                     <div class="card product-card h-100 border-0 shadow-sm" style="border-radius: 12px; overflow: hidden;">
                         @if($product->image)
-                            <img src="{{ asset('storage/'.$product->image) }}" class="card-img-top" style="height:210px;object-fit:cover;" alt="{{ $product->name }}">
+                            {{-- BAGIAN GAMBAR YANG SUDAH DIBENERIN (object-fit: contain) --}}
+                            <img src="{{ asset('storage/'.$product->image) }}" class="card-img-top bg-light" style="height:210px; width:100%; object-fit:contain; padding:1rem;" alt="{{ $product->name }}">
                         @else
                             <div class="bg-light text-secondary d-flex align-items-center justify-content-center" style="height:210px; font-size:48px;">
                                 🌿

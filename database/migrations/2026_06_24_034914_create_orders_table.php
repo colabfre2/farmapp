@@ -6,6 +6,9 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    /**
+     * Run the migrations.
+     */
     public function up(): void
     {
         Schema::create('orders', function (Blueprint $table) {
@@ -30,13 +33,20 @@ return new class extends Migration
             $table->decimal('shipping_cost', 10, 2)->default(0);
             
             // Pembayaran
-            $table->enum('payment_method', ['card', 'transfer', 'cod'])->default('cod');
+            $table->enum('payment_method', ['card', 'transfer', 'cod', 'midtrans'])->default('cod');
+            
+            // KOLOM MIDTRANS (Tanpa after() karena ini buat tabel baru)
+            $table->string('payment_status')->default('pending'); // pending, success, failed
+            $table->string('snap_token')->nullable();
             
             $table->timestamps();
             $table->softDeletes();
         });
     }
 
+    /**
+     * Reverse the migrations.
+     */
     public function down(): void
     {
         Schema::dropIfExists('orders');
