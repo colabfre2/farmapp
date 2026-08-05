@@ -86,7 +86,7 @@
                     <tr>
                         <th width="5%" class="text-center">No</th>
                         <th width="15%">Nama Kelompok</th>
-                        <th width="13%">Kandang</th>
+                        
                         <th width="11%">Tgl Masuk</th>
                         <th width="8%">Populasi</th>
                         <th width="9%" class="text-center">Status</th>
@@ -99,13 +99,6 @@
                         <td class="text-center fw-bold text-muted">{{ $loop->iteration }}</td>
                         <td><div class="fw-bold text-dark">{{ $livestock->name }}</div></td>
                         
-                        <td>
-                            @if($livestock->kandang)
-                                <span class="badge bg-info-subtle text-info rounded-pill px-3 py-1">🏠 {{ $livestock->kandang->name }}</span>
-                            @else
-                                <span class="text-muted small">-</span>
-                            @endif
-                        </td>
                         <td>
                             @if($livestock->arrival_date)
                                 {{ \Carbon\Carbon::parse($livestock->arrival_date)->format('d M Y') }}

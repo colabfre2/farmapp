@@ -165,17 +165,7 @@ document.addEventListener("DOMContentLoaded", function() {
     const kandangSelect = document.getElementById('kandangSelect');
     const capacityInfo = document.getElementById('kandangCapacityInfo');
     const nameDisplay = document.getElementById('generatedNameDisplay');
-    const arrivalDateInput = document.querySelector('input[name="arrival_date"]');
     const jenisHewan = @json($livestock->livestockType->name ?? '');
-
-    const bulanNama = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
-
-    function formatBulanTahun(dateStr) {
-        if (!dateStr) return '';
-        const d = new Date(dateStr + 'T00:00:00');
-        if (isNaN(d)) return '';
-        return `${bulanNama[d.getMonth()]} ${d.getFullYear()}`;
-    }
 
     function updateCapacityInfo() {
         const opt = kandangSelect.options[kandangSelect.selectedIndex];
@@ -207,10 +197,9 @@ document.addEventListener("DOMContentLoaded", function() {
     function updateNamePreview() {
         const opt = kandangSelect.options[kandangSelect.selectedIndex];
         const kandangName = (opt && opt.dataset.name) ? opt.dataset.name : '';
-        const bulanTahun = formatBulanTahun(arrivalDateInput.value);
 
         nameDisplay.value = kandangName
-            ? `${jenisHewan} - ${kandangName}${bulanTahun ? ' (' + bulanTahun + ')' : ''}`
+            ? `${jenisHewan} - ${kandangName}`
             : jenisHewan;
     }
 
@@ -218,8 +207,7 @@ document.addEventListener("DOMContentLoaded", function() {
         updateCapacityInfo();
         updateNamePreview();
     });
-    arrivalDateInput.addEventListener('change', updateNamePreview);
-    updateCapacityInfo(); // tampilkan info untuk kandang yang sudah terpilih saat halaman dimuat
+    updateCapacityInfo();
     updateNamePreview();
 });
 </script>

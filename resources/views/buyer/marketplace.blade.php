@@ -1,80 +1,114 @@
 @extends('layouts.buyer')
+@section('title', 'Marketplace ALMS')
 
 @section('content')
+<div class="container-fluid px-2 py-2">
 
-{{-- Header --}}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="fw-bold mb-0">🛒 Marketplace</h2>
-    <span class="text-muted">{{ $products->count() }} Produk tersedia</span>
-</div>
-
-{{-- Search & Filter --}}
-<div class="card mb-4">
-    <div class="card-body">
-        <form method="GET" action="{{ route('buyer.marketplace') }}" class="d-flex gap-3 flex-wrap">
-            <input type="text" name="q" class="form-control" placeholder="Cari produk..." value="{{ $query ?? '' }}" style="max-width:300px;">
-            <select name="category" class="form-select" style="max-width:200px;">
-                <option value="">Semua Kategori</option>
-                @foreach($categories as $category)
-                    <option value="{{ $category->id }}" {{ $categoryId == $category->id ? 'selected' : '' }}>
-                        {{ $category->name }}
-                    </option>
-                @endforeach
-            </select>
-            <button type="submit" class="btn btn-success">🔍 Cari</button>
-            @if(!empty($query) || !empty($categoryId))
-                <a href="{{ route('buyer.marketplace') }}" class="btn btn-outline-secondary">✕ Reset</a>
-            @endif
-        </form>
+    {{-- Header Halaman --}}
+    <div class="mb-4">
+        <h3 class="fw-bold mb-1 text-dark">🛒 ALMS Marketplace</h3>
+        <p class="text-muted small mb-0">Temukan produk pertanian dan peternakan berkualitas langsung dari sumbernya.</p>
+        @if(request('search'))
+            <p class="small text-success mt-2 fw-semibold">Menampilkan hasil pencarian untuk: "{{ request('search') }}"</p>
+        @endif
     </div>
-</div>
 
-{{-- Products Grid --}}
-@if($products->isEmpty())
-    <div class="text-center py-5 text-muted">
-        <div style="font-size:48px">🌾</div>
-        <h4>Produk tidak ditemukan</h4>
-        <p>Coba Ganti kata kunci atau kategori lain
-</p>
-    </div>
-@else
-    <div class="row row-cards">
-        @foreach($products as $product)
-        <div class="col-sm-6 col-lg-3">
-            <div class="card product-card h-100">
-                @if($product->image)
-                    <img src="{{ asset('storage/'.$product->image) }}" class="card-img-top" style="height:200px;object-fit:cover;" alt="{{ $product->name }}">
-                @else
-                    <div style="height:200px;background:#f4f6f8;display:flex;align-items:center;justify-content:center;font-size:48px;">
-                        🌿
+    {{-- Layout Utama: Sidebar Kiri Mentok & Produk Kanan --}}
+    <div class="row g-4">
+        
+        {{-- SIDEBAR FILTER KATEGORI (MENTOK KIRI) --}}
+        <div class="col-lg-3">
+            <div class="card border-0 shadow-sm p-4 sticky-top" style="border-radius: 12px; top: 90px;">
+                <h5 class="fw-bold text-dark mb-3">📂 Kategori Produk</h5>
+                
+                <div class="list-group list-group-flush gap-2">
+                    {{-- Tombol Semua Produk (Menampilkan total hasil pencarian dinamis) --}}
+                    <a href="{{ route('buyer.marketplace', ['search' => request('search') ?? request('q')]) }}" 
+                       class="list-group-item list-group-item-action rounded-3 py-3 px-3 fw-semibold d-flex justify-content-between align-items-center {{ !request('category') ? 'bg-success text-white' : 'text-dark bg-transparent' }}">
+                        <span>Semua Produk</span>
+                        <span class="badge {{ !request('category') ? 'bg-white text-success' : 'bg-light text-dark' }} rounded-pill px-3 py-2">
+                            {{ $totalSearchCount ?? 0 }}
+                        </span>
+                    </a>
+
+                    {{-- List Kategori dari Database dengan Hitungan Dinamis Berdasarkan Search --}}
+                    @foreach($categories as $cat)
+                        @php
+                            $productCount = $categoryCounts[$cat->id] ?? 0;
+                        @endphp
+                        <a href="{{ route('buyer.marketplace', ['category' => $cat->id, 'search' => request('search') ?? request('q')]) }}" 
+                           class="list-group-item list-group-item-action rounded-3 py-3 px-3 fw-semibold d-flex justify-content-between align-items-center {{ request('category') == $cat->id ? 'bg-success text-white' : 'text-dark bg-transparent' }}">
+                            <span>{{ $cat->name }}</span>
+                            <span class="badge {{ request('category') == $cat->id ? 'bg-white text-success' : 'bg-light text-dark' }} rounded-pill px-3 py-2">
+                                {{ $productCount }}
+                            </span>
+                        </a>
+                    @endforeach
+                </div>
+
+                {{-- Tombol Reset Filter --}}
+                @if(request('category') || request('search') || request('q'))
+                    <div class="mt-4 pt-3 border-top">
+                        <a href="{{ route('buyer.marketplace') }}" class="btn btn-sm btn-outline-secondary w-100 rounded-pill py-2 fw-semibold">
+                            Reset Filter
+                        </a>
                     </div>
                 @endif
-                <div class="card-body d-flex flex-column">
-                    <div class="mb-1">
-                        <span class="badge bg-success-lt text-success">{{ $product->category->name ?? '-' }}</span>
-                    </div>
-                    <h4 class="card-title mb-1">{{ $product->name }}</h4>
-                    @if($product->reviews->count() > 0)
-                    <div class="mb-1" style="font-size:13px;">
-                        ⭐ {{ $product->rating }} <span class="text-muted">({{ $product->reviews->count() }} ulasan)</span>
-                    </div>
-                    @endif
-                    <p class="text-muted small mb-2">{{ Str::limit($product->description, 60) }}</p>
-                    <div class="mt-auto">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span class="h3 mb-0 fw-bold text-success">{{ rupiah($product->price) }}</span>
-                            <span class="text-muted small">/ {{ $product->unit->symbol ?? '' }}</span>
-                        </div>
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <span class="text-muted small">Stok: {{ $product->stock }}</span>
-                        </div>
-                        <a href="{{ route('buyer.marketplace.show', $product) }}" class="btn btn-success w-100">Lihat detail</a>
-                    </div>
-                </div>
             </div>
         </div>
-        @endforeach
-    </div>
-@endif
 
+        {{-- GRID PRODUK (KANAN) --}}
+        <div class="col-lg-9">
+            <div class="row row-cards g-4">
+                @forelse($products as $product)
+                <div class="col-sm-6 col-md-6 col-xl-4">
+                    <div class="card product-card h-100 border-0 shadow-sm" style="border-radius: 12px; overflow: hidden;">
+                        @if($product->image)
+                            {{-- BAGIAN GAMBAR YANG SUDAH DIBENERIN (object-fit: contain) --}}
+                            <img src="{{ asset('storage/'.$product->image) }}" class="card-img-top bg-light" style="height:210px; width:100%; object-fit:contain; padding:1rem;" alt="{{ $product->name }}">
+                        @else
+                            <div class="bg-light text-secondary d-flex align-items-center justify-content-center" style="height:210px; font-size:48px;">
+                                🌿
+                            </div>
+                        @endif
+                        <div class="card-body d-flex flex-column p-4">
+                            <div class="mb-2">
+                                <span class="badge bg-success-subtle text-success rounded-pill px-3 py-1 small fw-medium">
+                                    {{ $product->category->name ?? '-' }}
+                                </span>
+                            </div>
+                            
+                            <h5 class="card-title fw-bold text-dark mb-3 text-truncate" title="{{ $product->name }}">{{ $product->name }}</h5>
+                            
+                            <div class="d-flex justify-content-between align-items-center mt-auto pt-2">
+                                <span class="fw-bolder text-success fs-5">Rp {{ number_format($product->price, 0, ',', '.') }}</span>
+                                
+                                <a href="{{ route('buyer.marketplace.show', $product) }}" class="btn btn-sm btn-success rounded-pill px-4 shadow-sm fw-bold">
+                                    Lihat
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @empty
+                <div class="col-12">
+                    <div class="alert alert-light text-center py-5 border-0 shadow-sm rounded-3 text-muted">
+                        <div style="font-size: 40px;" class="mb-2">🔍</div>
+                        <h5 class="fw-bold text-dark">Produk tidak ditemukan</h5>
+                        <p class="small mb-3">Tidak ada produk yang tersedia untuk kata kunci "{{ request('search') }}" pada kategori ini.</p>
+                        <a href="{{ route('buyer.marketplace') }}" class="btn btn-sm btn-outline-success rounded-pill px-4">Reset Filter</a>
+                    </div>
+                </div>
+                @endforelse
+            </div>
+
+            {{-- Pagination --}}
+            <div class="mt-5 d-flex justify-content-center">
+                {{ $products->links() }}
+            </div>
+        </div>
+
+    </div>
+
+</div>
 @endsection

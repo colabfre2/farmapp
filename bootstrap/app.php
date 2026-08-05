@@ -12,12 +12,19 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        
+        // Alias middleware lu (jangan dihapus)
         $middleware->alias([
             'role' => \App\Http\Middleware\RoleMiddleware::class,
-            
         ]);
+        
         $middleware->statefulApi();
+
+        // ── BEBASKAN ROUTE MIDTRANS WEBHOOK DARI CSRF DI SINI 🔥 ──
+        $middleware->validateCsrfTokens(except: [
+            'payment/notification', 
+        ]);
+        
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

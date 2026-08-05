@@ -9,6 +9,7 @@ use App\Models\LivestockType;
 
 class KandangController extends Controller
 {
+
     public function index(Request $request)
     {
         $query = $request->input('q');
@@ -77,4 +78,5 @@ class KandangController extends Controller
         $kandang->delete();
         return redirect()->route('admin.kandangs.index')->with('success', 'Kandang berhasil dihapus!');
     }
+    
 }

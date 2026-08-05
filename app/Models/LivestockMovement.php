@@ -8,6 +8,7 @@ class LivestockMovement extends Model
 { 
     protected $fillable = [
         'livestock_id',
+        'kandang_id',
         'user_id',
         'type',
         'quantity',
@@ -19,6 +20,11 @@ class LivestockMovement extends Model
     public function livestock()
     {
         return $this->belongsTo(Livestock::class);
+    }
+
+    public function kandang()
+    {
+        return $this->belongsTo(Kandang::class);
     }
 
     public function user()

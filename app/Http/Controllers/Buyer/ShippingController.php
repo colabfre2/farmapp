@@ -6,39 +6,39 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Services\RajaOngkirService;
 
-
-
 class ShippingController extends Controller
 {
-    protected $rajaOngkir;
-    //
+    protected RajaOngkirService $rajaOngkir;
+
     public function __construct(RajaOngkirService $rajaOngkir)
-{
+    {
+        $this->rajaOngkir = $rajaOngkir;
+    }
 
-    $this->rajaOngkir = $rajaOngkir;
-}
+    // GET /buyer/shipping/search?q=...
+    public function searchDestination(Request $request)
+    {
+        $keyword = $request->query('q', '');
+        $results = $this->rajaOngkir->searchDestination($keyword);
 
-public function getProvinces()
-{
-    $provinces = $this->rajaOngkir->getProvinces();
-    return response()->json($provinces);
-}
+        return response()->json($results);
+    }
 
-public function getCities($provinceId)
-{
-    $cities = $this->rajaOngkir->getCities($provinceId);
-    return response()->json($cities);
-}
+    // POST /buyer/shipping/ongkir
+    public function getOngkir(Request $request)
+    {
+        $request->validate([
+            'destination_id' => 'required',
+            'weight'         => 'required|integer|min:1',
+            'courier'        => 'required|in:jne,jnt,sicepat',
+        ]);
 
-public function getOngkir(Request $request)
-{
-    $results = $this->rajaOngkir->getOngkir(
-        $request->origin,
-        $request->destination,
-        $request->weight,
-        $request->courier
-    );
+        $costs = $this->rajaOngkir->getCost(
+            $request->destination_id,
+            $request->weight,
+            $request->courier
+        );
 
-    return response()->json($results);
-}
+        return response()->json($costs);
+    }
 }

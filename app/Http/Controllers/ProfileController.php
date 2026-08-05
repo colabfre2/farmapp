@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use App\Helpers\ImageCompressor;
 
 class ProfileController extends Controller
 {
@@ -19,32 +20,43 @@ class ProfileController extends Controller
         $user = auth()->user();
 
         $request->validate([
-            'name'    => 'required|string|max:255',
-            'email'   => 'required|email|unique:users,email,' . $user->id,
-            'phone'   => 'nullable|string|max:20',
-            'address' => 'nullable|string',
-            'city'    => 'nullable|string|max:100',
-            'avatar'  => 'nullable|image|max:2048',
+            'name'         => 'required|string|max:255',
+            'email'        => 'required|email|unique:users,email,' . $user->id,
+            'public_email' => 'nullable|email|max:255', // Validasi email publik
+            'city'         => 'nullable|string|max:100',
+            'address'      => 'nullable|string',
+            'whatsapp'     => 'nullable|string|max:20',
+            'instagram'    => 'nullable|string|max:255',
+            'facebook'     => 'nullable|string|max:255',
+            'avatar'       => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
         ]);
 
         $avatarPath = $user->avatar;
+        
+        // EKSEKUSI KOMPRESI KE WEBP
         if ($request->hasFile('avatar')) {
+            // Hapus avatar lama di storage kalau ada
             if ($user->avatar) {
                 Storage::disk('public')->delete($user->avatar);
             }
-            $avatarPath = $request->file('avatar')->store('avatars', 'public');
+            
+            // Panggil helper: parameter (file, nama_folder, max_lebar_px, kualitas_0-100)
+            $avatarPath = ImageCompressor::compressAndStore($request->file('avatar'), 'avatars', 400, 75);
         }
 
         $user->update([
-            'name'    => $request->name,
-            'email'   => $request->email,
-            'phone'   => $request->phone,
-            'address' => $request->address,
-            'city'    => $request->city,
-            'avatar'  => $avatarPath,
+            'name'         => $request->name,
+            'email'        => $request->email,
+            'public_email' => $request->public_email, // Simpan email publik
+            'city'         => $request->city,
+            'address'      => $request->address,
+            'whatsapp'     => $request->whatsapp,
+            'instagram'    => $request->instagram,
+            'facebook'     => $request->facebook,
+            'avatar'       => $avatarPath,
         ]);
 
-        return redirect()->route('profile.edit')->with('success', 'Profil berhasil diperbarui!');
+        return redirect()->route('profile.edit')->with('success', 'Profil dan informasi kontak berhasil diperbarui!');
     }
 
     public function updatePassword(Request $request)
@@ -57,7 +69,8 @@ class ProfileController extends Controller
         $user = auth()->user();
 
         if (!Hash::check($request->current_password, $user->password)) {
-            return back()->withErrors(['current_password' => 'Password lama tidak sesuai!']);
+            // Menggunakan withBag agar error lemparan password nyangkut dengan pas di form password
+            return back()->withErrors(['current_password' => 'Password lama tidak sesuai!'], 'updatePassword');
         }
 
         $user->update([

@@ -27,7 +27,14 @@ class User extends Authenticatable
     'address',
     'city',
     'avatar',
+    'whatsapp',
+    'instagram',
+    'facebook',
+    'public_email',
 ];
+
+
+
     public function isSeller(): bool
     {
         return $this->role === 'seller';

@@ -46,12 +46,11 @@
                         </div>
                         <div class="col-6 mb-3">
                             <label class="form-label fw-semibold">Satuan <span class="text-danger">*</span></label>
-                            <!-- Tambahin ID unit_select disini -->
                             <select name="unit_id" id="unit_select" class="form-select rounded-3 py-2 @error('unit_id') is-invalid @enderror" required>
                                 <option value="" data-symbol="satuan">-- Pilih satuan --</option>
                                 @foreach($units as $unit)
-                                    <!-- Sisipkan data-symbol buat ditangkep JS -->
-                                    <option value="{{ $unit->id }}" data-symbol="{{ $unit->name }} ({{ $unit->symbol }})" {{ old('unit_id') == $unit->id ? 'selected' : '' }}>
+                                    <!-- PERUBAHAN DI SINI: data-symbol cuma ambil unit->symbol -->
+                                    <option value="{{ $unit->id }}" data-symbol="{{ $unit->symbol }}" {{ old('unit_id') == $unit->id ? 'selected' : '' }}>
                                         {{ $unit->name }} ({{ $unit->symbol }})
                                     </option>
                                 @endforeach
@@ -72,13 +71,11 @@
                 <div class="card-body">
                     {{-- Form Dual-Input Rupiah --}}
                     <div class="mb-3">
-                        <!-- Tambahin ID dynamic-unit-label pada teks 'satuan' -->
-                        <label class="form-label fw-semibold">Harga Jual (per <span id="dynamic-unit-label">satuan</span>) <span class="text-danger">*</span></label>
+                        <label class="form-label fw-semibold">Harga Jual (per <span id="dynamic-unit-label" class="text-primary">satuan</span>) <span class="text-danger">*</span></label>
                         <div class="input-group">
                             <span class="input-group-text rounded-start-3 border-end-0 bg-light">Rp</span>
                             <input type="text" id="display_selling_price" class="form-control rounded-end-3 py-2 border-start-0 @error('selling_price') is-invalid @enderror" value="{{ old('selling_price') }}" placeholder="0" required>
                         </div>
-                        <!-- Input Hidden untuk dilempar ke database -->
                         <input type="hidden" name="selling_price" id="hidden_selling_price" value="{{ old('selling_price') }}">
                         @error('selling_price') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
                     </div>
@@ -104,30 +101,30 @@ document.addEventListener("DOMContentLoaded", function() {
     const unitSelect = document.getElementById('unit_select');
     const dynamicUnitLabel = document.getElementById('dynamic-unit-label');
 
-    // Dengerin kalau ada perubahan di dropdown satuan
-    unitSelect.addEventListener('change', function() {
-        const selectedOption = this.options[this.selectedIndex];
-        const symbol = selectedOption.getAttribute('data-symbol');
-        
-        // Ubah teks berdasarkan atribut data-symbol
-        if (symbol) {
-            dynamicUnitLabel.innerText = symbol;
-        } else {
-            dynamicUnitLabel.innerText = 'satuan';
+    function updateUnitLabel() {
+        if (unitSelect.selectedIndex >= 0) {
+            const selectedOption = unitSelect.options[unitSelect.selectedIndex];
+            const symbol = selectedOption.getAttribute('data-symbol');
+            
+            if (symbol && symbol !== 'satuan') {
+                dynamicUnitLabel.innerText = symbol;
+            } else {
+                dynamicUnitLabel.innerText = 'satuan';
+            }
         }
-    });
-
-    // Trigger on-load buat jaga-jaga kalau form error validation dan old() aktif terpilih
-    if(unitSelect.value) {
-        unitSelect.dispatchEvent(new Event('change'));
     }
+
+    // Dengerin pas user milih satuan
+    unitSelect.addEventListener('change', updateUnitLabel);
+
+    // Trigger pas pertama kali halaman di-load (buat nangkep old value kalo ada error validasi)
+    updateUnitLabel();
 
 
     // --- SCRIPT DUAL-INPUT FORMAT RUPIAH ---
     const displayInput = document.getElementById('display_selling_price');
     const hiddenInput = document.getElementById('hidden_selling_price');
 
-    // Fungsi format angka ke Rupiah
     function formatRupiah(angka) {
         let number_string = angka.replace(/[^,\d]/g, '').toString(),
             split    = number_string.split(','),
@@ -144,15 +141,12 @@ document.addEventListener("DOMContentLoaded", function() {
         return rupiah;
     }
 
-    // Format nilai awal jika ada (old input)
     if(hiddenInput.value) {
         displayInput.value = formatRupiah(hiddenInput.value);
     }
 
     displayInput.addEventListener('keyup', function(e) {
-        // Update display dengan titik
         this.value = formatRupiah(this.value);
-        // Simpan versi integer (tanpa titik) ke input hidden
         hiddenInput.value = this.value.replace(/\./g, '');
     });
 
