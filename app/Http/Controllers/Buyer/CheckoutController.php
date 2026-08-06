@@ -163,9 +163,9 @@ class CheckoutController extends Controller
         // Bersihkan session keranjang belanja setelah checkout berhasil
         session()->forget('cart');
 
-        // Jika metode pembayaran Midtrans, lempar ke halaman detail pesanan untuk bayar
+        // 🚀 FIX: kirim objek $order, bukan $order->id, biar URL pakai order_number
         if ($request->payment_method === 'midtrans') {
-            return redirect()->route('buyer.orders.show', $order->id)->with('success', 'Pesanan berhasil dibuat! Silakan lakukan pembayaran.');
+            return redirect()->route('buyer.orders.show', $order)->with('success', 'Pesanan berhasil dibuat! Silakan lakukan pembayaran.');
         }
 
         return redirect()->route('buyer.orders')->with('success', 'Pesanan berhasil dibuat!');

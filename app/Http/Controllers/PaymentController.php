@@ -21,16 +21,13 @@ class PaymentController extends Controller
 
     public function getSnapToken(Order $order)
     {
-        if ($order->snap_token && $order->payment_status === 'pending') {
-            return response()->json(['snap_token' => $order->snap_token]);
-        }
-
-        // Pastikan total amount murni integer tanpa format aneh biar gak loncat harganya
+        // Jika status masih pending, kita buatkan token baru dengan suffix unik agar tidak kena error "already been taken"
         $grossAmount = (int) $order->total_amount;
 
         $params = [
             'transaction_details' => [
-                'order_id' => $order->order_number . '-' . $order->id,
+                // Tambahkan uniqid() agar setiap kali klik bayar ulang, order_id di Midtrans selalu fresh & unik
+                'order_id' => $order->order_number . '-' . $order->id . '-' . substr(uniqid(), -4),
                 'gross_amount' => $grossAmount,
             ],
             'customer_details' => [
@@ -64,7 +61,7 @@ class PaymentController extends Controller
         
         Log::info('WEBHOOK HIT RECEIVED:', $payload);
 
-        $orderIdFull = $payload['order_id'] ?? ''; // Format: ORD-ZHK2RH80-5
+        $orderIdFull = $payload['order_id'] ?? ''; // Format: ORD-ZHK2RH80-5-ab12
 
         // ── FITUR PENCEGAT TEST DUMMY MIDTRANS BIAR GAK 404 🔥 ──
         if (str_contains($orderIdFull, 'payment_notif_test')) {
@@ -87,9 +84,11 @@ class PaymentController extends Controller
             return response()->json(['message' => 'Invalid signature key'], 403);
         }
 
-        // Ambil ID asli order dari string order_id
+        // Ambil ID asli order dari string order_id (Format: ORD-XXXX-ID-UNIQ)
+        // Karena ID order ada di bagian sebelum 4 karakter terakhir, kita explode pakai dash (-)
         $exploded = explode('-', $orderIdFull);
-        $orderId = end($exploded);
+        // Ambil elemen kedua dari belakang sebagai ID order asli (Contoh: ORD(0) - DED7WPRI(1) - 5(2) - ab12(3))
+        $orderId = count($exploded) >= 3 ? $exploded[count($exploded) - 2] : end($exploded);
 
         Log::info('LOOKING FOR ORDER ID IN DB:', ['order_id' => $orderId]);
 
@@ -127,4 +126,4 @@ class PaymentController extends Controller
 
         return response()->json(['message' => 'Notification successfully processed']);
     }
-} 
+}

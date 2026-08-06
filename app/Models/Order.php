@@ -27,6 +27,12 @@ class Order extends Model
         'payment_method',
     ];
 
+    // 🚀 Route model binding pakai order_number, bukan id
+    public function getRouteKeyName()
+    {
+        return 'order_number';
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class);

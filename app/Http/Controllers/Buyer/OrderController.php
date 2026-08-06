@@ -8,43 +8,48 @@ use App\Models\Order;
 
 class OrderController extends Controller
 {
-    //
-    public function index(){
+    public function index(Request $request)
+    {
         $orders = Order::where('user_id', auth()->id())
-        ->with('items')
-        ->latest()
-        ->get();
-        return view ('buyer.orders', compact('orders'));
+            ->with('items')
+            ->when($request->filled('status') && $request->status !== 'all', function ($query) use ($request) {
+                $query->where('status', $request->status);
+            })
+            ->latest()
+            ->get();
+
+        return view('buyer.orders', compact('orders'));
     }
 
     public function show(Order $order)
     {
-        if($order->user_id !== auth()->id()){
+        if ($order->user_id !== auth()->id()) {
             abort(403);
         }
         $order->load('items');
-        return view ('buyer.order-detail', compact('order'));
+        return view('buyer.order-detail', compact('order'));
     }
+
     public function cancel(Order $order)
-{
-    if ($order->user_id !== auth()->id()) {
-        abort(403);
-    }
-
-    if ($order->status !== 'Pending') {
-        return redirect()->back()->with('error', 'Pesanan tidak bisa dibatalkan karena sudah diproses!');
-    }
-
-    // Kembalikan stok produk
-    foreach ($order->items as $item) {
-        $product = \App\Models\Product::find($item->product_id);
-        if ($product) {
-            $product->increment('stock', $item->quantity);
+    {
+        if ($order->user_id !== auth()->id()) {
+            abort(403);
         }
-    }
 
-    $order->update(['status' => 'Cancelled']);
+        if ($order->status !== 'Pending') {
+            return redirect()->back()->with('error', 'Pesanan tidak bisa dibatalkan karena sudah diproses!');
+        }
 
-    return redirect()->route('buyer.orders')->with('success', 'Pesanan berhasil dibatalkan!');
+        // Kembalikan stok produk
+        foreach ($order->items as $item) {
+            $product = \App\Models\Product::find($item->product_id);
+            if ($product) {
+                $product->increment('stock', $item->quantity);
+            }
+        }
+
+        $order->update(['status' => 'Cancelled']);
+
+        return redirect()->route('buyer.orders')->with('success', 'Pesanan berhasil dibatalkan!');
     }
 }

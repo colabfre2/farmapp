@@ -99,8 +99,8 @@
                             <div class="input-group">
                                 <span class="input-group-text bg-light border-end-0">Rp</span>
                                 <input type="text" inputmode="numeric" id="priceInput" class="form-control border-start-0 ps-0 @error('price') is-invalid @enderror" placeholder="0" required>
-                                {{-- HIDDEN INPUT BUAT DIKIRIM KE DATABASE --}}
-                                <input type="hidden" name="price" id="priceActual" value="{{ old('price', $product->price) }}">
+                                {{-- HIDDEN INPUT BUAT DIKIRIM KE DATABASE — SELALU INTEGER MURNI, TANPA DESIMAL --}}
+                                <input type="hidden" name="price" id="priceActual" value="{{ (int) old('price', $product->price) }}">
                             </div>
                             @error('price') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
                         </div>
@@ -196,25 +196,28 @@
             reader.readAsDataURL(file);
         }
 
-        // --- 2. SCRIPT RUPIAH FORMATTER (Anti-Crash Database) ---
+        // --- 2. SCRIPT RUPIAH FORMATTER (Fixed: anti dobel-parse & anti desimal nyasar) ---
         const priceInput = document.getElementById('priceInput');
         const priceActual = document.getElementById('priceActual');
 
-        // Fungsi format titik
-        function formatRupiah(angka) {
-            return new Intl.NumberFormat('id-ID').format(angka);
+        // Fungsi format titik ribuan — HANYA menerima angka murni (integer), tidak pernah string berformat
+        function formatRupiah(angkaMurni) {
+            return new Intl.NumberFormat('id-ID').format(angkaMurni);
         }
 
-        // Format saat halaman pertama dimuat (mengambil data dari DB)
+        // Format saat halaman pertama dimuat.
+        // priceActual.value SUDAH DIJAMIN integer murni oleh PHP (int) di atas — aman diformat langsung.
         if (priceActual.value) {
-            priceInput.value = formatRupiah(priceActual.value);
+            priceInput.value = formatRupiah(parseInt(priceActual.value, 10));
         }
 
-        // Format saat user mengetik
+        // Format saat user mengetik.
+        // Setiap kali user ngetik, kita SELALU parse ulang dari input yang terlihat (this.value),
+        // bukan dari priceActual — supaya tidak pernah terjadi "format di atas format".
         priceInput.addEventListener('input', function(e) {
-            let rawValue = this.value.replace(/[^0-9]/g, ''); // Buang semua huruf/simbol
-            priceActual.value = rawValue; // Simpan nilai murni
-            this.value = rawValue ? formatRupiah(rawValue) : ''; // Tampilkan nilai berformat
+            const rawValue = this.value.replace(/[^0-9]/g, ''); // Buang semua selain digit 0-9 (termasuk titik/koma lama)
+            priceActual.value = rawValue || '0';                // Simpan nilai murni sebagai integer string
+            this.value = rawValue ? formatRupiah(parseInt(rawValue, 10)) : ''; // Tampilkan ulang hasil format bersih
         });
 
         // --- 3. SCRIPT ANTI DOUBLE SUBMIT ---

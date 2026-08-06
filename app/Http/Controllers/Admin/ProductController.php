@@ -35,9 +35,11 @@ class ProductController extends Controller
 
     public function store(Request $request)
     {
-        // Trik Dual-Input: Bersihkan format titik Rupiah jadi integer murni
+        // Bersihkan format harga: ambil angka murninya saja secara mutlak
+        $cleanPrice = preg_replace('/[^0-9]/', '', $request->input('price', 0));
+
         $request->merge([
-            'price' => preg_replace('/[^0-9]/', '', $request->price)
+            'price' => (int) $cleanPrice
         ]);
 
         $request->validate([
@@ -45,7 +47,7 @@ class ProductController extends Controller
             'unit_id'     => 'required|exists:units,id',
             'name'        => 'required|string|max:255',
             'description' => 'nullable|string',
-            'price'       => 'required|numeric|min:0',
+            'price'       => 'required|numeric|min:0|max:999999999', // Batasi max biar gak out of range
             'stock'       => 'required|integer|min:0',
             'image'       => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
             'is_active'   => 'nullable',
@@ -53,7 +55,6 @@ class ProductController extends Controller
 
         $imagePath = null;
         if ($request->hasFile('image')) {
-            // Kompres otomatis jadi .webp (Maks lebar 800px, kualitas 80%)
             $imagePath = ImageCompressor::compressAndStore($request->file('image'), 'products', 800, 80);
         }
 
@@ -81,8 +82,11 @@ class ProductController extends Controller
 
     public function update(Request $request, Product $product)
     {
+        // Bersihkan format harga secara aman agar tidak melipat ganda
+        $cleanPrice = preg_replace('/[^0-9]/', '', $request->input('price', 0));
+
         $request->merge([
-            'price' => preg_replace('/[^0-9]/', '', $request->price)
+            'price' => (int) $cleanPrice
         ]);
 
         $request->validate([
@@ -90,7 +94,7 @@ class ProductController extends Controller
             'unit_id'     => 'required|exists:units,id',
             'name'        => 'required|string|max:255',
             'description' => 'nullable|string',
-            'price'       => 'required|numeric|min:0',
+            'price'       => 'required|numeric|min:0|max:999999999',
             'image'       => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
             'is_active'   => 'nullable',
         ]);
@@ -100,7 +104,6 @@ class ProductController extends Controller
             if ($product->image) {
                 Storage::disk('public')->delete($product->image);
             }
-            // Kompres otomatis ke .webp
             $imagePath = ImageCompressor::compressAndStore($request->file('image'), 'products', 800, 80);
         }
 

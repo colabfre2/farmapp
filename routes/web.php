@@ -90,8 +90,13 @@ Route::middleware(['auth', 'role:buyer'])->prefix('buyer')->name('buyer.')->grou
     // ── Rute Midtrans Snap Token ──
     Route::get('/payment/snap-token/{order}', [PaymentController::class, 'getSnapToken'])->name('payment.snap-token');
 
+    // Daftar pesanan
     Route::get('/orders', [OrderController::class, 'index'])->name('orders');
-    Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
+
+    // 🚀 Detail pesanan pakai order_number (route model binding)
+    Route::get('/orders/{order:order_number}', [OrderController::class, 'show'])->name('orders.show');
+
+    // Batalin pesanan tetep pakai {id} numerik biar gampang nembak form
     Route::patch('/orders/{order}/cancel', [OrderController::class, 'cancel'])->name('orders.cancel');
     
     // Alamat Tersimpan
@@ -106,7 +111,6 @@ Route::middleware(['auth', 'role:buyer'])->prefix('buyer')->name('buyer.')->grou
     Route::get('/orders/{order}/review/{productId}', [ReviewController::class, 'create'])->name('reviews.create');
     Route::post('/orders/{order}/review/{productId}', [ReviewController::class, 'store'])->name('reviews.store');
 });
-
 
 // ── ADMIN ROUTES ─────────────────────────────────────────────
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {

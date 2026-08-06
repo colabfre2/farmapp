@@ -170,6 +170,6 @@
     <div class="container-fluid px-3 py-4">
         @yield('content')
     </div>
-
+    @stack('scripts')
 </body>
 </html>
