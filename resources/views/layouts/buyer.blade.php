@@ -21,18 +21,16 @@
             padding: 0 !important;
             overflow-x: hidden;
             background-color: #f8f9fa;
-            padding-top: 75px !important;
+            /* padding-top dihapus karena kita pakai sticky-top */
         }
 
-        /* Navbar Fixed di atas */
+        /* Navbar Sticky di atas (Lebih aman dari Fixed) */
         .navbar-full {
             background-color: #0d1b2a !important;
             width: 100% !important;
-            position: fixed !important;
+            position: sticky !important; /* Berubah jadi sticky */
             top: 0 !important;
-            left: 0 !important;
             z-index: 1030 !important;
-            margin: 0 !important;
             border-radius: 0 !important;
         }
         .navbar-full .navbar-brand {
@@ -72,46 +70,39 @@
 </head>
 <body class="antialiased m-0 p-0">
 
-    {{-- NAVBAR FIXED 100% FULL-WIDTH --}}
-    <nav class="navbar navbar-expand-lg navbar-full shadow-sm border-0 px-4 py-2">
-        <div class="container-fluid px-3 align-items-center">
+    {{-- NAVBAR FULL-WIDTH --}}
+    <nav class="navbar navbar-expand-lg navbar-full shadow-sm border-0 px-3 px-md-4 py-2 py-md-3">
+        {{-- Tambahan flex-wrap agar elemen bisa turun ke baris baru saat di HP --}}
+        <div class="container-fluid px-0 px-md-3 align-items-center flex-wrap">
             
-            {{-- Brand & Logo (Kiri) --}}
-            <a href="{{ route('buyer.home') }}" class="navbar-brand text-decoration-none d-flex align-items-center gap-3">
-                <img src="{{ asset('images/logo.png') }}" alt="FarmApp" style="height: 40px; width: auto; object-fit: contain;">
+            {{-- Brand & Logo (Kiri, Order 1) --}}
+            <a href="{{ route('buyer.home') }}" class="navbar-brand text-decoration-none d-flex align-items-center gap-2 me-auto order-1">
+                <img src="{{ asset('images/logo.png') }}" alt="FarmApp" style="height: 36px; width: auto; object-fit: contain;">
                 <div class="d-flex flex-column lh-sm">
                     <span style="letter-spacing: 1px; font-size: 1.15rem; font-weight: 700;">ALMS</span>
-                    <span class="text-white-50" style="font-size: 0.65rem; font-weight: 400;">Agriculture Livestock Management</span>
+                    <span class="text-white-50 d-none d-md-block" style="font-size: 0.65rem; font-weight: 400;">Agriculture Livestock Management</span>
                 </div>
             </a>
 
-            {{-- SEARCH BAR PRESISI DI TENGAH --}}
-            <div class="mx-auto my-2 my-lg-0 w-100" style="max-width: 480px;">
-                <form action="{{ route('buyer.marketplace') }}" method="GET" class="d-flex gap-2 m-0">
-                    @if(request('category'))
-                        <input type="hidden" name="category" value="{{ request('category') }}">
-                    @endif
-                    <input type="text" name="search" class="form-control rounded-pill py-2 px-4 shadow-sm border-0 bg-white small"
-                        placeholder="Cari produk pertanian atau peternakan..." value="{{ request('search') ?? request('q') }}">
-                    <button type="submit" class="btn btn-success rounded-pill px-4 shadow-sm fw-bold small">Cari</button>
-                </form>
-            </div>
-
-            {{-- Menu Kanan & Profile Dropdown (Kanan) --}}
-            <div class="navbar-nav d-flex align-items-center gap-3">
-                <a href="{{ route('buyer.marketplace') }}" class="nav-link {{ request()->routeIs('buyer.marketplace*') ? 'active' : '' }}">
-                    🛒 Marketplace
+            {{-- Menu Kanan & Profile Dropdown (Kanan, Order 2 di HP, Order 3 di Desktop) --}}
+            <div class="navbar-nav d-flex flex-row align-items-center gap-2 gap-md-3 order-2 order-lg-3">
+                
+                <a href="{{ route('buyer.marketplace') }}" class="nav-link px-2 {{ request()->routeIs('buyer.marketplace*') ? 'active' : '' }}" title="Marketplace">
+                    <span class="fs-5">🛒</span> <span class="d-none d-md-inline ms-1">Marketplace</span>
                 </a>
-                <a href="{{ route('buyer.cart') }}" class="nav-link {{ request()->routeIs('buyer.cart*') ? 'active' : '' }}">
-                    🛍️ Cart
+                
+                <a href="{{ route('buyer.cart') }}" class="nav-link px-2 position-relative {{ request()->routeIs('buyer.cart*') ? 'active' : '' }}" title="Cart">
+                    <span class="fs-5">🛍️</span> <span class="d-none d-md-inline ms-1">Cart</span>
                     @php $cartCount = count(session()->get('cart', [])); @endphp
                     @if($cartCount > 0)
-                        <span class="badge bg-success rounded-pill shadow-sm ms-1">{{ $cartCount }}</span>
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-success" style="font-size: 0.65rem;">
+                            {{ $cartCount }}
+                        </span>
                     @endif
                 </a>
 
                 {{-- PROFILE DROPDOWN UNTUK BUYER --}}
-                <div class="dropdown ps-2">
+                <div class="dropdown ps-1 ps-md-2">
                     <a href="#" class="d-flex align-items-center gap-2 text-decoration-none dropdown-toggle" id="dropdownBuyerUser" data-bs-toggle="dropdown" aria-expanded="false">
                         <div class="text-end d-none d-md-block">
                             <div class="fw-bold small mb-0 text-white" style="line-height: 1.2;">{{ auth()->user()->name }}</div>
@@ -125,7 +116,7 @@
                         @endif
                     </a>
                     
-                    <ul class="dropdown-menu dropdown-menu-end shadow border-0 py-2 mt-2" aria-labelledby="dropdownBuyerUser" style="min-width: 220px; border-radius: 12px;">
+                    <ul class="dropdown-menu dropdown-menu-end shadow border-0 py-2 mt-2 position-absolute" aria-labelledby="dropdownBuyerUser" style="min-width: 220px; border-radius: 12px;">
                         <li>
                             <div class="px-3 py-1 mb-1">
                                 <span class="text-muted d-block" style="font-size: 0.70rem;">Masuk sebagai</span>
@@ -139,7 +130,6 @@
                                 <span class="badge bg-success-subtle text-success rounded-pill small">Cek Paket</span>
                             </a>
                         </li>
-                        {{-- TAMBAHAN: Menu Atur Alamat --}}
                         <li>
                             <a class="dropdown-item py-2 px-3 d-flex align-items-center gap-2 fw-semibold text-dark" href="{{ route('buyer.addresses.index') }}">
                                 📍 <span class="flex-grow-1">Alamat Saya</span>
@@ -161,8 +151,20 @@
                         </li>
                     </ul>
                 </div>
-
             </div>
+
+            {{-- SEARCH BAR (Order 3 di HP alias Paling Bawah, Order 2 di Desktop alias di Tengah) --}}
+            <div class="w-100 order-3 order-lg-2 mx-auto mt-3 mt-lg-0 flex-grow-1" style="max-width: 480px;">
+                <form action="{{ route('buyer.marketplace') }}" method="GET" class="d-flex gap-2 m-0">
+                    @if(request('category'))
+                        <input type="hidden" name="category" value="{{ request('category') }}">
+                    @endif
+                    <input type="text" name="search" class="form-control rounded-pill py-2 px-3 px-md-4 shadow-sm border-0 bg-white small w-100"
+                        placeholder="Cari produk..." value="{{ request('search') ?? request('q') }}">
+                    <button type="submit" class="btn btn-success rounded-pill px-3 px-md-4 shadow-sm fw-bold small">Cari</button>
+                </form>
+            </div>
+
         </div>
     </nav>
 
