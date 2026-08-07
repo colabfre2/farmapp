@@ -80,6 +80,11 @@
                         ✓ {{ session('success') }}
                     </div>
                 @endif
+                @if(session('error'))
+                    <div class="alert alert-danger bg-danger-subtle text-danger border-0 rounded-3 shadow-sm fw-bold">
+                        ✕ {{ session('error') }}
+                    </div>
+                @endif
             </div>
         </div>
     </div>

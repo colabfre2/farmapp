@@ -6,7 +6,7 @@
         <div class="card">
             <div class="card-header">
                 <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
-                    <h3 class="card-title mb-0">📋 Log Pemberian Obat</h3>
+
                     <a href="{{ route('admin.medicine-logs.create') }}" class="btn btn-primary btn-sm">+ Catat Pemberian Obat</a>
                 </div>
             </div>
@@ -33,7 +33,7 @@
                             <td>{{ \Carbon\Carbon::parse($log->given_at)->format('d M Y') }}</td>
                             <td>{{ $log->medicine->name ?? '-' }}</td>
                             <td>{{ $log->livestock->name ?? '-' }}</td>
-                            <td>{{ $log->dose }} {{ $log->medicine->unit ?? '' }}</td>
+                            <td>{{ $log->dose }} {{ $log->medicine->unit->symbol ?? $log->medicine->unit->name ?? '' }}</td>
                             <td>{{ $log->reason ?? '-' }}</td>
                             <td>{{ $log->user->name ?? '-' }}</td>
                         </tr>

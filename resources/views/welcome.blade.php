@@ -33,6 +33,69 @@
         .footer-link:hover { color: #10b981; }
         .social-icon { display: inline-flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 50%; background-color: rgba(255,255,255,0.1); color: #fff; text-decoration: none; transition: 0.2s;}
         .social-icon:hover { background-color: #10b981; transform: translateY(-2px); }
+
+        /* Password Show/Hide Toggle */
+        .password-wrapper { position: relative; }
+        .password-toggle-btn {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #94a3b8;
+            cursor: pointer;
+            padding: 4px;
+            font-size: 1.1rem;
+            line-height: 1;
+        }
+        .password-toggle-btn:hover { color: #10b981; }
+
+        /* Auth Alert - Professional Style */
+        .auth-alert {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-left: 4px solid #dc2626;
+            border-radius: 10px;
+            padding: 14px 16px;
+            margin-bottom: 20px;
+            animation: alertSlideIn 0.3s ease;
+        }
+        .auth-alert-icon {
+            flex-shrink: 0;
+            width: 22px;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #dc2626;
+            color: #fff;
+            border-radius: 50%;
+            font-size: 12px;
+            font-weight: 800;
+            margin-top: 1px;
+        }
+        .auth-alert-body { flex: 1; }
+        .auth-alert-title {
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: #991b1b;
+            margin-bottom: 2px;
+        }
+        .auth-alert-text {
+            font-size: 0.82rem;
+            color: #b91c1c;
+            line-height: 1.4;
+            margin: 0;
+        }
+        .auth-alert-text ul { margin: 2px 0 0; padding-left: 16px; }
+        @keyframes alertSlideIn {
+            from { opacity: 0; transform: translateY(-8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
 <body class="layout-fluid text-gray-800">
@@ -403,19 +466,25 @@
                         <img src="{{ asset('images/logo.png') }}" alt="ALMS Logo" style="height: 44px; width: auto; object-fit: contain;" class="mb-2">
                         <p class="text-muted small">Kelola pertanian & peternakan jadi lebih mudah.</p>
                     </div>
-                    <form method="POST" action="{{ route('login') }}">
+
+                    <div id="loginAlertBox"></div>
+
+                    <form method="POST" action="{{ route('login') }}" id="loginForm">
                         @csrf
                         <div class="mb-3">
                             <label class="form-label fw-semibold text-dark small">Alamat Email</label>
-                            <input type="email" name="email" class="form-control rounded-3 py-2" value="{{ old('email') }}" placeholder="nama@email.com" required>
+                            <input type="email" name="email" id="loginEmail" class="form-control rounded-3 py-2" value="{{ old('email') }}" placeholder="nama@email.com" required>
                         </div>
                         <div class="mb-4">
                             <label class="form-label fw-semibold text-dark small">Password</label>
-                            <input type="password" name="password" class="form-control rounded-3 py-2" placeholder="••••••••" required>
+                            <div class="password-wrapper">
+                                <input type="password" name="password" id="loginPassword" class="form-control rounded-3 py-2" placeholder="••••••••" required>
+                                <button type="button" class="password-toggle-btn" onclick="togglePassword('loginPassword', this)">👁️</button>
+                            </div>
                         </div>
                         <div class="d-grid mb-3">
-                            <button type="submit" class="btn btn-success py-2 rounded-pill fw-bold shadow-sm">
-                                Masuk Sekarang ✓
+                            <button type="submit" id="loginSubmitBtn" class="btn btn-success py-2 rounded-pill fw-bold shadow-sm">
+                                <span id="loginBtnText">Masuk Sekarang ✓</span>
                             </button>
                         </div>
                         <div class="text-center text-muted small">
@@ -440,27 +509,36 @@
                         <img src="{{ asset('images/logo.png') }}" alt="ALMS Logo" style="height: 40px; width: auto; object-fit: contain;" class="mb-1">
                         <p class="text-muted small">Daftar untuk mulai belanja hasil tani & ternak.</p>
                     </div>
-                    <form method="POST" action="{{ route('register') }}">
+
+                    <div id="registerAlertBox"></div>
+
+                    <form method="POST" action="{{ route('register') }}" id="registerForm">
                         @csrf
                         <div class="mb-3">
                             <label class="form-label fw-semibold text-dark small">Nama Lengkap</label>
-                            <input type="text" name="name" class="form-control rounded-3 py-2" value="{{ old('name') }}" placeholder="Nama Lengkap Kamu" required>
+                            <input type="text" name="name" id="registerName" class="form-control rounded-3 py-2" value="{{ old('name') }}" placeholder="Nama Lengkap Kamu" required>
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-semibold text-dark small">Alamat Email</label>
-                            <input type="email" name="email" class="form-control rounded-3 py-2" value="{{ old('email') }}" placeholder="nama@email.com" required>
+                            <input type="email" name="email" id="registerEmail" class="form-control rounded-3 py-2" value="{{ old('email') }}" placeholder="nama@email.com" required>
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-semibold text-dark small">Password</label>
-                            <input type="password" name="password" class="form-control rounded-3 py-2" placeholder="••••••••" required>
+                            <div class="password-wrapper">
+                                <input type="password" name="password" id="registerPassword" class="form-control rounded-3 py-2" placeholder="••••••••" required>
+                                <button type="button" class="password-toggle-btn" onclick="togglePassword('registerPassword', this)">👁️</button>
+                            </div>
                         </div>
                         <div class="mb-4">
                             <label class="form-label fw-semibold text-dark small">Konfirmasi Password</label>
-                            <input type="password" name="password_confirmation" class="form-control rounded-3 py-2" placeholder="••••••••" required>
+                            <div class="password-wrapper">
+                                <input type="password" name="password_confirmation" id="registerPasswordConfirm" class="form-control rounded-3 py-2" placeholder="••••••••" required>
+                                <button type="button" class="password-toggle-btn" onclick="togglePassword('registerPasswordConfirm', this)">👁️</button>
+                            </div>
                         </div>
                         <div class="d-grid mb-3">
-                            <button type="submit" class="btn btn-success py-2 rounded-pill fw-bold shadow-sm">
-                                Daftar Sekarang ✓
+                            <button type="submit" id="registerSubmitBtn" class="btn btn-success py-2 rounded-pill fw-bold shadow-sm">
+                                <span id="registerBtnText">Daftar Sekarang ✓</span>
                             </button>
                         </div>
                         <div class="text-center text-muted small">
@@ -485,6 +563,140 @@
             setTimeout(function() {
                 AOS.refresh();
             }, 300);
+        });
+
+        // Toggle show/hide password
+        function togglePassword(inputId, btn) {
+            const input = document.getElementById(inputId);
+            if (input.type === 'password') {
+                input.type = 'text';
+                btn.textContent = '🙈';
+            } else {
+                input.type = 'password';
+                btn.textContent = '👁️';
+            }
+        }
+
+        // Render alert box profesional (dipakai bareng login & register)
+        function renderAuthAlert(container, title, message, isList = false) {
+            container.innerHTML = `
+                <div class="auth-alert">
+                    <div class="auth-alert-icon">!</div>
+                    <div class="auth-alert-body">
+                        <div class="auth-alert-title">${title}</div>
+                        <div class="auth-alert-text">${isList ? message : `<p class="auth-alert-text mb-0">${message}</p>`}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function clearAuthAlert(container) {
+            container.innerHTML = '';
+        }
+
+        function setButtonLoading(btn, textSpan, loadingText) {
+            btn.disabled = true;
+            textSpan.dataset.original = textSpan.textContent;
+            textSpan.textContent = loadingText;
+        }
+
+        function resetButtonLoading(btn, textSpan) {
+            btn.disabled = false;
+            textSpan.textContent = textSpan.dataset.original;
+        }
+
+        // ── AJAX LOGIN (tanpa reload halaman) ──────────────────
+        const loginForm = document.getElementById('loginForm');
+        const loginAlertBox = document.getElementById('loginAlertBox');
+        const loginSubmitBtn = document.getElementById('loginSubmitBtn');
+        const loginBtnText = document.getElementById('loginBtnText');
+
+        loginForm?.addEventListener('submit', function (e) {
+            e.preventDefault();
+            clearAuthAlert(loginAlertBox);
+            setButtonLoading(loginSubmitBtn, loginBtnText, 'Memproses...');
+
+            fetch(loginForm.action, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': document.querySelector('#loginForm input[name="_token"]').value,
+                },
+                body: new FormData(loginForm),
+            })
+            .then(async (response) => {
+                if (response.ok) {
+                    // Login sukses → server set session, kita redirect manual
+                    const data = await response.json().catch(() => null);
+                    window.location.href = data?.redirect || '/';
+                    return;
+                }
+
+                if (response.status === 422) {
+                    const data = await response.json();
+                    renderAuthAlert(
+                        loginAlertBox,
+                        'Gagal Masuk',
+                        'Email atau kata sandi yang Anda masukkan tidak sesuai. Silakan periksa kembali dan coba lagi.'
+                    );
+                } else {
+                    renderAuthAlert(loginAlertBox, 'Terjadi Kesalahan', 'Tidak dapat terhubung ke server. Silakan coba lagi.');
+                }
+                resetButtonLoading(loginSubmitBtn, loginBtnText);
+            })
+            .catch(() => {
+                renderAuthAlert(loginAlertBox, 'Terjadi Kesalahan', 'Tidak dapat terhubung ke server. Periksa koneksi Anda.');
+                resetButtonLoading(loginSubmitBtn, loginBtnText);
+            });
+        });
+
+        // ── AJAX REGISTER (tanpa reload halaman) ───────────────
+        const registerForm = document.getElementById('registerForm');
+        const registerAlertBox = document.getElementById('registerAlertBox');
+        const registerSubmitBtn = document.getElementById('registerSubmitBtn');
+        const registerBtnText = document.getElementById('registerBtnText');
+
+        registerForm?.addEventListener('submit', function (e) {
+            e.preventDefault();
+            clearAuthAlert(registerAlertBox);
+            setButtonLoading(registerSubmitBtn, registerBtnText, 'Memproses...');
+
+            fetch(registerForm.action, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': document.querySelector('#registerForm input[name="_token"]').value,
+                },
+                body: new FormData(registerForm),
+            })
+            .then(async (response) => {
+                if (response.ok) {
+                    const data = await response.json().catch(() => null);
+                    window.location.href = data?.redirect || '/';
+                    return;
+                }
+
+                if (response.status === 422) {
+                    const data = await response.json();
+                    const messages = Object.values(data.errors || {}).flat();
+
+                    if (messages.length === 1) {
+                        renderAuthAlert(registerAlertBox, 'Pendaftaran Belum Berhasil', messages[0]);
+                    } else {
+                        const listHtml = '<ul class="mb-0">' + messages.map(m => `<li>${m}</li>`).join('') + '</ul>';
+                        renderAuthAlert(registerAlertBox, 'Pendaftaran Belum Berhasil', listHtml, true);
+                    }
+                } else {
+                    renderAuthAlert(registerAlertBox, 'Terjadi Kesalahan', 'Tidak dapat terhubung ke server. Silakan coba lagi.');
+                }
+                resetButtonLoading(registerSubmitBtn, registerBtnText);
+            })
+            .catch(() => {
+                renderAuthAlert(registerAlertBox, 'Terjadi Kesalahan', 'Tidak dapat terhubung ke server. Periksa koneksi Anda.');
+                resetButtonLoading(registerSubmitBtn, registerBtnText);
+            });
         });
     </script>
 </body>

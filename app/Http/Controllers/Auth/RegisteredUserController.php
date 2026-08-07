@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -28,8 +29,12 @@ class RegisteredUserController extends Controller
      *
      * @throws ValidationException
      */
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request): RedirectResponse|JsonResponse
     {
+        // validate() otomatis lempar ValidationException kalau gagal.
+        // Laravel otomatis convert exception itu jadi response 422 JSON
+        // kalau request minta JSON (fetch/AJAX), atau redirect back
+        // dengan session errors kalau request form biasa.
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
@@ -50,11 +55,23 @@ class RegisteredUserController extends Controller
         $role = $user->role;
 
         if ($role === 'admin') {
-            return redirect()->route('admin.dashboard');
+            $redirectUrl = route('admin.dashboard');
         } elseif ($role === 'buyer') {
-            return redirect()->route('buyer.home');
+            $redirectUrl = route('buyer.home');
+        } else {
+            $redirectUrl = route('login');
         }
 
-        return redirect()->route('login');
+        // Kalau request dari fetch/AJAX (welcome page modal), balikin JSON
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success'  => true,
+                'message'  => 'Registrasi berhasil!',
+                'redirect' => $redirectUrl,
+            ]);
+        }
+
+        // Fallback untuk submit form biasa (non-AJAX)
+        return redirect($redirectUrl);
     }
 }

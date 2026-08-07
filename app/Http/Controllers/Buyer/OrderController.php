@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Buyer;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Order;
+use App\Models\StockMovement;
 
 class OrderController extends Controller
 {
@@ -40,10 +41,20 @@ class OrderController extends Controller
             return redirect()->back()->with('error', 'Pesanan tidak bisa dibatalkan karena sudah diproses!');
         }
 
-        // Kembalikan stok produk
+        // Kembalikan stok produk + catat mutasi stok masuk (pembatalan)
         foreach ($order->items as $item) {
             $product = \App\Models\Product::find($item->product_id);
             if ($product) {
+                // 🚀 FIX: catat mutasi stok masuk biar konsisten dengan histori Stok Masuk
+                StockMovement::create([
+                    'product_id' => $product->id,
+                    'user_id'    => auth()->id(),
+                    'type'       => 'in',
+                    'quantity'   => $item->quantity,
+                    'reason'     => 'Pembatalan Pesanan',
+                    'notes'      => 'Stok dikembalikan karena Pesanan ' . $order->order_number . ' dibatalkan buyer',
+                ]);
+
                 $product->increment('stock', $item->quantity);
             }
         }

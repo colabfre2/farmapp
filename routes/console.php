@@ -3,8 +3,9 @@
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
+use App\Console\Commands\SendFeedScheduleReminders;
 
-Schedule::command('reminders:daily')->dailyAt('06:00');
+Schedule::command(SendFeedScheduleReminders::class)->everyMinute();
 
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());

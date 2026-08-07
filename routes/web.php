@@ -44,6 +44,7 @@ use App\Http\Controllers\Admin\IncomeSourceController;
 use App\Http\Controllers\Admin\NotificationController;
 use App\Http\Controllers\Admin\KandangController;
 use App\Http\Controllers\Admin\FarmController;
+use App\Http\Controllers\Admin\FeedScheduleController;
 
 Route::post('/payment/notification', [PaymentController::class, 'notification'])->name('payment.notification');
 
@@ -164,11 +165,14 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::resource('products', ProductController::class);
 
     // Stock Barang Masuk & Keluar
+    
+    Route::post('/stock/in/store-bulk', [StockMovementController::class, 'inStoreBulk'])->name('stock.in.store-bulk');
     Route::get('/stock/in', [StockMovementController::class, 'inIndex'])->name('stock.in.index');
     Route::get('/stock/in/create', [StockMovementController::class, 'inCreate'])->name('stock.in.create');
     Route::post('/stock/in', [StockMovementController::class, 'inStore'])->name('stock.in.store');
     Route::get('/stock/in-export', [StockMovementController::class, 'exportInExcel'])->name('stock.in.export');
-
+    
+    Route::post('/stock/out/store-bulk', [StockMovementController::class, 'outStoreBulk'])->name('stock.out.store-bulk');
     Route::get('/stock/out', [StockMovementController::class, 'outIndex'])->name('stock.out.index');
     Route::get('/stock/out/create', [StockMovementController::class, 'outCreate'])->name('stock.out.create');
     Route::post('/stock/out', [StockMovementController::class, 'outStore'])->name('stock.out.store');
@@ -210,6 +214,14 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllRead'])->name('notifications.mark-all-read');
     Route::delete('/notifications/{id}', [NotificationController::class, 'destroy'])->name('notifications.destroy');
+
+    
+Route::get('/feed-schedules', [FeedScheduleController::class, 'index'])->name('feed-schedules.index');
+Route::post('/feed-schedules', [FeedScheduleController::class, 'store'])->name('feed-schedules.store');
+Route::patch('/feed-schedules/{feedSchedule}/toggle', [FeedScheduleController::class, 'toggleActive'])->name('feed-schedules.toggle');
+Route::delete('/feed-schedules/{feedSchedule}', [FeedScheduleController::class, 'destroy'])->name('feed-schedules.destroy');
+
+
 });
 
 // ── API / Testing Routes ─────────────────────────────────────

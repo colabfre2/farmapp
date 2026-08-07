@@ -195,7 +195,7 @@
 
                         {{-- Peternakan --}}
                         @php 
-                            $isPeternakanActive = request()->routeIs('admin.livestock.*', 'admin.medicine-logs.*', 'admin.feed-logs.*', 'admin.livestock-movements.*');
+                            $isPeternakanActive = request()->routeIs('admin.livestock.*', 'admin.medicine-logs.*', 'admin.feed-logs.*', 'admin.livestock-movements.*', 'admin.feed-schedules.*');
                         @endphp
                         <li class="nav-item">
                             <a class="nav-link {{ $isPeternakanActive ? 'active' : '' }}" href="#peternakan-menu" data-bs-toggle="collapse" aria-expanded="{{ $isPeternakanActive ? 'true' : 'false' }}">
@@ -212,6 +212,8 @@
                                     <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.livestock-movements.out.*') ? 'active fw-bold text-success' : '' }}" href="{{ route('admin.livestock-movements.out.index') }}"><span class="nav-link-title">⬇ Ternak Keluar</span></a></li>
                                     <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.medicine-logs.*') ? 'active fw-bold text-success' : '' }}" href="{{ route('admin.medicine-logs.index') }}"><span class="nav-link-title">📋 Log Obat</span></a></li>
                                     <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.feed-logs.*') ? 'active fw-bold text-success' : '' }}" href="{{ route('admin.feed-logs.index') }}"><span class="nav-link-title">📋 Log Pakan</span></a></li>
+                                    <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.feed-schedules.*') ? 'active fw-bold text-success' : '' }}" href="{{ route('admin.feed-schedules.index') }}"><span class="nav-link-title">⏰ Jadwal Pakan</span></a></li>
+
                                 </ul>
                             </div>
                         </li>
@@ -371,8 +373,8 @@
                                                     </div>
                                                     <p class="text-secondary small mb-2" style="line-height: 1.4;">{{ $notification->data['message'] ?? '-' }}</p>
                                                     
-                                                    @if(isset($notification->data['order_id']))
-                                                        <a href="{{ route('admin.transactions.show', $notification->data['order_id']) }}" class="btn btn-sm btn-success rounded-pill px-3 py-1 fw-bold" style="font-size: 0.75rem;">
+                                                    @if(isset($notification->data['order_number']))
+                                                        <a href="{{ route('admin.transactions.show', $notification->data['order_number']) }}" class="btn btn-sm btn-success rounded-pill px-3 py-1 fw-bold" style="font-size: 0.75rem;">
                                                             Lihat Pesanan →
                                                         </a>
                                                     @endif

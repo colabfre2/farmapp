@@ -73,6 +73,44 @@ class ProductController extends Controller
         return redirect()->route('admin.products.index')->with('success', 'Produk berhasil ditambahkan!');
     }
 
+    /**
+     * Tampilkan detail satu produk
+     */
+    public function show(Product $product)
+    {
+        $product->load([
+            'category',
+            'unit',
+            'user',
+            'reviews.user',
+            'orderItems.order',
+        ]);
+
+        // Statistik ringkas buat kartu insight
+        $totalSold   = $product->orderItems->sum('quantity');
+        $totalOmzet  = $product->orderItems->sum('subtotal');
+        $totalReview = $product->reviews->count();
+        $avgRating   = $product->reviews->count() > 0
+            ? round($product->reviews->avg('rating'), 1)
+            : null;
+
+        // Riwayat pesanan terbaru yang memuat produk ini (10 terakhir)
+        $recentOrderItems = $product->orderItems()
+            ->with('order.user')
+            ->latest()
+            ->take(10)
+            ->get();
+
+        return view('admin.products.show', compact(
+            'product',
+            'totalSold',
+            'totalOmzet',
+            'totalReview',
+            'avgRating',
+            'recentOrderItems'
+        ));
+    }
+
     public function edit(Product $product)
     {
         $categories = Category::all();

@@ -33,8 +33,8 @@
                                 </div>
                                 <div class="text-muted small mb-1">{{ $notification->data['message'] }}</div>
                                 <div class="text-muted" style="font-size:11px;">{{ $notification->created_at->format('d M Y H:i') }} · {{ $notification->created_at->diffForHumans() }}</div>
-                                @if(isset($notification->data['order_id']))
-                                    <a href="{{ route('admin.transactions.show', $notification->data['order_id']) }}" class="btn btn-sm btn-outline-primary mt-2">Lihat Pesanan</a>
+                                @if(isset($notification->data['order_number']))
+                                    <a href="{{ route('admin.transactions.show', $notification->data['order_number']) }}" class="btn btn-sm btn-outline-primary mt-2">Lihat Pesanan</a>
                                 @endif
                             </div>
                             <form method="POST" action="{{ route('admin.notifications.destroy', $notification->id) }}">

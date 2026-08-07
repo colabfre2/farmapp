@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -22,8 +23,12 @@ class AuthenticatedSessionController extends Controller
     /**
      * Handle an incoming authentication request.
      */
-    public function store(LoginRequest $request): RedirectResponse
+    public function store(LoginRequest $request): RedirectResponse|JsonResponse
     {
+        // Kalau email/password salah, LoginRequest::authenticate() otomatis
+        // lempar ValidationException. Laravel otomatis convert exception itu
+        // jadi response 422 JSON kalau request minta JSON (fetch/AJAX),
+        // atau redirect back dengan session errors kalau request form biasa.
         $request->authenticate();
 
         $request->session()->regenerate();
@@ -31,13 +36,25 @@ class AuthenticatedSessionController extends Controller
         $role = auth()->user()->role;
 
         if ($role === 'admin') {
-            return redirect()->route('admin.dashboard');
+            $redirectUrl = route('admin.dashboard');
         } elseif ($role === 'buyer') {
-            return redirect()->route('buyer.home');
+            $redirectUrl = route('buyer.home');
+        } else {
+            $redirectUrl = route('login');
         }
 
-        return redirect()->route('login');
+        // Kalau request dari fetch/AJAX (welcome page modal), balikin JSON
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success'  => true,
+                'message'  => 'Login berhasil!',
+                'redirect' => $redirectUrl,
+            ]);
         }
+
+        // Fallback untuk submit form biasa (non-AJAX)
+        return redirect($redirectUrl);
+    }
 
     /**
      * Destroy an authenticated session.

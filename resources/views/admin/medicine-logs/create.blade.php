@@ -13,11 +13,13 @@
                     @csrf
                     <div class="mb-3">
                         <label class="form-label fw-bold">Obat</label>
-                        <select name="medicine_id" class="form-select @error('medicine_id') is-invalid @enderror" required>
+                        <select name="medicine_id" id="medicineSelect" class="form-select @error('medicine_id') is-invalid @enderror" required>
                             <option value="">-- Pilih Obat --</option>
                             @foreach($medicines as $medicine)
-                                <option value="{{ $medicine->id }}" {{ old('medicine_id') == $medicine->id ? 'selected' : '' }}>
-                                    {{ $medicine->name }} (Stok: {{ $medicine->stock }} {{ $medicine->unit }})
+                                <option value="{{ $medicine->id }}"
+                                    data-unit="{{ $medicine->unit->symbol ?? $medicine->unit->name ?? '' }}"
+                                    {{ old('medicine_id') == $medicine->id ? 'selected' : '' }}>
+                                    {{ $medicine->name }} (Stok: {{ $medicine->stock }} {{ $medicine->unit->symbol ?? $medicine->unit->name ?? '' }})
                                 </option>
                             @endforeach
                         </select>
@@ -36,8 +38,11 @@
                         @error('livestock_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-bold">Dosis</label>
-                        <input type="number" step="0.01" name="dose" class="form-control @error('dose') is-invalid @enderror" value="{{ old('dose') }}" required>
+                        <label class="form-label fw-bold">Dosis <span id="doseUnitLabel" class="text-muted fw-normal"></span></label>
+                        <div class="input-group">
+                            <input type="number" step="0.01" name="dose" id="doseInput" class="form-control @error('dose') is-invalid @enderror" value="{{ old('dose') }}" required>
+                            <span class="input-group-text" id="doseUnitSuffix">-</span>
+                        </div>
                         @error('dose') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
                     <div class="mb-3">
@@ -62,4 +67,28 @@
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const medicineSelect = document.getElementById('medicineSelect');
+    const doseUnitSuffix = document.getElementById('doseUnitSuffix');
+    const doseUnitLabel  = document.getElementById('doseUnitLabel');
+
+    function updateDoseUnit() {
+        const selectedOpt = medicineSelect.options[medicineSelect.selectedIndex];
+        const unit = selectedOpt ? selectedOpt.dataset.unit : '';
+
+        if (unit) {
+            doseUnitSuffix.textContent = unit;
+            doseUnitLabel.textContent = `(dalam ${unit})`;
+        } else {
+            doseUnitSuffix.textContent = '-';
+            doseUnitLabel.textContent = '';
+        }
+    }
+
+    medicineSelect.addEventListener('change', updateDoseUnit);
+    updateDoseUnit(); // jalankan sekali saat halaman dimuat (buat kasus old('medicine_id') / validasi gagal)
+});
+</script>
 @endsection

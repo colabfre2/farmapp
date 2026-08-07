@@ -144,6 +144,9 @@
                         </td>
                         <td>
                             <div class="d-flex justify-content-center gap-2">
+                                <a href="{{ route('admin.products.show', $product) }}" class="btn btn-sm btn-light text-success border shadow-sm rounded-3" title="Lihat Detail">
+                                    👁️ Detail
+                                </a>
                                 <a href="{{ route('admin.products.edit', $product) }}" class="btn btn-sm btn-light text-primary border shadow-sm rounded-3" title="Edit">
                                     ✏️ Edit
                                 </a>

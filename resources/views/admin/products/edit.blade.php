@@ -105,9 +105,14 @@
                             @error('price') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label fw-semibold">Stok Saat Ini <span class="text-danger">*</span></label>
-                            <input type="number" name="stock" class="form-control @error('stock') is-invalid @enderror" value="{{ old('stock', $product->stock) }}" min="0" required>
-                            @error('stock') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                            <label class="form-label fw-semibold">Stok Saat Ini</label>
+                            <input type="number" class="form-control bg-light" value="{{ $product->stock }}" disabled>
+                            <div class="form-text text-muted">
+                                <i class="bi bi-info-circle"></i> Stok tidak bisa diubah dari sini. Gunakan menu
+                                <a href="{{ route('admin.stock.in.create') }}" class="text-decoration-none fw-semibold">Stok Masuk</a> atau
+                                <a href="{{ route('admin.stock.out.create') }}" class="text-decoration-none fw-semibold">Stok Keluar</a>
+                                untuk mencatat perubahan stok.
+                            </div>
                         </div>
                     </div>
                 </div>

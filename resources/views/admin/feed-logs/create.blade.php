@@ -13,11 +13,13 @@
                     @csrf
                     <div class="mb-3">
                         <label class="form-label fw-bold">Pakan</label>
-                        <select name="feed_id" class="form-select @error('feed_id') is-invalid @enderror" required>
+                        <select name="feed_id" id="feedSelect" class="form-select @error('feed_id') is-invalid @enderror" required>
                             <option value="">-- Pilih Pakan --</option>
                             @foreach($feeds as $feed)
-                                <option value="{{ $feed->id }}" {{ old('feed_id') == $feed->id ? 'selected' : '' }}>
-                                    {{ $feed->name }} (Stok: {{ $feed->stock }} {{ $feed->unit }})
+                                <option value="{{ $feed->id }}"
+                                    data-unit="{{ $feed->unit->symbol ?? $feed->unit->name ?? '' }}"
+                                    {{ old('feed_id') == $feed->id ? 'selected' : '' }}>
+                                    {{ $feed->name }} (Stok: {{ $feed->stock }} {{ $feed->unit->symbol ?? $feed->unit->name ?? '' }})
                                 </option>
                             @endforeach
                         </select>
@@ -37,8 +39,11 @@
                     </div>
                     <div class="row">
                         <div class="col-6 mb-3">
-                            <label class="form-label fw-bold">Jumlah</label>
-                            <input type="number" step="0.01" name="amount" class="form-control @error('amount') is-invalid @enderror" value="{{ old('amount') }}" required>
+                            <label class="form-label fw-bold">Jumlah <span id="amountUnitLabel" class="text-muted fw-normal"></span></label>
+                            <div class="input-group">
+                                <input type="number" step="0.01" name="amount" id="amountInput" class="form-control @error('amount') is-invalid @enderror" value="{{ old('amount') }}" required>
+                                <span class="input-group-text" id="amountUnitSuffix">-</span>
+                            </div>
                             @error('amount') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
                         <div class="col-6 mb-3">
@@ -70,4 +75,28 @@
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const feedSelect = document.getElementById('feedSelect');
+    const amountUnitSuffix = document.getElementById('amountUnitSuffix');
+    const amountUnitLabel  = document.getElementById('amountUnitLabel');
+
+    function updateAmountUnit() {
+        const selectedOpt = feedSelect.options[feedSelect.selectedIndex];
+        const unit = selectedOpt ? selectedOpt.dataset.unit : '';
+
+        if (unit) {
+            amountUnitSuffix.textContent = unit;
+            amountUnitLabel.textContent = `(dalam ${unit})`;
+        } else {
+            amountUnitSuffix.textContent = '-';
+            amountUnitLabel.textContent = '';
+        }
+    }
+
+    feedSelect.addEventListener('change', updateAmountUnit);
+    updateAmountUnit();
+});
+</script>
 @endsection

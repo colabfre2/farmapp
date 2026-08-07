@@ -19,6 +19,12 @@
 </div>
 @endif
 
+@if(session('error'))
+<div class="alert alert-danger">
+    ✕ {{ session('error')}}
+</div>
+@endif
+
 @if(empty($cart))
     <div class="text-center py-5 text-muted">
         <div class="font-size:64px">🛒</div>
