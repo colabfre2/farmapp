@@ -53,6 +53,18 @@ class TransactionController extends Controller
 
         return redirect()->route('admin.transactions.show', $order)->with('success', 'Status pesanan berhasil diperbarui!');
     }
+
+    public function updateTracking(Request $request, Order $order)
+    {
+        $request->validate([
+            'tracking_number' => 'required|string|max:255',
+        ]);
+
+        $order->update(['tracking_number' => $request->tracking_number]);
+
+        return redirect()->route('admin.transactions.show', $order)->with('success', 'Nomor resi berhasil disimpan!');
+    }
+
     public function exportExcel()
     {
         return Excel::download(new TransactionsExport, 'Data-Transaksi-' . date('Y-m-d') . '.xlsx');

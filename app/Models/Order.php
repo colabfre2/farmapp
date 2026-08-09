@@ -23,6 +23,7 @@ class Order extends Model
         'destination_id',
         'courier',
         'courier_service',
+        'tracking_number',
         'shipping_cost',
         'payment_method',
     ];

@@ -300,6 +300,7 @@
                                 </ul>
                             </div>
                         </li>
+                        <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.banners.*') ? 'active fw-bold text-success' : '' }}" href="{{ route('admin.banners.index') }}"><span class="nav-link-title">🖼️ Banner</span></a></li>
 
                     </ul>
                 </div>

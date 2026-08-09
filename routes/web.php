@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Http;
-
+use App\Http\Controllers\Admin\BannerController;
 // ── Controller Utama ─────────────────────────────────────────
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RajaOngkirController;
@@ -71,6 +71,7 @@ Route::middleware(['auth'])->group(function () {
 });
 
 // ── BUYER ROUTES ─────────────────────────────────────────────
+// ── BUYER ROUTES ─────────────────────────────────────────────
 Route::middleware(['auth', 'role:buyer'])->prefix('buyer')->name('buyer.')->group(function () {
     Route::get('/home', function () {
         return view('buyer.home');
@@ -85,8 +86,10 @@ Route::middleware(['auth', 'role:buyer'])->prefix('buyer')->name('buyer.')->grou
     Route::delete('/cart/{id}/remove', [CartController::class, 'remove'])->name('cart.remove');
     Route::delete('/cart/clear', [CartController::class, 'clear'])->name('cart.clear');
 
-    Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout');
-    Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
+    // 🚀 FIX: checkout sekarang POST (bukan GET) karena butuh kirim selected_ids[]
+    // dari checkbox di halaman cart. Dipecah jadi 2 path beda biar tidak bentrok.
+    Route::post('/checkout', [CheckoutController::class, 'index'])->name('checkout');
+    Route::post('/checkout/store', [CheckoutController::class, 'store'])->name('checkout.store');
 
     // ── Rute Midtrans Snap Token ──
     Route::get('/payment/snap-token/{order}', [PaymentController::class, 'getSnapToken'])->name('payment.snap-token');
@@ -99,7 +102,7 @@ Route::middleware(['auth', 'role:buyer'])->prefix('buyer')->name('buyer.')->grou
 
     // Batalin pesanan tetep pakai {id} numerik biar gampang nembak form
     Route::patch('/orders/{order}/cancel', [OrderController::class, 'cancel'])->name('orders.cancel');
-    
+
     // Alamat Tersimpan
     Route::resource('addresses', AddressController::class);
     Route::patch('/addresses/{address}/set-default', [AddressController::class, 'setDefault'])->name('addresses.set-default');
@@ -117,6 +120,15 @@ Route::middleware(['auth', 'role:buyer'])->prefix('buyer')->name('buyer.')->grou
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/search', [SearchController::class, 'index'])->name('search');
+
+    //home banner
+    Route::get('/banners', [BannerController::class, 'index'])->name('banners.index');
+Route::get('/banners/create', [BannerController::class, 'create'])->name('banners.create');
+Route::post('/banners', [BannerController::class, 'store'])->name('banners.store');
+Route::get('/banners/{banner}/edit', [BannerController::class, 'edit'])->name('banners.edit');
+Route::put('/banners/{banner}', [BannerController::class, 'update'])->name('banners.update');
+Route::delete('/banners/{banner}', [BannerController::class, 'destroy'])->name('banners.destroy');
+Route::patch('/banners/{banner}/toggle', [BannerController::class, 'toggleActive'])->name('banners.toggle');
 
     // Master Data
     Route::resource('categories', CategoryController::class);
@@ -182,6 +194,8 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/transactions', [TransactionController::class, 'index'])->name('transactions.index');
     Route::get('/transactions/{order}', [TransactionController::class, 'show'])->name('transactions.show');
     Route::patch('/transactions/{order}/status', [TransactionController::class, 'updateStatus'])->name('transactions.update-status');
+    Route::patch('/transactions/{order}/tracking', [TransactionController::class, 'updateTracking'])->name('transactions.update-tracking');
+    
     Route::get('/transactions-export', [TransactionController::class, 'exportExcel'])->name('transactions.export');
 
     // Finance (Income & Expense)

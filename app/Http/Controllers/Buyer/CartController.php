@@ -65,20 +65,40 @@ class CartController extends Controller
     {
         $cart = session()->get('cart', []);
 
-        if (isset($cart[$id])) {
-            $product = Product::find($id);
-            $requestedQty = (int) $request->input('quantity', 1);
-
-            // 🚀 FIX: cegah update quantity melebihi stok terkini
-            if ($product) {
-                if ($requestedQty > $product->stock) {
-                    return redirect()->route('buyer.cart')->with('error', 'Stok ' . $product->name . ' tersisa ' . $product->stock . ', tidak bisa mengubah jumlah melebihi itu.');
-                }
-                $cart[$id]['stock'] = $product->stock; // sinkronkan stok terbaru
+        if (!isset($cart[$id])) {
+            if ($request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => 'Item tidak ditemukan di keranjang.'], 404);
             }
+            return redirect()->route('buyer.cart')->with('error', 'Item tidak ditemukan di keranjang.');
+        }
 
-            $cart[$id]['quantity'] = max($requestedQty, 1);
-            session()->put('cart', $cart);
+        $product = Product::find($id);
+        $requestedQty = (int) $request->input('quantity', 1);
+
+        // 🚀 FIX: cegah update quantity melebihi stok terkini
+        if ($product) {
+            if ($requestedQty > $product->stock) {
+                $message = 'Stok ' . $product->name . ' tersisa ' . $product->stock . ', tidak bisa mengubah jumlah melebihi itu.';
+
+                if ($request->wantsJson()) {
+                    return response()->json(['success' => false, 'message' => $message], 422);
+                }
+                return redirect()->route('buyer.cart')->with('error', $message);
+            }
+            $cart[$id]['stock'] = $product->stock; // sinkronkan stok terbaru
+        }
+
+        $cart[$id]['quantity'] = max($requestedQty, 1);
+        session()->put('cart', $cart);
+
+        // 🚀 FIX: kalau request dari AJAX (fetch), balikin JSON tanpa redirect —
+        // biar halaman tidak reload dan checkbox yang sudah dicentang tidak reset.
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success'  => true,
+                'quantity' => $cart[$id]['quantity'],
+                'subtotal' => $cart[$id]['price'] * $cart[$id]['quantity'],
+            ]);
         }
 
         return redirect()->route('buyer.cart')->with('success', 'Cart updated!');

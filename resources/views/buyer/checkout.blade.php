@@ -576,7 +576,7 @@
         document.getElementById('totalDisplay').textContent = formatRupiahDisplay(SUBTOTAL);
         document.getElementById('courierHint').style.display = 'block';
         document.getElementById('courierHint').textContent = 'Pilih layanan kurir di atas.';
-    }
+    } 
     
     // Payment Management
     function selectPaymentMethod(methodVal) {

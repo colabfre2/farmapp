@@ -28,10 +28,18 @@
         object-fit: contain;
         border-radius: 8px;
     }
+    .banner-info-box {
+        background: #f0f9ff;
+        border: 1px solid #bae6fd;
+        border-left: 4px solid #0ea5e9;
+        border-radius: 10px;
+        padding: 14px 16px;
+    }
+    .banner-info-box ul { margin: 6px 0 0; padding-left: 18px; }
+    .banner-info-box li { font-size: 0.85rem; color: #0c4a6e; margin-bottom: 2px; }
 </style>
 
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="fw-bold mb-0">Edit Banner</h2>
     <a href="{{ route('admin.banners.index') }}" class="btn btn-outline-secondary">← Kembali</a>
 </div>
 
@@ -69,11 +77,23 @@
         </div>
 
         <div class="col-lg-5">
-            <div class="card mb-4 border-0 shadow-sm">
+            <div class="card mb-3 border-0 shadow-sm">
                 <div class="card-header bg-white border-bottom-0 pt-4 pb-0">
                     <h3 class="card-title fw-bold">Gambar Banner</h3>
                 </div>
                 <div class="card-body">
+
+                    {{-- INFO UKURAN & KETENTUAN GAMBAR --}}
+                    <div class="banner-info-box mb-3">
+                        <div class="fw-bold text-dark small mb-1">📐 Ketentuan Gambar Banner</div>
+                        <ul>
+                            <li>Ukuran ideal: <strong>1600 × 500 px</strong> (rasio 16:5)</li>
+                            <li>Taruh teks/objek penting di <strong>tengah gambar</strong> — bagian pinggir bisa terpotong otomatis di layar berbeda</li>
+                            <li>Format: JPG, PNG, atau WEBP</li>
+                            <li>Ukuran file maksimal: <strong>2 MB</strong></li>
+                        </ul>
+                    </div>
+
                     <div id="drop-zone" class="upload-area p-3 text-center rounded-3 has-image">
                         <input type="file" name="image" id="imageInput" class="d-none @error('image') is-invalid @enderror" accept="image/*">
                         <div id="drop-text">

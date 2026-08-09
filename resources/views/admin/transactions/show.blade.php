@@ -93,6 +93,16 @@
                             <div class="text-muted small">Alamat Lengkap</div>
                             <div class="fw-bold text-dark">{{ $order->shipping_address }}</div>
                         </div>
+                        <div class="col-12">
+                            <hr class="text-muted opacity-25 my-2">
+                            <div class="text-muted small mb-2">Nomor Resi</div>
+                            <form method="POST" action="{{ route('admin.transactions.update-tracking', $order) }}" class="d-flex gap-2">
+                                @csrf
+                                @method('PATCH')
+                                <input type="text" name="tracking_number" value="{{ $order->tracking_number }}" placeholder="Masukkan nomor resi..." class="form-control rounded-3 py-2" required>
+                                <button type="submit" class="btn btn-success rounded-pill px-4 fw-bold text-nowrap">Simpan</button>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>

@@ -25,12 +25,22 @@ class BannerController extends Controller
     {
         $request->validate([
             'title'    => 'required|string|max:255',
-            'image'    => 'required|image|mimes:jpeg,png,jpg,webp|max:2048',
+            // 🚀 FIX: naikkan limit upload mentah jadi 10MB — file akan otomatis
+            // dikompres ke WebP setelah lolos validasi, jadi limit ketat di sini
+            // cuma menghalangi kompresi berjalan.
+            'image'    => 'required|image|mimes:jpeg,png,jpg,webp|max:10240',
             'link_url' => 'nullable|url|max:255',
             'order'    => 'nullable|integer|min:0',
+        ], [
+            // 🚀 FIX: pesan custom manual, gak bergantung ke file lang/validation.php
+            'image.required' => 'Gambar banner wajib diupload.',
+            'image.image'    => 'File yang diupload harus berupa gambar.',
+            'image.mimes'    => 'Format gambar harus JPG, PNG, JPG, atau WEBP.',
+            'image.max'      => 'Ukuran gambar terlalu besar! Maksimal 10 MB (akan otomatis dikompres oleh sistem setelah diupload).',
         ]);
 
-        $imagePath = ImageCompressor::compressAndStore($request->file('image'), 'banners', 1600, 80);
+        // Kompres ke WebP, lebar maks 1600px, kualitas 70% (ringan buat koneksi lambat)
+        $imagePath = ImageCompressor::compressAndStore($request->file('image'), 'banners', 1600, 70);
 
         Banner::create([
             'title'     => $request->title,
@@ -52,9 +62,13 @@ class BannerController extends Controller
     {
         $request->validate([
             'title'    => 'required|string|max:255',
-            'image'    => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'image'    => 'nullable|image|mimes:jpeg,png,jpg,webp|max:10240',
             'link_url' => 'nullable|url|max:255',
             'order'    => 'nullable|integer|min:0',
+        ], [
+            'image.image' => 'File yang diupload harus berupa gambar.',
+            'image.mimes' => 'Format gambar harus JPG, PNG, JPG, atau WEBP.',
+            'image.max'   => 'Ukuran gambar terlalu besar! Maksimal 10 MB (akan otomatis dikompres oleh sistem setelah diupload).',
         ]);
 
         $imagePath = $banner->image;
@@ -62,7 +76,8 @@ class BannerController extends Controller
             if ($banner->image) {
                 Storage::disk('public')->delete($banner->image);
             }
-            $imagePath = ImageCompressor::compressAndStore($request->file('image'), 'banners', 1600, 80);
+            // Kompres ke WebP, lebar maks 1600px, kualitas 70% (ringan buat koneksi lambat)
+            $imagePath = ImageCompressor::compressAndStore($request->file('image'), 'banners', 1600, 70);
         }
 
         $banner->update([

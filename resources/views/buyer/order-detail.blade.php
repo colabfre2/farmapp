@@ -202,6 +202,19 @@
                             <span class="text-muted d-block small mb-1">Alamat Lengkap</span>
                             <span class="fw-bold text-dark">{{ $order->shipping_address }}</span>
                         </div>
+                        @if(!empty($order->tracking_number))
+                        <div class="col-12">
+                            <div class="p-3 bg-light rounded-4 border d-flex justify-content-between align-items-center flex-wrap gap-2">
+                                <div>
+                                    <span class="text-muted d-block small mb-1">📦 Nomor Resi</span>
+                                    <span class="fw-bold text-dark">{{ $order->tracking_number }}</span>
+                                </div>
+                                @if($order->courier)
+                                <span class="badge bg-secondary-subtle text-secondary rounded-pill px-3 py-2 fw-bold text-uppercase">{{ $order->courier }}</span>
+                                @endif
+                            </div>
+                        </div>
+                        @endif
                     </div>
                 </div>
             </div>

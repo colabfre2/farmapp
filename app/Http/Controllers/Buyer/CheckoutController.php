@@ -26,13 +26,32 @@ class CheckoutController extends Controller
 
     // ── Halaman Checkout ──────────────────────────────────────
 
-    public function index()
+    public function index(Request $request)
     {
-        $cart = session()->get('cart', []);
+        $fullCart = session()->get('cart', []);
 
-        if (empty($cart)) {
+        if (empty($fullCart)) {
             return redirect()->route('buyer.cart')->with('error', 'Keranjang belanja kosong!');
         }
+
+        // 🚀 FIX: hanya proses item yang dicentang buyer di halaman cart.
+        // selected_ids dikirim dari form cart (checkbox per item).
+        $selectedIds = $request->input('selected_ids', []);
+
+        if (empty($selectedIds)) {
+            return redirect()->route('buyer.cart')->with('error', 'Pilih minimal 1 item untuk checkout.');
+        }
+
+        $cart = collect($fullCart)
+            ->filter(fn($item, $id) => in_array((string) $id, array_map('strval', $selectedIds)))
+            ->toArray();
+
+        if (empty($cart)) {
+            return redirect()->route('buyer.cart')->with('error', 'Item yang dipilih tidak ditemukan di keranjang.');
+        }
+
+        // Simpan pilihan ke session, dipakai lagi saat submit form checkout (store())
+        session()->put('checkout_selected_ids', array_keys($cart));
 
         $subtotal = collect($cart)->sum(fn($item) => $item['price'] * $item['quantity']);
 
@@ -51,7 +70,20 @@ class CheckoutController extends Controller
 
     public function store(Request $request)
     {
-        $cart = session()->get('cart', []);
+        $fullCart = session()->get('cart', []);
+
+        if (empty($fullCart)) {
+            return redirect()->route('buyer.cart')->with('error', 'Keranjang belanja kosong!');
+        }
+
+        // 🚀 FIX: ambil hanya item yang tadi dipilih di halaman cart (disimpan session
+        // saat CheckoutController@index dipanggil). Fallback ke seluruh cart kalau
+        // entah kenapa session ini kosong, biar tidak error total.
+        $selectedIds = session()->get('checkout_selected_ids', array_keys($fullCart));
+
+        $cart = collect($fullCart)
+            ->filter(fn($item, $id) => in_array((string) $id, array_map('strval', $selectedIds)))
+            ->toArray();
 
         if (empty($cart)) {
             return redirect()->route('buyer.cart')->with('error', 'Keranjang belanja kosong!');
@@ -193,8 +225,14 @@ class CheckoutController extends Controller
                 $admin->notify(new NewOrderNotification($order));
             }
 
-            // Bersihkan session keranjang belanja setelah checkout berhasil
-            session()->forget('cart');
+            // 🚀 FIX: hapus HANYA item yang dicheckout dari session cart,
+            // item yang tidak dipilih tetap ada untuk dibeli lain kali.
+            $remainingCart = collect($fullCart)
+                ->reject(fn($item, $id) => in_array((string) $id, array_map('strval', array_keys($cart))))
+                ->toArray();
+
+            session()->put('cart', $remainingCart);
+            session()->forget('checkout_selected_ids');
 
             // Jika metode pembayaran Midtrans, lempar ke halaman detail pesanan untuk bayar
             if ($request->payment_method === 'midtrans') {
