@@ -14,7 +14,7 @@
                 {{-- Product Info --}}
                 <div class="d-flex align-items-center gap-3 mb-4 p-3 bg-light rounded-3">
                     @if($product->image)
-                        <img src="{{ asset('storage/'.$product->image) }}" class="shadow-sm rounded-3" style="width:64px; height:64px; object-fit:cover;">
+                        <img src="{{ '/storage/' . $product->image }}" class="shadow-sm rounded-3" style="width:64px; height:64px; object-fit:cover;">
                     @else
                         <div class="bg-secondary rounded-3 d-flex align-items-center justify-content-center text-white" style="width:64px; height:64px;">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">

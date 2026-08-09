@@ -137,7 +137,7 @@
                         </div>
                         
                         {{-- Set source gambar lama jika ada --}}
-                        <img id="imagePreview" src="{{ $product->image ? asset('storage/' . $product->image) : '' }}" class="img-fluid mx-auto" alt="Preview">
+                        <img id="imagePreview" src="{{ $product->image ? '/storage/' . $product->image : '' }}" class="img-fluid mx-auto" alt="Preview">
                     </div>
                     @error('image') <div class="text-danger small mt-2 text-center">{{ $message }}</div> @enderror
                 </div>

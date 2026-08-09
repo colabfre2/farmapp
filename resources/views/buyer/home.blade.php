@@ -145,10 +145,10 @@
             <div class="carousel-item {{ $index === 0 ? 'active' : '' }}" style="height: 100%;">
                 @if($banner->link_url)
                     <a href="{{ $banner->link_url }}" target="_blank" rel="noopener">
-                        <img src="{{ asset('storage/'.$banner->image) }}" class="d-block w-100 h-100" style="object-fit: cover;" alt="{{ $banner->title }}">
+                        <img src="{{ '/storage/' . $banner->image }}" class="d-block w-100 h-100" style="object-fit: cover;" alt="{{ $banner->title }}">
                     </a>
                 @else
-                    <img src="{{ asset('storage/'.$banner->image) }}" class="d-block w-100 h-100" style="object-fit: cover;" alt="{{ $banner->title }}">
+                    <img src="{{ '/storage/' . $banner->image }}" class="d-block w-100 h-100" style="object-fit: cover;" alt="{{ $banner->title }}">
                 @endif
             </div>
             @endforeach
@@ -201,7 +201,7 @@
         <div class="col-6 col-md-4 col-xl-3">
             <div class="card home-product-card h-100 border-0" style="overflow: hidden;">
                 @if($product->image)
-                    <img src="{{ asset('storage/'.$product->image) }}" class="card-img-top home-product-img" alt="{{ $product->name }}">
+                    <img src="{{ '/storage/' . $product->image }}" class="card-img-top home-product-img" alt="{{ $product->name }}">
                 @else
                     <div class="bg-light text-secondary d-flex align-items-center justify-content-center" style="height:150px; font-size:36px;">
                         🌿

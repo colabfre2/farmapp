@@ -308,7 +308,7 @@
                             <a href="{{ route('buyer.marketplace') }}" class="card product-card h-100 text-decoration-none text-reset">
                                 <div class="position-relative">
                                     @if($product->image)
-                                        <img src="{{ asset('storage/'.$product->image) }}" class="card-img-top bg-light w-100" style="height:200px; object-fit:contain; padding:1rem;" alt="{{ $product->name }}">
+                                        <img src="{{ '/storage/' . $product->image }}" class="card-img-top bg-light w-100" style="height:200px; object-fit:contain; padding:1rem;" alt="{{ $product->name }}">
                                     @else
                                         <div class="card-img-top w-100 d-flex align-items-center justify-content-center bg-light" style="height:200px;font-size:48px;">🌿</div>
                                     @endif

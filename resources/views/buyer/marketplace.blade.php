@@ -197,7 +197,7 @@
                 <div class="col-sm-6 col-md-6 col-xl-4">
                     <div class="card mp-product-card h-100 border-0" style="overflow: hidden;">
                         @if($product->image)
-                            <img src="{{ asset('storage/'.$product->image) }}" class="card-img-top mp-product-img" alt="{{ $product->name }}">
+                            <img src="{{ '/storage/' . $product->image }}" class="card-img-top mp-product-img" alt="{{ $product->name }}">
                         @else
                             <div class="bg-light text-secondary d-flex align-items-center justify-content-center" style="height:200px; font-size:44px;">
                                 🌿

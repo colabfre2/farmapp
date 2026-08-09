@@ -88,7 +88,7 @@
                         <div class="mb-4 text-center">
                             <div class="avatar-container mb-3">
                                 @if(auth()->user()->avatar)
-                                    <img src="{{ asset('storage/' . auth()->user()->avatar) }}" class="avatar-preview-img" id="avatarPreview" alt="Avatar">
+                                    <img src="{{ '/storage/' . auth()->user()->avatar }}" class="avatar-preview-img" id="avatarPreview" alt="Avatar">
                                 @else
                                     <div id="avatarPreview" class="avatar-preview-img bg-success d-flex align-items-center justify-content-center text-white display-4 fw-bold font-quicksand">
                                         {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}

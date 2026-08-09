@@ -80,7 +80,7 @@
                                     <td>
                                         <div class="d-flex align-items-center gap-3">
                                             @if($item['image'])
-                                                <img src="{{ asset('storage/'.$item['image']) }}" style="width:50px;height:50px;object-fit:cover;border-radius:8px;">
+                                                <img src="{{ '/storage/' . $item['image'] }}" style="width:50px;height:50px;object-fit:cover;border-radius:8px;">
                                             @else
                                                 <div style="width:50px;height:50px;background:#f4f6f8;border-radius:8px;display:flex;align-items:center;justify-content:center;">🌿</div>
                                             @endif

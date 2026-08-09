@@ -145,7 +145,7 @@
         <div class="col-lg-5">
             <div class="pd-image-wrap">
                 @if($product->image)
-                    <img src="{{ asset('storage/'.$product->image) }}" class="img-fluid w-100" style="height:420px; object-fit:contain; padding:2rem;" alt="{{ $product->name }}">
+                    <img src="{{ '/storage/' . $product->image }}" class="img-fluid w-100" style="height:420px; object-fit:contain; padding:2rem;" alt="{{ $product->name }}">
                 @else
                     <div class="text-secondary d-flex align-items-center justify-content-center" style="height:420px; font-size:90px;">
                         🌿

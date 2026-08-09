@@ -117,7 +117,7 @@
                         <td class="text-center fw-bold text-muted">{{ $loop->iteration }}</td>
                         <td>
                             @if($product->image)
-                                <img src="{{ asset('storage/'.$product->image) }}" alt="{{ $product->name }}" style="width:45px; height:45px; object-fit:cover; border-radius:8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                                <img src="{{ '/storage/' . $product->image }}" alt="{{ $product->name }}" style="width:45px; height:45px; object-fit:cover; border-radius:8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
                             @else
                                 <div class="bg-light d-flex align-items-center justify-content-center text-muted border" style="width:45px; height:45px; border-radius:8px;">
                                     📸

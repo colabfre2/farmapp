@@ -31,7 +31,7 @@
                     <tr>
                         <td class="text-center fw-bold text-muted">{{ $banner->order }}</td>
                         <td>
-                            <img src="{{ asset('storage/'.$banner->image) }}" alt="{{ $banner->title }}" style="width:120px; height:60px; object-fit:cover; border-radius:8px;">
+                            <img src="{{ '/storage/' . $banner->image }}" alt="{{ $banner->title }}" style="width:120px; height:60px; object-fit:cover; border-radius:8px;">
                         </td>
                         <td class="fw-bold text-dark">{{ $banner->title }}</td>
                         <td class="text-muted small">{{ $banner->link_url ?? '-' }}</td>

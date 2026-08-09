@@ -23,12 +23,13 @@ class ProfileController extends Controller
             'name'         => 'required|string|max:255',
             'email'        => 'required|email|unique:users,email,' . $user->id,
             'public_email' => 'nullable|email|max:255', // Validasi email publik
+            'phone'        => 'nullable|string|max:20',
             'city'         => 'nullable|string|max:100',
             'address'      => 'nullable|string',
             'whatsapp'     => 'nullable|string|max:20',
             'instagram'    => 'nullable|string|max:255',
             'facebook'     => 'nullable|string|max:255',
-            'avatar'       => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'avatar'       => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
         ]);
 
         $avatarPath = $user->avatar;
@@ -48,6 +49,7 @@ class ProfileController extends Controller
             'name'         => $request->name,
             'email'        => $request->email,
             'public_email' => $request->public_email, // Simpan email publik
+            'phone'        => $request->phone,
             'city'         => $request->city,
             'address'      => $request->address,
             'whatsapp'     => $request->whatsapp,

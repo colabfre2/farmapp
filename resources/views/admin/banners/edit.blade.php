@@ -101,7 +101,7 @@
                             <h5 class="mt-2 text-dark fw-semibold">Ubah Gambar</h5>
                             <p class="text-muted small mb-0">Tarik & lepas atau klik untuk mengganti.</p>
                         </div>
-                        <img id="imagePreview" src="{{ asset('storage/'.$banner->image) }}" class="img-fluid mx-auto" alt="Preview">
+                        <img id="imagePreview" src="{{ '/storage/' . $banner->image }}" class="img-fluid mx-auto" alt="Preview">
                     </div>
                     @error('image') <div class="text-danger small mt-2 text-center">{{ $message }}</div> @enderror
                 </div>

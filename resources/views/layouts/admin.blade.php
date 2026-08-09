@@ -303,6 +303,9 @@
                         </li>
                         <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.banners.*') ? 'active fw-bold text-success' : '' }}" href="{{ route('admin.banners.index') }}"><span class="nav-link-title">🖼️ Banner</span></a></li>
 
+                        <div class="sidebar-heading">Pengaturan</div>
+                        <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.admins.*') ? 'active fw-bold text-success' : '' }}" href="{{ route('admin.admins.index') }}"><span class="nav-link-icon">🛡️</span><span class="nav-link-title">Kelola Admin</span></a></li>
+
                     </ul>
                 </div>
             </div>
@@ -408,7 +411,7 @@
                                         <small class="text-muted" style="font-size: 0.75rem;">Admin</small>
                                     </div>
                                     @if(auth()->user()->avatar)
-                                        <img src="{{ asset('storage/' . auth()->user()->avatar) }}" style="width:38px;height:38px;object-fit:cover;border-radius:50%; border: 2px solid #2d7a2d;">
+                                        <img src="{{ '/storage/' . auth()->user()->avatar }}" style="width:38px;height:38px;object-fit:cover;border-radius:50%; border: 2px solid #2d7a2d;">
                                     @else
                                         <div class="navbar-avatar shadow-sm">
                                             {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}

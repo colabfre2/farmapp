@@ -198,7 +198,7 @@
                             <div class="fw-bold small mb-0 text-white" style="line-height: 1.2;">{{ auth()->user()->name }}</div>
                         </div>
                         @if(auth()->user()->avatar)
-                            <img src="{{ asset('storage/' . auth()->user()->avatar) }}" style="width:38px;height:38px;object-fit:cover;border-radius:50%; border: 2px solid rgba(201, 138, 60, 0.55);">
+                            <img src="{{ '/storage/' . auth()->user()->avatar }}" style="width:38px;height:38px;object-fit:cover;border-radius:50%; border: 2px solid rgba(201, 138, 60, 0.55);">
                         @else
                             <div class="navbar-avatar shadow-sm">
                                 {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}

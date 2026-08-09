@@ -74,7 +74,7 @@
         <div class="card card-flat">
             <div class="card-body p-4 text-center">
                 @if($product->image)
-                    <img src="{{ asset('storage/'.$product->image) }}" alt="{{ $product->name }}" class="rounded-3 mb-3 shadow-sm" style="width: 100%; height: 220px; object-fit: cover;">
+                    <img src="{{ '/storage/' . $product->image }}" alt="{{ $product->name }}" class="rounded-3 mb-3 shadow-sm" style="width: 100%; height: 220px; object-fit: cover;">
                 @else
                     <div class="bg-light d-flex align-items-center justify-content-center text-muted rounded-3 mb-3" style="width: 100%; height: 220px; font-size: 3rem;">
                         📸
