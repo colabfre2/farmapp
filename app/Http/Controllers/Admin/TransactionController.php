@@ -16,11 +16,24 @@ class TransactionController extends Controller
     {
         $query = $request->input('q');
         $status = $request->input('status');
+        $dateFrom = $request->input('date_from');
+        $dateTo = $request->input('date_to');
 
-        $orders = Order::with('user', 'items')->when($query, fn($q) => $q->where('order_number', 'like', "%{$query}%")
-        ->orWhereHas('user', fn($q) => $q->where('name', 'like', "%{$query}%")))->when($status, fn($q) => $q->where('status', $status))->latest()->get();
+        $orders = Order::with('user', 'items')
+            ->when($query, function ($q) use ($query) {
+                $q->where(function ($sub) use ($query) {
+                    $sub->where('order_number', 'like', "%{$query}%")
+                        ->orWhereHas('user', fn($u) => $u->where('name', 'like', "%{$query}%"));
+                });
+            })
+            ->when($status, fn($q) => $q->where('status', $status))
+            ->when($dateFrom, fn($q) => $q->whereDate('created_at', '>=', $dateFrom))
+            ->when($dateTo, fn($q) => $q->whereDate('created_at', '<=', $dateTo))
+            ->latest()
+            ->paginate(15)
+            ->withQueryString();
 
-        return view ('admin.transactions.index', compact('orders', 'query', 'status'));
+        return view ('admin.transactions.index', compact('orders', 'query', 'status', 'dateFrom', 'dateTo'));
     }
 
     public function show(Order $order)
@@ -51,7 +64,7 @@ class TransactionController extends Controller
         ]);
     }
 
-        return redirect()->route('admin.transactions.show', $order)->with('success', 'Status pesanan berhasil diperbarui!');
+        return redirect()->back()->with('success', 'Status pesanan berhasil diperbarui!');
     }
 
     public function updateTracking(Request $request, Order $order)

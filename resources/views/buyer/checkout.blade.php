@@ -260,15 +260,22 @@
                                 <span class="text-secondary">Subtotal Barang</span>
                                 <span class="text-dark fw-medium">Rp {{ number_format($subtotal, 0, ',', '.') }}</span>
                             </div>
-                            <div class="d-flex justify-content-between small">
+                            <div class="d-flex justify-content-between small mb-2">
                                 <span class="text-secondary">Ongkos Kirim</span>
                                 <span id="shippingCostDisplay" class="text-secondary">—</span>
                             </div>
+                            <div class="d-flex justify-content-between small">
+                                <span class="text-secondary">Biaya Layanan</span>
+                                <span class="text-dark fw-medium">Rp {{ number_format($estimatedFee, 0, ',', '.') }}</span>
+                            </div>
+                        </div>
+                        <div class="text-secondary mb-3" style="font-size: 0.75rem;">
+                            💡 Biaya layanan mulai Rp100/hari & naik Rp1 tiap ada pesanan baru masuk, otomatis reset tiap hari. Nilai final dihitung ulang saat pesanan dikonfirmasi.
                         </div>
 
                         <div class="d-flex justify-content-between align-items-center mb-4">
                             <span class="fw-bold text-dark fs-5">Total Bayar</span>
-                            <span id="totalDisplay" class="fs-4 fw-bold text-success font-quicksand">Rp {{ number_format($subtotal, 0, ',', '.') }}</span>
+                            <span id="totalDisplay" class="fs-4 fw-bold text-success font-quicksand">Rp {{ number_format($subtotal + $estimatedFee, 0, ',', '.') }}</span>
                         </div>
 
                         <button type="submit" class="btn btn-success w-100 fw-bold rounded-pill py-3 px-4 shadow-sm fs-5 d-flex justify-content-center align-items-center gap-2">
@@ -285,6 +292,7 @@
 <script>
     // Konfigurasi Variabel
     const SUBTOTAL       = {{ $subtotal }};
+    const ESTIMATED_FEE  = {{ $estimatedFee }};
     const SEARCH_URL     = '{{ route("buyer.shipping.search") }}';
     const ONGKIR_URL     = '{{ route("buyer.shipping.ongkir") }}';
     const CSRF           = '{{ csrf_token() }}';
@@ -560,7 +568,7 @@
         document.getElementById('shippingCostDisplay').textContent = formatRupiahDisplay(cost);
         document.getElementById('shippingCostDisplay').className   = 'text-dark fw-bold';
     
-        const total = SUBTOTAL + cost;
+        const total = SUBTOTAL + cost + ESTIMATED_FEE;
         document.getElementById('totalDisplay').textContent = formatRupiahDisplay(total);
     }
     
@@ -573,7 +581,7 @@
         document.getElementById('shippingCostDisplay').textContent = '—';
         document.getElementById('shippingCostDisplay').className   = 'text-secondary';
         
-        document.getElementById('totalDisplay').textContent = formatRupiahDisplay(SUBTOTAL);
+        document.getElementById('totalDisplay').textContent = formatRupiahDisplay(SUBTOTAL + ESTIMATED_FEE);
         document.getElementById('courierHint').style.display = 'block';
         document.getElementById('courierHint').textContent = 'Pilih layanan kurir di atas.';
     } 

@@ -148,7 +148,7 @@
 
                         {{-- Keuangan --}}
                         @php 
-                            $isFinanceActive = request()->routeIs('admin.transactions.*', 'admin.finance.*');
+                            $isFinanceActive = request()->routeIs('admin.transactions.*', 'admin.finance.*', 'admin.buyers.*');
                         @endphp
                         <li class="nav-item">
                             <a class="nav-link {{ $isFinanceActive ? 'active' : '' }}" href="#finance-menu" data-bs-toggle="collapse" aria-expanded="{{ $isFinanceActive ? 'true' : 'false' }}">
@@ -161,6 +161,7 @@
                             <div class="collapse {{ $isFinanceActive ? 'show' : '' }}" id="finance-menu">
                                 <ul class="navbar-nav ps-4">
                                     <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.transactions.*') ? 'active fw-bold text-success' : '' }}" href="{{ route('admin.transactions.index') }}"><span class="nav-link-title">🧾 Transaksi / Pesanan</span></a></li>
+                                    <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.buyers.*') ? 'active fw-bold text-success' : '' }}" href="{{ route('admin.buyers.index') }}"><span class="nav-link-title">👥 Data Buyer</span></a></li>
                                     <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.finance.income.*') ? 'active fw-bold text-success' : '' }}" href="{{ route('admin.finance.income.index') }}"><span class="nav-link-title">💵 Pemasukan</span></a></li>
                                     <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.finance.expense.*') ? 'active fw-bold text-success' : '' }}" href="{{ route('admin.finance.expense.index') }}"><span class="nav-link-title">💸 Pengeluaran</span></a></li>
                                     <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.finance.profit-loss') ? 'active fw-bold text-success' : '' }}" href="{{ route('admin.finance.profit-loss') }}"><span class="nav-link-title">📊 Laba Rugi</span></a></li>

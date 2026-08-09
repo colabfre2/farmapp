@@ -143,6 +143,30 @@
                             {{ $order->status }}
                         </span>
                     </div>
+                </div>
+            </div>
+
+            {{-- Rincian Keuangan --}}
+            <div class="card card-flat mb-4">
+                <div class="card-header bg-white border-bottom-0 pt-4 px-4">
+                    <h3 class="card-title fw-bold font-quicksand text-dark mb-0">💰 Rincian Keuangan</h3>
+                </div>
+                <div class="card-body px-4 pb-4">
+                    @php
+                        $itemsSubtotal = $order->items->sum('subtotal');
+                    @endphp
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-muted small">Subtotal Barang</span>
+                        <span class="fw-semibold text-dark">{{ rupiah($itemsSubtotal) }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-muted small">Ongkos Kirim</span>
+                        <span class="fw-semibold text-dark">{{ rupiah($order->shipping_cost ?? 0) }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-muted small">Biaya Layanan (Fee)</span>
+                        <span class="fw-semibold text-dark">{{ rupiah($order->fee ?? 0) }}</span>
+                    </div>
                     <hr class="text-muted opacity-25">
                     <div class="d-flex justify-content-between align-items-center fw-bold h4 mb-0">
                         <span class="text-dark">Total</span>

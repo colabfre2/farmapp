@@ -55,6 +55,9 @@ class CheckoutController extends Controller
 
         $subtotal = collect($cart)->sum(fn($item) => $item['price'] * $item['quantity']);
 
+        // Estimasi fee layanan harian (bisa naik kalau ada buyer lain checkout duluan sebelum submit)
+        $estimatedFee = Order::nextDailyFee();
+
         // Ambil alamat tersimpan milik user, urutkan yang default di paling atas
         $addresses = UserAddress::where('user_id', auth()->id())
             ->orderByDesc('is_default')
@@ -63,7 +66,7 @@ class CheckoutController extends Controller
 
         $defaultAddress = $addresses->firstWhere('is_default', true) ?? $addresses->first();
 
-        return view('buyer.checkout', compact('cart', 'subtotal', 'addresses', 'defaultAddress'));
+        return view('buyer.checkout', compact('cart', 'subtotal', 'estimatedFee', 'addresses', 'defaultAddress'));
     }
 
     // ── Simpan Order ──────────────────────────────────────────
@@ -170,7 +173,14 @@ class CheckoutController extends Controller
 
             $subtotal     = collect($cart)->sum(fn($item) => $item['price'] * $item['quantity']);
             $shippingCost = (float) $request->shipping_cost;
-            $totalAmount  = $subtotal + $shippingCost;
+
+            // Fee layanan harian: Rp100 di order pertama hari ini, lalu naik Rp1 tiap order baru,
+            // dan otomatis reset ke Rp100 lagi begitu tanggalnya berganti.
+            // Dikunci di dalam transaction (bareng lockForUpdate produk di atas) biar aman dari race condition
+            // kalau ada 2 buyer checkout barengan di detik yang sama.
+            $fee = Order::nextDailyFee();
+
+            $totalAmount = $subtotal + $shippingCost + $fee;
 
             // Insert data Order ke tabel orders
             $order = Order::create([
@@ -188,6 +198,7 @@ class CheckoutController extends Controller
                 'courier'           => $request->courier,
                 'courier_service'   => $request->courier_service,
                 'shipping_cost'     => $shippingCost,
+                'fee'               => $fee,
                 'payment_method'    => $request->payment_method,
                 'payment_status'    => 'pending',
             ]);

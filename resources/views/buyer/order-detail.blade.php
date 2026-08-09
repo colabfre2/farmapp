@@ -195,10 +195,27 @@
                             <span class="fw-bold text-dark">{{ $order->shipping_phone }}</span>
                         </div>
                         <div class="col-md-6">
+                            <span class="text-muted d-block small mb-1">Kecamatan</span>
+                            <span class="fw-bold text-dark text-uppercase">{{ $order->shipping_district ?? '-' }}</span>
+                        </div>
+                        <div class="col-md-6">
                             <span class="text-muted d-block small mb-1">Kota / Wilayah</span>
                             <span class="fw-bold text-dark text-uppercase">{{ $order->shipping_city ?? '-' }}</span>
                         </div>
                         <div class="col-md-6">
+                            <span class="text-muted d-block small mb-1">Provinsi</span>
+                            <span class="fw-bold text-dark text-uppercase">{{ $order->province ?? '-' }}</span>
+                        </div>
+                        <div class="col-md-6">
+                            <span class="text-muted d-block small mb-1">Kurir & Layanan</span>
+                            <span class="fw-bold text-dark text-uppercase">
+                                {{ $order->courier ?? '-' }}
+                                @if($order->courier_service)
+                                    <span class="badge bg-secondary-subtle text-secondary rounded-pill ms-1 small">{{ $order->courier_service }}</span>
+                                @endif
+                            </span>
+                        </div>
+                        <div class="col-12">
                             <span class="text-muted d-block small mb-1">Alamat Lengkap</span>
                             <span class="fw-bold text-dark">{{ $order->shipping_address }}</span>
                         </div>
@@ -254,10 +271,23 @@
                     @endif
 
                     <hr class="text-muted opacity-25 mb-3">
-                    
+
+                    @php
+                        $itemsSubtotal = $order->items->sum('subtotal');
+                    @endphp
+                    <div class="d-flex justify-content-between align-items-center mb-2 small">
+                        <span class="text-muted">Subtotal Barang</span>
+                        <span class="fw-semibold text-dark">{{ rupiah($itemsSubtotal) }}</span>
+                    </div>
+
                     <div class="d-flex justify-content-between align-items-center mb-2 small">
                         <span class="text-muted">Ongkos Kirim</span>
                         <span class="fw-semibold text-dark">{{ rupiah($order->shipping_cost ?? 0) }}</span>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mb-2 small">
+                        <span class="text-muted">Biaya Layanan</span>
+                        <span class="fw-semibold text-dark">{{ rupiah($order->fee ?? 0) }}</span>
                     </div>
 
                     <div class="d-flex justify-content-between align-items-center mb-4">

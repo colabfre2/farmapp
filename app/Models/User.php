@@ -44,6 +44,16 @@ class User extends Authenticatable
         return $this->role === 'buyer';
     }
 
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
+    }
+
+    public function completedOrders()
+    {
+        return $this->hasMany(Order::class)->where('status', 'Completed');
+    }
+
     /**
      * The attributes that should be hidden for serialization.
      *

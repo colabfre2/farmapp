@@ -33,6 +33,7 @@ use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\SearchController;
 use App\Http\Controllers\Admin\StockMovementController;
 use App\Http\Controllers\Admin\TransactionController;
+use App\Http\Controllers\Admin\BuyerController;
 use App\Http\Controllers\Admin\FinanceController;
 use App\Http\Controllers\Admin\MedicineController;
 use App\Http\Controllers\Admin\MedicineLogController;
@@ -195,8 +196,11 @@ Route::patch('/banners/{banner}/toggle', [BannerController::class, 'toggleActive
     Route::get('/transactions/{order}', [TransactionController::class, 'show'])->name('transactions.show');
     Route::patch('/transactions/{order}/status', [TransactionController::class, 'updateStatus'])->name('transactions.update-status');
     Route::patch('/transactions/{order}/tracking', [TransactionController::class, 'updateTracking'])->name('transactions.update-tracking');
-    
     Route::get('/transactions-export', [TransactionController::class, 'exportExcel'])->name('transactions.export');
+
+    // Buyer Management
+    Route::get('/buyers', [BuyerController::class, 'index'])->name('buyers.index');
+    Route::get('/buyers/{buyer}', [BuyerController::class, 'show'])->name('buyers.show');
 
     // Finance (Income & Expense)
     Route::get('/finance/income', [FinanceController::class, 'incomeIndex'])->name('finance.income.index');
