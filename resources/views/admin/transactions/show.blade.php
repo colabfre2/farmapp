@@ -42,7 +42,8 @@
                         <table class="table table-custom table-vcenter mb-0">
                             <thead>
                                 <tr>
-                                    <th class="ps-4">Produk</th>
+                                    <th class="ps-4" style="width:64px;">Foto</th>
+                                    <th>Produk</th>
                                     <th>Harga</th>
                                     <th>Jumlah</th>
                                     <th class="pe-4 text-end">Subtotal</th>
@@ -51,7 +52,14 @@
                             <tbody>
                                 @foreach($order->items as $item)
                                 <tr>
-                                    <td class="ps-4 fw-bold text-dark">{{ $item->product_name }}</td>
+                                    <td class="ps-4">
+                                        @if($item->product && $item->product->image)
+                                            <img src="{{ '/storage/' . $item->product->image }}" alt="{{ $item->product_name }}" class="rounded-3 border" style="width:48px; height:48px; object-fit:cover;">
+                                        @else
+                                            <div class="rounded-3 bg-light border d-flex align-items-center justify-content-center text-muted" style="width:48px; height:48px; font-size:1.2rem;">🛒</div>
+                                        @endif
+                                    </td>
+                                    <td class="fw-bold text-dark">{{ $item->product_name }}</td>
                                     <td>{{ rupiah($item->unit_price) }}</td>
                                     <td>{{ $item->quantity }}</td>
                                     <td class="pe-4 text-end fw-bold text-success">{{ rupiah($item->subtotal) }}</td>

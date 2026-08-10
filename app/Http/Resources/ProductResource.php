@@ -9,15 +9,33 @@ class ProductResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
+        // 🚀 FIX: sebelumnya pakai asset('storage/...') yang generate URL
+        // berdasarkan APP_URL di .env (misal http://localhost, tanpa port).
+        // Ini bikin gambar GA NYAMPE di Flutter (emulator/HP), karena
+        // "localhost" di sana ngerujuk ke device itu sendiri, bukan ke
+        // komputer server. Sekarang kita bangun URL dari HOST YANG BENERAN
+        // DIPAKE buat manggil API ini (misal 10.0.2.2:8000 di emulator,
+        // atau IP LAN kalau dari HP fisik) — otomatis selalu nyambung,
+        // ga peduli device-nya manggil API dari host mana.
+        $baseUrl = $request->getSchemeAndHttpHost();
+
+        // Rating dinamis (rata-rata review asli) kalau ada, fallback ke
+        // kolom rating statis kalau belum pernah ada yang review —
+        // biar konsisten sama yang ditampilin di web app (home & marketplace).
+        $rating = $this->average_rating !== null
+            ? round((float) $this->average_rating, 1)
+            : (float) $this->rating;
+
         return [
             'id'          => $this->id,
             'name'        => $this->name,
             'description' => $this->description,
             'price'       => (int) $this->price,
             'stock'       => (int) $this->stock,
-            'rating'      => (float) $this->rating, // Field baru masuk sini bro[cite: 14]
-            'badge'       => $this->badge,          // Field baru masuk sini[cite: 14]
-            'image'       => $this->image ? asset('storage/' . $this->image) : null,
+            'rating'      => $rating,
+            'reviews_count' => (int) ($this->reviews_count ?? 0),
+            'badge'       => $this->badge,
+            'image'       => $this->image ? $baseUrl . '/storage/' . $this->image : null,
             'is_active'   => (bool) $this->is_active,
             'category'    => [
                 'id'   => $this->category?->id,

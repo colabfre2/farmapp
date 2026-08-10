@@ -18,6 +18,7 @@ protected $fillable = [
     'description',
     'price',
     'rating',
+    'badge',
     'stock',
     'image',
     'is_active',

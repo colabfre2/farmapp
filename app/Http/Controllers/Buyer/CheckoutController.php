@@ -34,9 +34,10 @@ class CheckoutController extends Controller
             return redirect()->route('buyer.cart')->with('error', 'Keranjang belanja kosong!');
         }
 
-        // 🚀 FIX: hanya proses item yang dicentang buyer di halaman cart.
-        // selected_ids dikirim dari form cart (checkbox per item).
-        $selectedIds = $request->input('selected_ids', []);
+        // 🚀 FIX: selected_ids normalnya dikirim POST dari cart. Tapi kalau halaman ini
+        // di-refresh / diakses ulang (jadi GET), request body-nya kosong — makanya fallback
+        // ambil dari session (disimpan di bawah, dari kunjungan POST sebelumnya).
+        $selectedIds = $request->input('selected_ids') ?: session('checkout_selected_ids', []);
 
         if (empty($selectedIds)) {
             return redirect()->route('buyer.cart')->with('error', 'Pilih minimal 1 item untuk checkout.');

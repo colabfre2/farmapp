@@ -157,7 +157,16 @@
                             <tbody class="border-top-0" style="font-size: 14px;">
                                 @foreach($order->items as $item)
                                 <tr>
-                                    <td class="ps-4 py-3 fw-bold text-dark">{{ $item->product_name }}</td>
+                                    <td class="ps-4 py-3">
+                                        <div class="d-flex align-items-center gap-3">
+                                            @if($item->product && $item->product->image)
+                                                <img src="{{ '/storage/' . $item->product->image }}" alt="{{ $item->product_name }}" class="rounded-3 border flex-shrink-0" style="width:48px; height:48px; object-fit:cover;">
+                                            @else
+                                                <div class="rounded-3 bg-light border d-flex align-items-center justify-content-center text-muted flex-shrink-0" style="width:48px; height:48px; font-size:1.2rem;">🛒</div>
+                                            @endif
+                                            <span class="fw-bold text-dark">{{ $item->product_name }}</span>
+                                        </div>
+                                    </td>
                                     <td class="py-3 text-secondary">{{ rupiah($item->unit_price) }}</td>
                                     <td class="py-3">
                                         <span class="badge bg-light text-secondary border rounded-pill px-3 py-1 fw-medium">

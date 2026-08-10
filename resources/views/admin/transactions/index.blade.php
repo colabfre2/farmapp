@@ -48,6 +48,10 @@
     .status-pill.pill-success.active { color: #fff; background: #16a34a; }
     .status-pill.pill-danger { color: #b91c1c; background: #fee2e2; }
     .status-pill.pill-danger.active { color: #fff; background: #dc2626; }
+    .aksi-dropdown-btn {
+        min-width: 110px;
+        text-align: center;
+    }
 </style>
 
 <div class="container-fluid py-2">
@@ -168,24 +172,36 @@
                                     </td>
                                     <td class="text-muted small">{{ $order->created_at->format('d M Y H:i') }}</td>
                                     <td class="pe-4 text-end">
-                                        <div class="d-flex justify-content-end gap-1 flex-wrap">
-                                            <a href="{{ route('admin.transactions.show', $order) }}" class="btn btn-sm btn-outline-secondary rounded-pill px-3 fw-bold">Detail</a>
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm btn-outline-secondary rounded-pill px-3 fw-bold dropdown-toggle aksi-dropdown-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                ⚙️ Aksi
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-end shadow border-0 py-2" style="border-radius:14px; min-width:200px;">
+                                                <li>
+                                                    <a class="dropdown-item py-2 fw-semibold" href="{{ route('admin.transactions.show', $order) }}">
+                                                        🔍 Lihat Detail
+                                                    </a>
+                                                </li>
 
-                                            @if(isset($nextStatusMap[$order->status]))
-                                                @php [$nextStatus, $btnLabel, $btnColor] = $nextStatusMap[$order->status]; @endphp
-                                                <form method="POST" action="{{ route('admin.transactions.update-status', $order) }}" id="status-form-{{ $order->id }}" class="d-inline">
-                                                    @csrf
-                                                    @method('PATCH')
-                                                    <input type="hidden" name="status" value="{{ $nextStatus }}">
-                                                </form>
-                                                <button type="button"
-                                                        class="btn btn-sm btn-{{ $btnColor }} rounded-pill px-3 fw-bold btn-next-status"
-                                                        data-form-target="status-form-{{ $order->id }}"
-                                                        data-order-number="{{ $order->order_number }}"
-                                                        data-next-status="{{ $nextStatus }}">
-                                                    {{ $btnLabel }}
-                                                </button>
-                                            @endif
+                                                @if(isset($nextStatusMap[$order->status]))
+                                                    @php [$nextStatus, $btnLabel, $btnColor] = $nextStatusMap[$order->status]; @endphp
+                                                    <li><hr class="dropdown-divider my-1"></li>
+                                                    <li>
+                                                        <form method="POST" action="{{ route('admin.transactions.update-status', $order) }}" id="status-form-{{ $order->id }}" class="d-none">
+                                                            @csrf
+                                                            @method('PATCH')
+                                                            <input type="hidden" name="status" value="{{ $nextStatus }}">
+                                                        </form>
+                                                        <button type="button"
+                                                                class="dropdown-item py-2 fw-bold text-{{ $btnColor }} btn-next-status"
+                                                                data-form-target="status-form-{{ $order->id }}"
+                                                                data-order-number="{{ $order->order_number }}"
+                                                                data-next-status="{{ $nextStatus }}">
+                                                            ▶️ {{ $btnLabel }}
+                                                        </button>
+                                                    </li>
+                                                @endif
+                                            </ul>
                                         </div>
                                     </td>
                                 </tr>

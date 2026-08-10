@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\BaseApiController;
 use App\Http\Requests\Api\StoreProductRequest;
 use App\Http\Requests\Api\UpdateProductRequest;
 use App\Http\Resources\ProductResource;
+use App\Helpers\ImageCompressor;
 use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Support\Facades\Auth;
@@ -23,7 +24,12 @@ class ProductController extends BaseApiController
             'category',
             'unit',
             'user'
-        ])->where('is_active', true);
+        ])
+            // 🚀 FIX: withAvg biar field 'rating' di response konsisten sama
+            // yang ditampilin web app (dihitung dari review asli, bukan kolom statis)
+            ->withAvg('reviews as average_rating', 'rating')
+            ->withCount('reviews')
+            ->where('is_active', true);
 
         if ($request->filled('q')) {
             $query->where('name', 'like', '%' . $request->q . '%');
@@ -46,11 +52,9 @@ class ProductController extends BaseApiController
      */
     public function show(Product $product)
     {
-        $product->load([
-            'category',
-            'unit',
-            'user'
-        ]);
+        $product->load(['category', 'unit', 'user'])
+            ->loadAvg('reviews as average_rating', 'rating')
+            ->loadCount('reviews');
 
         return $this->success(
             new ProductResource($product),
@@ -67,8 +71,10 @@ class ProductController extends BaseApiController
 
         $data['user_id'] = Auth::id();
 
+        // 🚀 FIX: pakai ImageCompressor yang sama kayak web (resize + convert
+        // ke WebP) biar ukuran file konsisten & lebih ringan buat mobile.
         if ($request->hasFile('image')) {
-            $data['image'] = $request->file('image')->store('products', 'public');
+            $data['image'] = ImageCompressor::compressAndStore($request->file('image'), 'products', 800, 80);
         }
 
         $product = Product::create($data);
@@ -95,7 +101,7 @@ class ProductController extends BaseApiController
                 Storage::disk('public')->delete($product->image);
             }
 
-            $data['image'] = $request->file('image')->store('products', 'public');
+            $data['image'] = ImageCompressor::compressAndStore($request->file('image'), 'products', 800, 80);
         }
 
         $product->update($data);

@@ -88,9 +88,9 @@ Route::middleware(['auth', 'role:buyer'])->prefix('buyer')->name('buyer.')->grou
     Route::delete('/cart/{id}/remove', [CartController::class, 'remove'])->name('cart.remove');
     Route::delete('/cart/clear', [CartController::class, 'clear'])->name('cart.clear');
 
-    // 🚀 FIX: checkout sekarang POST (bukan GET) karena butuh kirim selected_ids[]
-    // dari checkbox di halaman cart. Dipecah jadi 2 path beda biar tidak bentrok.
-    Route::post('/checkout', [CheckoutController::class, 'index'])->name('checkout');
+    // Checkout: POST dari form cart (kirim selected_ids[]), GET buat fallback kalau halaman
+    // di-refresh / diakses ulang setelah POST pertama — biar gak 405 begitu aja.
+    Route::match(['get', 'post'], '/checkout', [CheckoutController::class, 'index'])->name('checkout');
     Route::post('/checkout/store', [CheckoutController::class, 'store'])->name('checkout.store');
 
     // ── Rute Midtrans Snap Token ──

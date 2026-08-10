@@ -3,12 +3,26 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Helpers\ImageCompressor;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 
 class AuthController extends Controller
 {
+    /**
+     * 🚀 FIX: helper kecil biar URL avatar konsisten dibangun dari host yang
+     * BENERAN dipakai buat manggil API (bukan dari APP_URL statis di .env).
+     * Ini yang bikin gambar akhirnya nyambung juga di Flutter (emulator/HP),
+     * karena "localhost" di .env ga akan pernah kejangkau dari luar server.
+     */
+    private function avatarUrl(Request $request, ?string $avatar): ?string
+    {
+        if (!$avatar) return null;
+        return $request->getSchemeAndHttpHost() . '/storage/' . $avatar;
+    }
+
     public function login(Request $request)
     {
         $request->validate([
@@ -39,7 +53,7 @@ class AuthController extends Controller
                     'phone'   => $user->phone,
                     'address' => $user->address,
                     'city'    => $user->city,
-                    'avatar'  => $user->avatar ? asset('storage/' . $user->avatar) : null,
+                    'avatar'  => $this->avatarUrl($request, $user->avatar),
                 ],
                 'token' => $token,
             ],
@@ -102,7 +116,7 @@ class AuthController extends Controller
                 'phone'   => $user->phone,
                 'address' => $user->address,
                 'city'    => $user->city,
-                'avatar'  => $user->avatar ? asset('storage/' . $user->avatar) : null,
+                'avatar'  => $this->avatarUrl($request, $user->avatar),
             ],
         ]);
     }
@@ -124,6 +138,38 @@ class AuthController extends Controller
             'success' => true,
             'message' => 'Profil berhasil diperbarui!',
             'data'    => $user,
+        ]);
+    }
+
+    /**
+     * 🚀 FIX: method ini sebelumnya BELUM ADA sama sekali, padahal rute
+     * POST /profile/avatar udah didaftarin di routes/api.php — jadi kalau
+     * dipanggil dari Flutter bakal error "method not found". Sekarang dibikin,
+     * pakai ImageCompressor yang sama kayak avatar upload di web app
+     * (folder 'avatars', max lebar 400px, kualitas 75, otomatis jadi .webp).
+     */
+    public function updateAvatar(Request $request)
+    {
+        $user = $request->user();
+
+        $request->validate([
+            'avatar' => 'required|image|mimes:jpeg,png,jpg,webp|max:5120',
+        ]);
+
+        if ($user->avatar) {
+            Storage::disk('public')->delete($user->avatar);
+        }
+
+        $avatarPath = ImageCompressor::compressAndStore($request->file('avatar'), 'avatars', 400, 75);
+
+        $user->update(['avatar' => $avatarPath]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Foto profil berhasil diperbarui!',
+            'data'    => [
+                'avatar' => $this->avatarUrl($request, $avatarPath),
+            ],
         ]);
     }
 }

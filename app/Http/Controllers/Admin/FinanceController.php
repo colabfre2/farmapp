@@ -185,8 +185,48 @@ class FinanceController extends Controller
 
     public function profitLoss(Request $request)
     {
-        $year = $request->input('year', date('Y'));
+        $year  = $request->input('year', date('Y'));
+        $month = $request->input('month'); // null = semua bulan (rekap tahunan)
 
+        if ($month) {
+            // ── Mode Bulanan: breakdown per hari di bulan yang dipilih ──
+            $daysInMonth = cal_days_in_month(CAL_GREGORIAN, $month, $year);
+
+            $dailyIncome = Income::selectRaw('DAY(date) as day, SUM(amount) as total')
+                ->whereYear('date', $year)
+                ->whereMonth('date', $month)
+                ->groupBy('day')
+                ->pluck('total', 'day')
+                ->toArray();
+
+            $dailyExpense = Expense::selectRaw('DAY(date) as day, SUM(amount) as total')
+                ->whereYear('date', $year)
+                ->whereMonth('date', $month)
+                ->groupBy('day')
+                ->pluck('total', 'day')
+                ->toArray();
+
+            $months = [];
+            for ($d = 1; $d <= $daysInMonth; $d++) {
+                $income  = $dailyIncome[$d]  ?? 0;
+                $expense = $dailyExpense[$d] ?? 0;
+                $months[] = [
+                    'month'   => 'Tanggal ' . $d,
+                    'income'  => $income,
+                    'expense' => $expense,
+                    'profit'  => $income - $expense,
+                ];
+            }
+
+            $totalIncome  = Income::whereYear('date', $year)->whereMonth('date', $month)->sum('amount');
+            $totalExpense = Expense::whereYear('date', $year)->whereMonth('date', $month)->sum('amount');
+            $netProfit    = $totalIncome - $totalExpense;
+            $periodLabel  = date('F', mktime(0, 0, 0, $month, 1)) . ' ' . $year;
+
+            return view('admin.finance.profit-loss', compact('months', 'totalIncome', 'totalExpense', 'netProfit', 'year', 'month', 'periodLabel'));
+        }
+
+        // ── Mode Tahunan: breakdown per bulan (perilaku lama) ──
         $monthlyIncome = Income::selectRaw('MONTH(date) as month, SUM(amount) as total')
             ->whereYear('date', $year)
             ->groupBy('month')
@@ -214,13 +254,46 @@ class FinanceController extends Controller
         $totalIncome  = Income::whereYear('date', $year)->sum('amount');
         $totalExpense = Expense::whereYear('date', $year)->sum('amount');
         $netProfit    = $totalIncome - $totalExpense;
+        $periodLabel  = 'Tahun ' . $year;
 
-        return view('admin.finance.profit-loss', compact('months', 'totalIncome', 'totalExpense', 'netProfit', 'year'));
+        return view('admin.finance.profit-loss', compact('months', 'totalIncome', 'totalExpense', 'netProfit', 'year', 'month', 'periodLabel'));
     }
 
     public function profitLossExportPdf(Request $request)
 {
-    $year = $request->input('year', date('Y'));
+    $year  = $request->input('year', date('Y'));
+    $month = $request->input('month');
+
+    if ($month) {
+        $daysInMonth = cal_days_in_month(CAL_GREGORIAN, $month, $year);
+
+        $dailyIncome = Income::selectRaw('DAY(date) as day, SUM(amount) as total')
+            ->whereYear('date', $year)->whereMonth('date', $month)->groupBy('day')->pluck('total', 'day')->toArray();
+
+        $dailyExpense = Expense::selectRaw('DAY(date) as day, SUM(amount) as total')
+            ->whereYear('date', $year)->whereMonth('date', $month)->groupBy('day')->pluck('total', 'day')->toArray();
+
+        $months = [];
+        for ($d = 1; $d <= $daysInMonth; $d++) {
+            $income  = $dailyIncome[$d]  ?? 0;
+            $expense = $dailyExpense[$d] ?? 0;
+            $months[] = [
+                'month'   => 'Tanggal ' . $d,
+                'income'  => $income,
+                'expense' => $expense,
+                'profit'  => $income - $expense,
+            ];
+        }
+
+        $totalIncome  = Income::whereYear('date', $year)->whereMonth('date', $month)->sum('amount');
+        $totalExpense = Expense::whereYear('date', $year)->whereMonth('date', $month)->sum('amount');
+        $netProfit    = $totalIncome - $totalExpense;
+        $periodLabel  = date('F', mktime(0, 0, 0, $month, 1)) . ' ' . $year;
+
+        $pdf = Pdf::loadView('admin.finance.profit-loss-pdf', compact('months', 'totalIncome', 'totalExpense', 'netProfit', 'year', 'periodLabel'));
+
+        return $pdf->stream('Laporan-Laba-Rugi-' . date('F', mktime(0, 0, 0, $month, 1)) . '-' . $year . '.pdf');
+    }
 
     $monthlyIncome = Income::selectRaw('MONTH(date) as month, SUM(amount) as total')
         ->whereYear('date', $year)->groupBy('month')->pluck('total', 'month')->toArray();
@@ -243,8 +316,9 @@ class FinanceController extends Controller
     $totalIncome  = Income::whereYear('date', $year)->sum('amount');
     $totalExpense = Expense::whereYear('date', $year)->sum('amount');
     $netProfit    = $totalIncome - $totalExpense;
+    $periodLabel  = 'Tahun ' . $year;
 
-    $pdf = Pdf::loadView('admin.finance.profit-loss-pdf', compact('months', 'totalIncome', 'totalExpense', 'netProfit', 'year'));
+    $pdf = Pdf::loadView('admin.finance.profit-loss-pdf', compact('months', 'totalIncome', 'totalExpense', 'netProfit', 'year', 'periodLabel'));
 
     // Preview di browser (bukan langsung download)
     return $pdf->stream('Laporan-Laba-Rugi-' . $year . '.pdf');
