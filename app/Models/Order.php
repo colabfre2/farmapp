@@ -27,6 +27,11 @@ class Order extends Model
         'shipping_cost',
         'fee',
         'payment_method',
+        // FIX: kolom ini ada di migration & dipakai PaymentController::getSnapToken()
+        // via mass-assignment update(), tapi sebelumnya tidak ada di $fillable —
+        // jadi gagal tersimpan diam-diam (tidak error, cuma tidak ke-set).
+        'payment_status',
+        'snap_token',
     ];
 
     /**

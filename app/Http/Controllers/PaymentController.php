@@ -21,6 +21,13 @@ class PaymentController extends Controller
 
     public function getSnapToken(Order $order)
     {
+        // FIX: sebelumnya endpoint ini tidak cek kepemilikan order sama sekali —
+        // siapa saja yang tau ID/order_number bisa generate token bayar untuk order
+        // orang lain. Admin tetap diizinkan (misal untuk keperluan support).
+        if (auth()->id() !== $order->user_id && auth()->user()->role !== 'admin') {
+            abort(403, 'Anda tidak berhak mengakses pembayaran order ini.');
+        }
+
         // Jika status masih pending, kita buatkan token baru dengan suffix unik agar tidak kena error "already been taken"
         $grossAmount = (int) $order->total_amount;
 
