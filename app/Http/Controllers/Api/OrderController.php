@@ -27,16 +27,38 @@ class OrderController extends BaseApiController
             ->latest()
             ->paginate(10);
 
+        // 🚀 FIX: sama kayak kasus ProductResource — kolom 'image' produk
+        // yang ke-load lewat relasi items.product itu path mentah dari DB
+        // (misal "products/abc.webp"), BUKAN URL lengkap. Kalau dibiarin,
+        // thumbnail produk di riwayat pesanan Flutter bakal blank juga.
+        // Di-convert jadi URL absolut pakai host yang beneran dipake request.
+        $baseUrl = $request->getSchemeAndHttpHost();
+        $orders->getCollection()->each(function ($order) use ($baseUrl) {
+            $order->items->each(function ($item) use ($baseUrl) {
+                if ($item->product && $item->product->image) {
+                    $item->product->image = $baseUrl . '/storage/' . $item->product->image;
+                }
+            });
+        });
+
         return $this->success($orders, 'Data list order berhasil ditarik bro.');
     }
 
     /**
      * Nampilin detail order spesifik
      */
-    public function show(Order $order)
+    public function show(Request $request, Order $order)
     {
         // Load relasi biar datanya lengkap pas ditampilin di detail Flutter
         $order->load(['user:id,name,email,phone', 'items.product:id,name,image']);
+
+        // 🚀 FIX: sama kayak index() di atas, image produk di-convert ke URL absolut.
+        $baseUrl = $request->getSchemeAndHttpHost();
+        $order->items->each(function ($item) use ($baseUrl) {
+            if ($item->product && $item->product->image) {
+                $item->product->image = $baseUrl . '/storage/' . $item->product->image;
+            }
+        });
 
         return $this->success($order, 'Detail order berhasil ditarik.');
     }

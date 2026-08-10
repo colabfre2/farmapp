@@ -21,7 +21,7 @@ class NewOrderNotification extends Notification
     {
         return [
             'title'        => 'Pesanan Baru!',
-            'message'      => 'Ada pesanan baru dari ' . $this->order->Shipping_name . ' dengan total ' . rupiah($this->order->total_amount),
+            'message'      => 'Ada pesanan baru dari ' . $this->order->shipping_name . ' dengan total ' . rupiah($this->order->total_amount),
             'order_number' => $this->order->order_number,
             'order_id'     => $this->order->id,
             'type'         => 'order',
