@@ -20,7 +20,12 @@ Route::post('/register', [AuthController::class, 'register']);
 Route::get('/products', [ProductController::class, 'index']);
 Route::get('/products/{product}', [ProductController::class, 'show']);
 Route::get('/categories', [ProductController::class, 'categories']);
+// Admin & Seller Orders
+    Route::get('/admin/orders', [OrderController::class, 'adminIndex']);
+    Route::get('/seller/orders', [OrderController::class, 'sellerIndex']);
+    Route::patch('/orders/{order}/status', [OrderController::class, 'updateStatus']);
 
+    
 Route::get('/storage/{path}', function ($path){
     $fullpath = storage_path('app/public/' . $path);
     if(!file_exists($fullpath)){

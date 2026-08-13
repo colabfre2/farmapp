@@ -118,12 +118,12 @@
                             </div>
 
                             {{-- Field Nomor Telepon Atas Dihapus, Digantikan dengan input yang terintegrasi di bawah untuk Admin, atau single field untuk Buyer --}}
-                            @if(!$isAdmin)
+                            {{-- @if(!$isAdmin) --}}
                                 <div class="col-md-6 mb-2">
                                     <label class="form-label">Nomor Telepon</label>
                                     <input type="tel" name="phone" class="form-control form-control-custom" value="{{ old('phone', auth()->user()->phone ?? '') }}" placeholder="cth: 081234567890">
                                 </div>
-                            @endif
+                            {{-- @endif --}}
 
                             <div class="{{ $isAdmin ? 'col-12' : 'col-md-6' }} mb-2">
                                 <label class="form-label">Kota Domisili</label>

@@ -2,14 +2,13 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Models\CartItem;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
-use App\Models\StockMovement;
-use App\Models\User;
 use App\Models\UserAddress;
-use App\Notifications\NewOrderNotification;
+use App\Models\StockMovement;
+use App\Models\Payment;
+use App\Services\MidtransService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -17,268 +16,175 @@ use Illuminate\Support\Str;
 
 class OrderController extends BaseApiController
 {
-    /**
-     * Ubah path gambar produk mentah jadi URL absolut berdasarkan host yang
-     * benar-benar dipakai request (bukan APP_URL statis) — biar thumbnail
-     * nyambung juga dari emulator/HP Flutter.
-     */
-    private function withProductImageUrls(Request $request, $orders)
-    {
-        $baseUrl = $request->getSchemeAndHttpHost();
-        $orders->each(function ($order) use ($baseUrl) {
-            $order->items->each(function ($item) use ($baseUrl) {
-                if ($item->product && $item->product->image) {
-                    $item->product->image = $baseUrl . '/storage/' . $item->product->image;
-                }
-            });
-        });
-    }
-
-    /**
-     * GET /orders — monitoring SEMUA order, khusus admin.
-     * Digating role:admin di routes/api.php.
-     */
     public function index(Request $request)
     {
         $status = $request->query('status');
 
         $orders = Order::with(['user:id,name,email', 'items.product:id,name,price,image'])
-            ->when($status, fn($query, $status) => $query->where('status', $status))
+            ->where('user_id', Auth::id())
+            ->when($status, function ($query, $status) {
+                return $query->where('status', $status);
+            })
             ->latest()
             ->paginate(10);
-
-        $this->withProductImageUrls($request, $orders->getCollection());
 
         return $this->success($orders, 'Data list order berhasil ditarik.');
     }
 
-    /**
-     * GET /my-orders — riwayat pesanan milik user yang login sendiri.
-     * Ini yang sebelumnya belum ada — buyer tidak punya cara lihat riwayat
-     * pesanannya sendiri dari mobile selain lewat endpoint admin index() di atas
-     * (yang menampilkan SEMUA order, bukan cuma miliknya).
-     */
-    public function myOrders(Request $request)
+    public function adminIndex(Request $request)
     {
         $status = $request->query('status');
 
-        $orders = Order::with(['items.product:id,name,price,image'])
-            ->where('user_id', Auth::id())
-            ->when($status, fn($query, $status) => $query->where('status', $status))
+        $orders = Order::with(['user:id,name,email', 'items.product:id,name,price,image'])
+            ->when($status, function ($query, $status) {
+                return $query->where('status', $status);
+            })
             ->latest()
-            ->paginate(10);
+            ->paginate(20);
 
-        $this->withProductImageUrls($request, $orders->getCollection());
-
-        return $this->success($orders, 'Riwayat pesanan berhasil diambil.');
+        return $this->success($orders, 'Data list all order berhasil ditarik.');
     }
 
-    /**
-     * GET /orders/{order} — detail order.
-     * Buyer hanya boleh lihat order miliknya sendiri; admin boleh lihat semua.
-     */
-    public function show(Request $request, Order $order)
+    public function sellerIndex(Request $request)
     {
-        if (Auth::user()->role !== 'admin' && $order->user_id !== Auth::id()) {
-            abort(403, 'Anda tidak berhak mengakses order ini.');
+        $status = $request->query('status');
+
+        // Filter orders that have products belonging to this seller
+        // Note: For now, we assume all products are global or we don't have multiple sellers yet.
+        // If we have 'seller_id' in products, we would filter here.
+        // For demonstration, seller sees orders where they are involved.
+        $orders = Order::with(['user:id,name,email', 'items.product:id,name,price,image'])
+            ->when($status, function ($query, $status) {
+                return $query->where('status', $status);
+            })
+            ->latest()
+            ->paginate(20);
+
+        return $this->success($orders, 'Data list seller order berhasil ditarik.');
+    }
+
+    public function updateStatus(Request $request, Order $order)
+    {
+        $validated = $request->validate([
+            'status' => 'required|string',
+        ]);
+
+        $order->update(['status' => $validated['status']]);
+
+        return $this->success($order, 'Status order berhasil diperbarui.');
+    }
+
+    public function show(Order $order)
+    {
+        if ($order->user_id !== Auth::id()) {
+            return $this->error('Bukan pesanan elu bro.', 403);
         }
 
-        $order->load(['user:id,name,email,phone', 'items.product:id,name,image']);
-
-        $baseUrl = $request->getSchemeAndHttpHost();
-        $order->items->each(function ($item) use ($baseUrl) {
-            if ($item->product && $item->product->image) {
-                $item->product->image = $baseUrl . '/storage/' . $item->product->image;
-            }
-        });
+        $order->load(['user:id,name,email,phone', 'items.product:id,name,image', 'payment']);
 
         return $this->success($order, 'Detail order berhasil ditarik.');
     }
 
-    /**
-     * POST /orders — checkout dari mobile.
-     * Disamakan penuh dengan Buyer\CheckoutController@store di web:
-     * - Sumber item: cart_items milik user (bukan array manual dari body request)
-     * - Support address_id (alamat tersimpan) ATAU alamat manual + opsi simpan
-     * - Field pengiriman lengkap (courier, ongkir, destination_id, dst)
-     * - Fee layanan harian dinamis (Order::nextDailyFee())
-     * - payment_method termasuk 'midtrans', set payment_status awal
-     * - Lock produk saat checkout, re-cek stok real-time (cegah race condition)
-     * - Kirim notifikasi ke semua admin, sama seperti web
-     */
     public function store(Request $request)
     {
-        $cartItems = CartItem::with('product')
-            ->where('user_id', Auth::id())
-            ->get();
-
-        if ($cartItems->isEmpty()) {
-            return $this->error('Keranjang belanja kosong!', 422);
-        }
-
         $validated = $request->validate([
-            'address_id'        => 'nullable|exists:user_addresses,id',
-            'shipping_name'     => 'required_without:address_id|nullable|string|max:255',
-            'shipping_phone'    => 'required_without:address_id|nullable|string|max:20',
-            'shipping_address'  => 'required_without:address_id|nullable|string',
-            'destination_id'    => 'required|string',
-            'province'          => 'required_without:address_id|nullable|string|max:255',
-            'shipping_city'     => 'required_without:address_id|nullable|string|max:255',
-            'shipping_district' => 'required_without:address_id|nullable|string|max:255',
-            'courier'           => 'required|in:jne,jnt,sicepat',
-            'courier_service'   => 'required|string',
-            'shipping_cost'     => 'required|numeric|min:0',
-            'payment_method'    => 'required|in:card,transfer,cod,midtrans',
-            'save_address'      => 'nullable|boolean',
-            'address_label'     => 'nullable|string|max:50',
+            'address_id'       => 'required|exists:user_addresses,id',
+            'courier'          => 'required|string',
+            'courier_service'  => 'required|string',
+            'shipping_cost'    => 'required|numeric',
+
+            'items'            => 'required|array|min:1',
+            'items.*.product_id' => 'required|exists:products,id',
+            'items.*.quantity' => 'required|integer|min:1',
         ]);
 
         try {
-            DB::beginTransaction();
+            return DB::transaction(function () use ($validated) {
+                $address = UserAddress::findOrFail($validated['address_id']);
 
-            // Lock & re-validasi stok real-time — cegah race condition & stok berubah
-            // sejak item masuk cart
-            $lockedProducts = [];
-            foreach ($cartItems as $cartItem) {
-                $product = Product::lockForUpdate()->find($cartItem->product_id);
+                // 1. Kalkulasi Subtotal & Cek Stok
+                $subtotal = 0;
+                $orderItemsData = [];
 
-                if (!$product || !$product->is_active) {
-                    throw new \Exception("Produk \"{$cartItem->product->name}\" sudah tidak tersedia. Silakan hapus dari keranjang.");
+                foreach ($validated['items'] as $item) {
+                    $product = Product::lockForUpdate()->find($item['product_id']);
+
+                    if ($product->stock < $item['quantity']) {
+                        throw new \Exception("Stok {$product->name} tidak cukup (Sisa: {$product->stock})");
+                    }
+
+                    $itemSubtotal = $product->price * $item['quantity'];
+                    $subtotal += $itemSubtotal;
+
+                    $orderItemsData[] = [
+                        'product_id'   => $product->id,
+                        'product_name' => $product->name,
+                        'unit_price'   => $product->price,
+                        'quantity'     => $item['quantity'],
+                        'subtotal'     => $itemSubtotal,
+                    ];
                 }
 
-                if ($product->stock < $cartItem->quantity) {
-                    throw new \Exception("Stok \"{$product->name}\" tidak cukup! Tersisa {$product->stock}, kamu memesan {$cartItem->quantity}.");
-                }
+                $totalAmount = $subtotal + $validated['shipping_cost'];
 
-                $lockedProducts[$cartItem->product_id] = $product;
-            }
+                // 2. Buat Order
+                $order = Order::create([
+                    'user_id'          => Auth::id(),
+                    'order_number'     => 'ALMS-' . time() . strtoupper(Str::random(4)),
+                    'status'           => 'Waiting Payment',
+                    'total_amount'     => $totalAmount,
+                    'shipping_name'    => $address->recipient_name,
+                    'shipping_phone'   => $address->phone,
+                    'shipping_address' => $address->address_detail,
+                    'shipping_city'    => $address->city,
+                    'shipping_district' => $address->district,
+                    'province'         => $address->province,
+                    'destination_id'   => $address->destination_id,
+                    'courier'          => $validated['courier'],
+                    'courier_service'  => $validated['courier_service'],
+                    'shipping_cost'    => $validated['shipping_cost'],
+                    'payment_method'   => 'midtrans',
+                ]);
 
-            // Resolve alamat — dari alamat tersimpan atau input manual
-            if (!empty($validated['address_id'])) {
-                $addr = UserAddress::where('id', $validated['address_id'])
-                    ->where('user_id', Auth::id())
-                    ->firstOrFail();
+                // 3. Simpan Order Items & Kurangi Stok
+                foreach ($orderItemsData as $itemData) {
+                    $order->items()->create($itemData);
 
-                $shippingName     = $addr->recipient_name;
-                $shippingPhone    = $addr->phone;
-                $shippingAddress  = $addr->address_detail;
-                $shippingCity     = $addr->city;
-                $shippingDistrict = $addr->district;
-                $province         = $addr->province;
-                $destinationId    = $addr->destination_id;
-            } else {
-                $shippingName     = $validated['shipping_name'];
-                $shippingPhone    = $validated['shipping_phone'];
-                $shippingAddress  = $validated['shipping_address'];
-                $shippingCity     = $validated['shipping_city'];
-                $shippingDistrict = $validated['shipping_district'];
-                $province         = $validated['province'];
-                $destinationId    = $validated['destination_id'];
+                    $product = Product::find($itemData['product_id']);
+                    $product->decrement('stock', $itemData['quantity']);
 
-                if ($request->boolean('save_address')) {
-                    $hasAddress = UserAddress::where('user_id', Auth::id())->exists();
-                    UserAddress::create([
-                        'user_id'        => Auth::id(),
-                        'label'          => $validated['address_label'] ?? 'Rumah',
-                        'recipient_name' => $shippingName,
-                        'phone'          => $shippingPhone,
-                        'province'       => $province,
-                        'city'           => $shippingCity,
-                        'district'       => $shippingDistrict,
-                        'destination_id' => $destinationId,
-                        'address_detail' => $shippingAddress,
-                        'is_default'     => !$hasAddress,
+                    StockMovement::create([
+                        'product_id' => $product->id,
+                        'user_id'    => Auth::id(),
+                        'type'       => 'out',
+                        'quantity'   => $itemData['quantity'],
+                        'reason'     => 'Terjual (Order ' . $order->order_number . ')',
                     ]);
                 }
-            }
 
-            $subtotal     = $cartItems->sum(fn($item) => $item->product->price * $item->quantity);
-            $shippingCost = (float) $validated['shipping_cost'];
-            $fee          = Order::nextDailyFee();
-            $totalAmount  = $subtotal + $shippingCost + $fee;
+                // 4. Integrasi Midtrans
+                $midtrans = new MidtransService();
+                $snapToken = $midtrans->createSnapToken($order);
 
-            $order = Order::create([
-                'user_id'           => Auth::id(),
-                'order_number'      => 'ORD-' . strtoupper(Str::random(8)),
-                'status'            => 'Pending',
-                'total_amount'      => $totalAmount,
-                'shipping_name'     => $shippingName,
-                'shipping_phone'    => $shippingPhone,
-                'shipping_address'  => $shippingAddress,
-                'shipping_city'     => $shippingCity,
-                'shipping_district' => $shippingDistrict,
-                'province'          => $province,
-                'destination_id'    => $destinationId,
-                'courier'           => $validated['courier'],
-                'courier_service'   => $validated['courier_service'],
-                'shipping_cost'     => $shippingCost,
-                'fee'               => $fee,
-                'payment_method'    => $validated['payment_method'],
-                'payment_status'    => 'pending',
-            ]);
+                $order->update(['snap_token' => $snapToken]);
 
-            foreach ($cartItems as $cartItem) {
-                $product = $lockedProducts[$cartItem->product_id];
-
-                OrderItem::create([
-                    'order_id'     => $order->id,
-                    'product_id'   => $product->id,
-                    'product_name' => $product->name,
-                    'unit_price'   => $product->price,
-                    'quantity'     => $cartItem->quantity,
-                    'subtotal'     => $product->price * $cartItem->quantity,
+                Payment::create([
+                    'order_id'          => $order->id,
+                    'midtrans_order_id' => $order->order_number,
+                    'snap_token'        => $snapToken,
+                    'status'            => 'pending',
                 ]);
 
-                StockMovement::create([
-                    'product_id' => $product->id,
-                    'user_id'    => Auth::id(),
-                    'type'       => 'out',
-                    'quantity'   => $cartItem->quantity,
-                    'reason'     => 'Terjual',
-                    'notes'      => 'Terjual otomatis via Checkout API (Pesanan ' . $order->order_number . ')',
-                ]);
-
-                $product->decrement('stock', $cartItem->quantity);
-            }
-
-            // Kosongkan cart setelah checkout berhasil
-            CartItem::where('user_id', Auth::id())->delete();
-
-            DB::commit();
-
-            $admins = User::where('role', 'admin')->get();
-            foreach ($admins as $admin) {
-                $admin->notify(new NewOrderNotification($order));
-            }
-
-            return $this->success(
-                $order->load('items'),
-                'Pesanan berhasil dibuat!',
-                201
-            );
+                return $this->success([
+                    'id'         => $order->id,
+                    'order_id'   => $order->id,
+                    'order_number' => $order->order_number,
+                    'snap_token' => $snapToken,
+                ], 'Pesanan berhasil dibuat, silakan bayar bro.');
+            });
 
         } catch (\Exception $e) {
-            DB::rollBack();
-            return $this->error($e->getMessage(), 422);
+            return $this->error($e->getMessage(), 400);
         }
-    }
-
-    /**
-     * PATCH /orders/{order}/cancel — buyer batalkan order miliknya sendiri
-     * selama masih berstatus Pending (belum diproses admin).
-     */
-    public function cancel(Order $order)
-    {
-        if ($order->user_id !== Auth::id()) {
-            abort(403, 'Anda tidak berhak membatalkan order ini.');
-        }
-
-        if ($order->status !== 'Pending') {
-            return $this->error('Order yang sudah diproses tidak bisa dibatalkan lagi.', 422);
-        }
-
-        $order->update(['status' => 'Cancelled']);
-
-        return $this->success($order->fresh(), 'Order berhasil dibatalkan.');
     }
 }
