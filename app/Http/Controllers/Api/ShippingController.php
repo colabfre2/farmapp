@@ -2,49 +2,47 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Api\BaseApiController;
-use Illuminate\Http\Request;
 use App\Services\RajaOngkirService;
+use Illuminate\Http\Request;
 
 class ShippingController extends BaseApiController
 {
-    protected RajaOngkirService $rajaOngkir;
+    protected RajaOngkirService $rajaOngkirService;
 
-    public function __construct(RajaOngkirService $rajaOngkir)
+    public function __construct(RajaOngkirService $rajaOngkirService)
     {
-        $this->rajaOngkir = $rajaOngkir;
+        $this->rajaOngkirService = $rajaOngkirService;
     }
 
-    // GET /shipping/search?q=...
-    public function searchDestination(Request $request)
+    /**
+     * Get Shipping Rates
+     */
+    public function getRates(Request $request)
     {
-        $keyword = $request->query('q', '');
-        $results = $this->rajaOngkir->searchDestination($keyword);
-
-        return $this->success($results, 'Hasil pencarian destinasi berhasil diambil.');
-    }
-
-    // POST /shipping/ongkir
-    public function getOngkir(Request $request)
-    {
-        $request->validate([
-            'destination_id' => 'required',
+        $validated = $request->validate([
+            'destination_id' => 'required|string',
             'weight'         => 'required|integer|min:1',
-            'courier'        => 'required|in:jne,jnt,sicepat',
+            'courier'        => 'required|string|in:jne,jnt,sicepat',
         ]);
 
-        $costs = $this->rajaOngkir->getCost(
-            $request->destination_id,
-            $request->weight,
-            $request->courier
+        $rates = $this->rajaOngkirService->getCost(
+            $validated['destination_id'],
+            $validated['weight'],
+            $validated['courier']
         );
 
-        return $this->success($costs, 'Ongkos kirim berhasil dihitung.');
+        return $this->success($rates, 'Tarif pengiriman berhasil ditarik.');
     }
 
-    // GET /shipping/couriers
-    public function couriers()
+    /**
+     * Search Destination for Address form
+     */
+    public function searchDestination(Request $request)
     {
-        return $this->success(RajaOngkirService::supportedCouriers(), 'Daftar kurir berhasil diambil.');
+        $request->validate(['query' => 'required|string|min:3']);
+
+        $results = $this->rajaOngkirService->searchDestination($request->query('query'));
+
+        return $this->success($results, 'Daftar destinasi ditemukan.');
     }
 }
