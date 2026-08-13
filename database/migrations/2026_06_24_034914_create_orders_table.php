@@ -17,7 +17,6 @@ return new class extends Migration
             $table->string('order_number')->unique();
             $table->enum('status', ['Pending', 'Processing', 'Shipped', 'Completed', 'Cancelled'])->default('Pending');
             $table->decimal('total_amount', 12, 2);
-            
             // Informasi Penerima & Pengiriman
             $table->string('shipping_name');
             $table->string('shipping_phone', 20);
