@@ -25,10 +25,14 @@ class ProductController extends BaseApiController
             'unit',
             'user'
         ])
-            // 🚀 FIX: withAvg biar field 'rating' di response konsisten sama
-            // yang ditampilin web app (dihitung dari review asli, bukan kolom statis)
             ->withAvg('reviews as average_rating', 'rating')
             ->withCount('reviews')
+            // REWRITE: Hitung jumlah terjual berdasarkan status order yang valid (Processing, Shipped, Completed)
+            ->withSum(['orderItems as sold_count' => function($query) {
+                $query->whereHas('order', function($q) {
+                    $q->whereIn('status', ['Processing', 'Shipped', 'Completed']);
+                });
+            }], 'quantity')
             ->where('is_active', true);
 
         if ($request->filled('q')) {
@@ -54,7 +58,13 @@ class ProductController extends BaseApiController
     {
         $product->load(['category', 'unit', 'user'])
             ->loadAvg('reviews as average_rating', 'rating')
-            ->loadCount('reviews');
+            ->loadCount('reviews')
+            // REWRITE: Samakan logic sold_count untuk detail produk
+            ->loadSum(['orderItems as sold_count' => function($query) {
+                $query->whereHas('order', function($q) {
+                    $q->whereIn('status', ['Processing', 'Shipped', 'Completed']);
+                });
+            }], 'quantity');
 
         return $this->success(
             new ProductResource($product),
@@ -71,8 +81,6 @@ class ProductController extends BaseApiController
 
         $data['user_id'] = Auth::id();
 
-        // 🚀 FIX: pakai ImageCompressor yang sama kayak web (resize + convert
-        // ke WebP) biar ukuran file konsisten & lebih ringan buat mobile.
         if ($request->hasFile('image')) {
             $data['image'] = ImageCompressor::compressAndStore($request->file('image'), 'products', 800, 80);
         }
