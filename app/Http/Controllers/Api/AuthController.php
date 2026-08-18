@@ -65,12 +65,14 @@ class AuthController extends Controller
         $request->validate([
             'name'     => 'required|string|max:255',
             'email'    => 'required|email|unique:users',
+            'phone'    => 'required|string|max:20',
             'password' => 'required|min:8|confirmed',
         ]);
 
         $user = User::create([
             'name'     => $request->name,
             'email'    => $request->email,
+            'phone'    => $request->phone,
             'password' => Hash::make($request->password),
             'role'     => 'buyer',
         ]);
@@ -137,7 +139,16 @@ class AuthController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Profil berhasil diperbarui!',
-            'data'    => $user,
+            'data'    => [
+                'id'      => $user->id,
+                'name'    => $user->name,
+                'email'   => $user->email,
+                'role'    => $user->role,
+                'phone'   => $user->phone,
+                'address' => $user->address,
+                'city'    => $user->city,
+                'avatar'  => $this->avatarUrl($request, $user->avatar),
+            ],
         ]);
     }
 

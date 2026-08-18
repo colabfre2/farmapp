@@ -12,6 +12,8 @@ use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\AddressController;
 use App\Http\Controllers\Api\ShippingController;
 use App\Http\Controllers\Api\PaymentController;
+use App\Http\Controllers\Api\AnalyticsController;
+use App\Http\Controllers\Api\ReviewController;
 
 
 // Public routes
@@ -56,6 +58,15 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/admin/orders', [OrderController::class, 'adminIndex']);
     Route::get('/seller/orders', [OrderController::class, 'sellerIndex']);
     Route::patch('/orders/{order}/status', [OrderController::class, 'updateStatus']);
+
+    // Analytics / BI
+    Route::get('/admin/insights', [AnalyticsController::class, 'adminInsights']);
+    Route::get('/seller/insights', [AnalyticsController::class, 'sellerInsights']);
+    Route::get('/products/{product}/insights', [AnalyticsController::class, 'productInsights']);
+    Route::get('/inventory/summary', [AnalyticsController::class, 'inventorySummary']);
+
+    // Reviews
+    Route::post('/reviews', [ReviewController::class, 'store']);
 
     Route::post('/profile/avatar', [AuthController::class, 'updateAvatar']);
     Route::get('/dashboard', [DashboardController::class, 'index']);

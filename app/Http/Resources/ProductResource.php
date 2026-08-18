@@ -32,6 +32,7 @@ class ProductResource extends JsonResource
             'description' => $this->description,
             'price'       => (int) $this->price,
             'stock'       => (int) $this->stock,
+            'sold_count'  => (int) ($this->sold_count ?? 0),
             'rating'      => $rating,
             'reviews_count' => (int) ($this->reviews_count ?? 0),
             'badge'       => $this->badge,
