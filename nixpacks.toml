@@ -1,14 +1,19 @@
 [providers]
-providers = ['php']
+providers = ['php', 'node']
 
 [phases.setup]
-nixPkgs = ['php82', 'composer']
+nixPkgs = ['php82', 'composer', 'nodejs_18']
 
 [phases.install]
-cmds = ['composer install --ignore-platform-reqs --optimize-autoloader --no-dev']
+cmds = [
+  'composer install --ignore-platform-reqs --optimize-autoloader --no-dev',
+  'npm install --include=dev'
+]
 
 [phases.build]
-cmds = []
+cmds = [
+  'npm run build'
+]
 
 [start]
 cmd = 'php artisan serve --host=0.0.0.0 --port=$PORT'
