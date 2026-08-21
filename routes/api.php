@@ -14,7 +14,9 @@ use App\Http\Controllers\Api\ShippingController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\AnalyticsController;
 use App\Http\Controllers\Api\ReviewController;
+use App\Http\Controllers\Api\BannerController;
 
+Route::get('/banners', [BannerController::class, 'index']);
 
 // Public routes
 Route::post('/login', [AuthController::class, 'login']);
